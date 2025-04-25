@@ -1,0 +1,325 @@
+// Fonts
+@import url('https://fonts.bunny.net/css?family=Nunito');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+// Design Tokens
+@import 'tokens';
+
+// Variables
+@import 'variables';
+
+// Bootstrap
+@import 'bootstrap/scss/bootstrap';
+
+// Custom Styles
+// เพิ่ม utility classes ที่ใช้ design tokens
+.badge-primary {
+  background-color: $color-primary-lighter;
+  color: $color-primary-darker;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $radius-full;
+  font-weight: $font-weight-medium;
+  font-size: $font-size-sm;
+}
+
+// Bootstrap button override
+.btn-primary {
+  color: white !important;
+  background-color: $color-primary;
+  border-color: $color-primary;
+  font-weight: $font-weight-medium;
+  box-shadow: $shadow-sm;
+
+  &:hover, &:focus, &:active {
+    color: white !important;
+    background-color: $color-primary-dark;
+    border-color: $color-primary-dark;
+    box-shadow: $shadow-primary;
+  }
+}
+
+.btn-secondary {
+  color: white !important;
+  font-weight: $font-weight-medium;
+
+  &:hover, &:focus, &:active {
+    color: white !important;
+  }
+}
+
+// ปรับแต่งปุ่มทั่วไป
+.btn {
+  font-family: $font-family;
+  font-weight: $font-weight-medium;
+  transition: all $transition-fast;
+}
+
+// Form controls
+.form-control {
+  border-radius: $radius-md;
+  padding: $spacing-sm $spacing-md;
+  border: 1px solid #DFE3E8;
+  transition: all $transition-fast;
+
+  &:focus {
+    border-color: $color-primary-light;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.15);
+  }
+}
+
+// ปรับขนาด form-control-lg ให้เล็กลง
+.form-control-lg {
+  height: auto;
+  padding: $spacing-xs $spacing-md;
+  font-size: $font-size-md;
+  min-height: 40px;
+}
+
+// Authentication Pages Styling
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  width: 100%;
+
+  .auth-form-side {
+    flex: 0.4;
+    padding: $spacing-3xl;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: $color-background;
+
+    @media (max-width: 991.98px) {
+      padding: $spacing-2xl $spacing-lg;
+      flex: 1;
+    }
+  }
+
+  .auth-image-side {
+    flex: 0.6;
+    background-color: $color-primary;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    background-image: linear-gradient(135deg, $color-primary, $color-primary-dark);
+
+    @media (max-width: 991.98px) {
+      display: none;
+    }
+  }
+
+  .auth-form-container {
+    max-width: 450px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .auth-logo {
+    margin-bottom: $spacing-3xl;
+  }
+
+  .auth-title {
+    font-size: $font-size-3xl;
+    font-weight: $font-weight-bold;
+    margin-bottom: $spacing-md;
+    color: $color-text-primary;
+  }
+
+  .auth-subtitle {
+    color: $color-text-secondary;
+    margin-bottom: $spacing-2xl;
+  }
+
+  .auth-form-divider {
+    display: flex;
+    align-items: center;
+    margin: $spacing-lg 0;
+
+    &:before, &:after {
+      content: "";
+      flex: 1;
+      border-bottom: 1px solid #eaeaea;
+    }
+
+    .divider-text {
+      padding: 0 $spacing-sm;
+      color: $color-text-tertiary;
+      font-size: $font-size-sm;
+    }
+  }
+
+  .auth-social-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-sm;
+    border: 1px solid #DFE3E8;
+    border-radius: $radius-md;
+    background-color: white;
+    transition: all $transition-fast;
+
+    &:hover {
+      background-color: $color-background-hover;
+    }
+
+    img {
+      height: 24px;
+      margin-right: $spacing-sm;
+    }
+  }
+
+  .auth-image-content {
+    width: 90%;
+    height: 90%;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      max-height: 90vh;
+    }
+  }
+
+  .auth-image-shape {
+    position: absolute;
+    border-radius: 40% 60% 70% 30% / 50% 60% 40% 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+
+    &.shape-1 {
+      width: 300px;
+      height: 300px;
+      top: -100px;
+      right: -50px;
+    }
+
+    &.shape-2 {
+      width: 400px;
+      height: 400px;
+      bottom: -150px;
+      left: -100px;
+    }
+  }
+}
+
+// ปรับขนาดปุ่มให้สอดคล้องกับ input fields
+.btn-gofit.py-3 {
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+}
+
+.btn-gofit {
+  background-color: $color-primary;
+  color: white;
+  border: none;
+  padding: $spacing-sm $spacing-lg;
+  border-radius: $radius-md;
+  font-weight: $font-weight-medium;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background-color: $color-primary-dark;
+    color: white;
+  }
+
+  &:active {
+    background-color: $color-primary-darker;
+  }
+}
+
+.btn-gofit-outline {
+  background-color: white;
+  color: $color-primary;
+  border: 1px solid $color-primary;
+  padding: $spacing-sm $spacing-lg;
+  border-radius: $radius-md;
+  font-weight: $font-weight-medium;
+  transition: all $transition-fast;
+
+  &:hover {
+    background-color: $color-background-hover;
+    color: $color-primary-dark;
+  }
+}
+
+.card-gofit {
+  background-color: white;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-md;
+  border: none;
+  transition: transform $transition-normal, box-shadow $transition-normal;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-lg;
+  }
+}
+
+// Input with Icons
+.input-icon-group {
+  position: relative;
+
+  .form-control {
+    padding-left: $spacing-3xl;
+  }
+
+  .input-icon {
+    position: absolute;
+    left: $spacing-md;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $color-text-tertiary;
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  .toggle-password {
+    position: absolute;
+    right: $spacing-md;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $color-text-tertiary;
+    cursor: pointer;
+    z-index: 4;
+    background: none;
+    border: none;
+    padding: 0;
+
+    &:hover {
+      color: $color-primary;
+    }
+  }
+}
+
+// แก้ไขปัญหา validation icon ทับกันกับไอคอนด้านใน
+.was-validated .form-control:invalid,
+.form-control.is-invalid {
+  background-image: none !important;
+  border-color: $color-error;
+}
+
+.was-validated .form-control:valid,
+.form-control.is-valid {
+  background-image: none !important;
+  border-color: $color-success;
+}
+
+.invalid-feedback {
+  display: none;
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: $font-size-sm;
+  color: $color-error;
+}
+
+.was-validated :invalid ~ .invalid-feedback,
+.is-invalid ~ .invalid-feedback {
+  display: block;
+}

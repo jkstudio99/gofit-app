@@ -1,0 +1,31 @@
+// Body
+$body-bg: $color-background;
+
+// Typography
+$font-family-sans-serif: $font-family;
+$font-size-base: $font-size-md;
+$line-height-base: $line-height-normal;
+
+// Colors
+$primary: $color-primary;
+$secondary: $color-text-secondary;
+$success: $color-success;
+$info: $color-info;
+$warning: $color-warning;
+$danger: $color-error;
+
+// Cards
+$card-border-radius: $radius-lg;
+$card-box-shadow: $shadow-md;
+
+// Buttons
+$btn-font-weight: $font-weight-medium;
+$btn-border-radius: $radius-md;
+$btn-padding-x: $spacing-lg;
+$btn-padding-y: $spacing-sm;
+
+// Button Colors
+$btn-primary-color: white;
+$btn-secondary-color: white;
+$btn-primary-hover-color: white;
+$btn-secondary-hover-color: white;
