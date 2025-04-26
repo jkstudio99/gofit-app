@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class LoginController extends Controller
 {
@@ -24,9 +25,18 @@ class LoginController extends Controller
     /**
      * Where to redirect users after login.
      *
-     * @var string
+     * @return string
      */
-    protected $redirectTo = '/home';
+    protected function redirectTo()
+    {
+        if (auth()->user()->user_type_id == 2) {
+            Log::info('User is admin. Redirecting to admin dashboard.', ['user_id' => auth()->id(), 'user_type_id' => auth()->user()->user_type_id]);
+            return '/admin'; // เปลี่ยนเส้นทางไปหน้าแดชบอร์ดของแอดมิน
+        }
+
+        Log::info('User is not admin. Redirecting to user dashboard.', ['user_id' => auth()->id(), 'user_type_id' => auth()->user()->user_type_id]);
+        return '/dashboard'; // เปลี่ยนเส้นทางไปหน้าแดชบอร์ดของผู้ใช้ทั่วไป
+    }
 
     /**
      * Create a new controller instance.

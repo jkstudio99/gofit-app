@@ -25,9 +25,9 @@ class AdminMiddleware
         // ตรวจสอบบทบาทผู้ใช้
         $user = Auth::user();
 
-        // ตรวจสอบว่าผู้ใช้มีบทบาทเป็น admin หรือไม่ (user_type_id = 1 คือ admin)
-        if ($user->user_type_id != 1) {
-            return redirect()->route('home')->with('error', 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้');
+        // ตรวจสอบว่าผู้ใช้มีบทบาทเป็น admin หรือไม่ (user_type_id = 2 คือ admin)
+        if ($user->user_type_id != 2) {
+            return redirect()->route('dashboard')->with('error', 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้');
         }
 
         return $next($request);

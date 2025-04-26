@@ -21,8 +21,7 @@ class AdminController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        // ต้องการสร้าง middleware ตรวจสอบบทบาทของผู้ใช้ว่าเป็น admin
-        // $this->middleware('admin');
+        $this->middleware('admin');
     }
 
     /**
@@ -32,6 +31,12 @@ class AdminController extends Controller
      */
     public function index()
     {
+        \Illuminate\Support\Facades\Log::info('Admin dashboard is being accessed', [
+            'user_id' => auth()->id(),
+            'user_type_id' => auth()->user()->user_type_id,
+            'route' => request()->path()
+        ]);
+
         // จำนวนผู้ใช้งานทั้งหมด
         $totalUsers = User::count();
 
@@ -102,6 +107,7 @@ class AdminController extends Controller
             $dailyActivities[] = $dailyStats->has($dateString) ? $dailyStats[$dateString]->count : 0;
         }
 
+        // แสดงผลโดยใช้ AdminLTE template
         return view('admin.dashboard', compact(
             'totalUsers',
             'newUsers',
@@ -117,5 +123,64 @@ class AdminController extends Controller
             'dailyLabels',
             'dailyActivities'
         ));
+    }
+
+    /**
+     * แสดงรายการผู้ใช้ทั้งหมด
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function users()
+    {
+        $users = User::orderBy('created_at', 'desc')->paginate(20);
+        return view('admin.users.index', compact('users'));
+    }
+
+    /**
+     * แสดงรายการกิจกรรมของผู้ใช้ทั้งหมด
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function userActivities()
+    {
+        $activities = Activity::with('user')
+                        ->orderBy('created_at', 'desc')
+                        ->paginate(20);
+        return view('admin.activities.index', compact('activities'));
+    }
+
+    /**
+     * แสดงรายการเหรียญตราทั้งหมด
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function badges()
+    {
+        $badges = Badge::orderBy('created_at', 'desc')->paginate(20);
+        return view('admin.badges.index', compact('badges'));
+    }
+
+    /**
+     * แสดงรายการรางวัลทั้งหมด
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function rewards()
+    {
+        $rewards = Reward::orderBy('created_at', 'desc')->paginate(20);
+        return view('admin.rewards.index', compact('rewards'));
+    }
+
+    /**
+     * แสดงรายการการแลกรางวัลทั้งหมด
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function redeems()
+    {
+        $redeems = Redeem::with(['user', 'reward'])
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(20);
+        return view('admin.redeems.index', compact('redeems'));
     }
 }
