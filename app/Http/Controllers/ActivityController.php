@@ -25,14 +25,39 @@ class ActivityController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $activities = Activity::where('status', 'active')
-            ->where('start_time', '>', now())
-            ->orderBy('start_time')
-            ->paginate(12);
+        $query = Activity::query();
 
-        return view('activities.index', compact('activities'));
+        // Filter by type if provided
+        if ($request->has('type') && !empty($request->type)) {
+            $query->where('type', $request->type);
+        }
+
+        // Filter by date range if provided
+        if ($request->has('start_date') && !empty($request->start_date)) {
+            $query->where('start_time', '>=', $request->start_date . ' 00:00:00');
+        }
+
+        if ($request->has('end_date') && !empty($request->end_date)) {
+            $query->where('start_time', '<=', $request->end_date . ' 23:59:59');
+        }
+
+        $activities = $query->orderBy('start_time', 'desc')->paginate(10);
+
+        // Define activity types
+        $activityTypes = [
+            'run' => 'วิ่ง',
+            'walk' => 'เดิน',
+            'cycle' => 'ปั่นจักรยาน',
+            'swim' => 'ว่ายน้ำ',
+            'gym' => 'ออกกำลังกายที่ยิม',
+            'yoga' => 'โยคะ',
+            'hiit' => 'HIIT',
+            'other' => 'อื่นๆ'
+        ];
+
+        return view('activities.index', compact('activities', 'activityTypes'));
     }
 
     /**

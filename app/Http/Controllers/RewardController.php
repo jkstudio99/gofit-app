@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Reward;
 use App\Models\Redeem;
 use App\Models\Activity;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -37,31 +38,41 @@ class RewardController extends Controller
 
         // Check if user has enough points
         if ($user->points < $reward->points_required) {
-            return redirect()->route('rewards.index')->with('error', 'Not enough points to redeem this reward');
+            return redirect()->route('rewards.index')->with('error', 'คะแนนของคุณไม่เพียงพอที่จะแลกรางวัลนี้');
         }
 
         // Check if reward is available
-        if ($reward->quantity > 0) {
-            // Create redeem record
-            $redeem = new Redeem();
-            $redeem->user_id = $user->id;
-            $redeem->reward_id = $reward->reward_id;
-            $redeem->points_used = $reward->points_required;
-            $redeem->status = 'pending';
-            $redeem->save();
-
-            // Deduct points from user
-            $user->points -= $reward->points_required;
-            $user->save();
-
-            // Decrease reward quantity
-            $reward->quantity -= 1;
-            $reward->save();
-
-            return redirect()->route('rewards.index')->with('success', 'Reward redeemed successfully');
+        if ($reward->quantity <= 0) {
+            return redirect()->route('rewards.index')->with('error', 'รางวัลนี้หมดแล้ว');
         }
 
-        return redirect()->route('rewards.index')->with('error', 'This reward is out of stock');
+        // Begin transaction to ensure data consistency
+        DB::beginTransaction();
+
+        try {
+            // Create redeem record
+            Redeem::create([
+                'user_id' => $user->user_id,
+                'reward_id' => $reward->reward_id,
+                'status' => 'pending'
+            ]);
+
+            // Deduct points from user
+            DB::table('tb_user')
+                ->where('user_id', $user->user_id)
+                ->decrement('points', $reward->points_required);
+
+            // Decrease reward quantity
+            DB::table('tb_reward')
+                ->where('reward_id', $reward->reward_id)
+                ->decrement('quantity', 1);
+
+            DB::commit();
+            return redirect()->route('rewards.index')->with('success', 'คุณได้แลกรางวัล ' . $reward->name . ' เรียบร้อยแล้ว');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return redirect()->route('rewards.index')->with('error', 'เกิดข้อผิดพลาดในการแลกรางวัล โปรดลองอีกครั้ง: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -100,7 +111,7 @@ class RewardController extends Controller
 
         $reward->save();
 
-        return redirect()->route('admin.rewards')->with('success', 'Reward created successfully');
+        return redirect()->route('admin.rewards')->with('success', 'เพิ่มรางวัลใหม่เรียบร้อยแล้ว');
     }
 
     /**
@@ -139,6 +150,7 @@ class RewardController extends Controller
         $reward->quantity = $request->quantity;
         $reward->is_enabled = $request->has('is_enabled') ? 1 : 0;
 
+        // Handle image upload or removal
         if ($request->hasFile('image_path')) {
             // Delete old image if exists
             if ($reward->image_path) {
@@ -146,11 +158,17 @@ class RewardController extends Controller
             }
             $path = $request->file('image_path')->store('rewards', 'public');
             $reward->image_path = $path;
+        } elseif ($request->has('remove_image') && $request->remove_image) {
+            // Remove existing image if checkbox is checked
+            if ($reward->image_path) {
+                Storage::disk('public')->delete($reward->image_path);
+                $reward->image_path = null;
+            }
         }
 
         $reward->save();
 
-        return redirect()->route('admin.rewards')->with('success', 'Reward updated successfully');
+        return redirect()->route('admin.rewards')->with('success', 'อัปเดตรางวัลเรียบร้อยแล้ว');
     }
 
     /**
@@ -162,7 +180,7 @@ class RewardController extends Controller
         $redeemedCount = Redeem::where('reward_id', $reward->reward_id)->count();
 
         if ($redeemedCount > 0) {
-            return redirect()->route('admin.rewards')->with('error', 'Cannot delete reward that has been redeemed');
+            return redirect()->route('admin.rewards')->with('error', 'ไม่สามารถลบรางวัลที่มีการแลกแล้วได้');
         }
 
         // Delete reward image if exists
@@ -173,12 +191,15 @@ class RewardController extends Controller
         // Delete reward
         $reward->delete();
 
-        return redirect()->route('admin.rewards')->with('success', 'Reward deleted successfully');
+        return redirect()->route('admin.rewards')->with('success', 'ลบรางวัลเรียบร้อยแล้ว');
     }
 
+    /**
+     * Display admin rewards page
+     */
     public function admin()
     {
-        $rewards = Reward::orderBy('created_at', 'desc')->get();
+        $rewards = Reward::orderBy('points_required', 'asc')->get();
         return view('admin.rewards.index', compact('rewards'));
     }
 }

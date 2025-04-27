@@ -78,7 +78,7 @@
                     </div>
                 </div>
                 <div class="card-footer bg-transparent border-0">
-                    <a href="{{ route('admin.rewards.index') }}" class="text-danger text-decoration-none">รายละเอียดเพิ่มเติม <i class="fas fa-arrow-right ms-1"></i></a>
+                    <a href="{{ route('admin.rewards') }}" class="text-danger text-decoration-none">รายละเอียดเพิ่มเติม <i class="fas fa-arrow-right ms-1"></i></a>
                 </div>
             </div>
         </div>

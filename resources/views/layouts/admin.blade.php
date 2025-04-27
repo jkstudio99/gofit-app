@@ -52,7 +52,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.rewards.*') ? 'active' : '' }}" href="{{ route('admin.rewards.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.rewards.*') ? 'active' : '' }}" href="{{ route('admin.rewards') }}">
                                     <i class="fas fa-gift me-1"></i> รางวัล
                                 </a>
                             </li>

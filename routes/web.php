@@ -54,7 +54,7 @@ Route::middleware(['auth'])->group(function () {
 
     // รางวัล
     Route::get('/rewards', [RewardController::class, 'index'])->name('rewards.index');
-    Route::post('/rewards/redeem', [RewardController::class, 'redeem'])->name('rewards.redeem');
+    Route::get('/rewards/{reward}/redeem', [RewardController::class, 'redeem'])->name('rewards.redeem');
 
     // โปรไฟล์ผู้ใช้
     Route::get('/profile', [DashboardController::class, 'profile'])->name('profile.edit');
@@ -95,7 +95,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/badges', [AdminController::class, 'badges'])->name('badges.index');
 
     // Rewards management
-    Route::get('/rewards', [AdminController::class, 'rewards'])->name('rewards.index');
+    Route::get('/rewards', [RewardController::class, 'admin'])->name('rewards');
+    Route::get('/rewards/create', [RewardController::class, 'create'])->name('rewards.create');
+    Route::post('/rewards', [RewardController::class, 'store'])->name('rewards.store');
+    Route::get('/rewards/{reward}/edit', [RewardController::class, 'edit'])->name('rewards.edit');
+    Route::put('/rewards/{reward}', [RewardController::class, 'update'])->name('rewards.update');
+    Route::delete('/rewards/{reward}', [RewardController::class, 'destroy'])->name('rewards.destroy');
 
     // Redeems history
     Route::get('/redeems', [AdminController::class, 'redeems'])->name('redeems');
