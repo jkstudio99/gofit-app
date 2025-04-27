@@ -51,7 +51,8 @@ class DashboardController extends Controller
 
         // Get recent activities
         $recentActivities = Activity::where('user_id', $user->user_id)
-            ->orderBy('created_at', 'desc')
+            ->where('activity_type', 'running')
+            ->orderBy('start_time', 'desc')
             ->take(5)
             ->get();
 
@@ -103,7 +104,36 @@ class DashboardController extends Controller
     public function profile()
     {
         $user = Auth::user();
+
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'คุณต้องเข้าสู่ระบบก่อนเข้าถึงหน้านี้');
+        }
+
         return view('profile.edit', compact('user'));
+    }
+
+    /**
+     * Display a user's public profile.
+     */
+    public function show($username)
+    {
+        $user = \App\Models\User::where('username', $username)->firstOrFail();
+
+        // Load activity statistics
+        $user->activities_count = $user->activities()->count();
+        $user->total_distance = $user->activities()->sum('distance');
+        $user->fitness_score = $user->points ?? 0;
+
+        // Load recent activities
+        $user->recent_activities = $user->activities()
+            ->orderBy('started_at', 'desc')
+            ->take(5)
+            ->get();
+
+        // Load badges
+        $user->loadMissing('badges');
+
+        return view('profile.show', compact('user'));
     }
 
     /**
@@ -135,5 +165,113 @@ class DashboardController extends Controller
             ]);
 
         return redirect()->route('profile.edit')->with('success', 'ข้อมูลส่วนตัวได้รับการอัปเดตเรียบร้อยแล้ว');
+    }
+
+    /**
+     * Update the user's profile image.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updateProfileImage(Request $request)
+    {
+        $user = Auth::user();
+
+        $validatedData = $request->validate([
+            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        // อัปโหลดไฟล์และบันทึกไว้ใน public/profile_images
+        if ($request->hasFile('profile_image')) {
+            // สร้างโฟลเดอร์หากยังไม่มี
+            $uploadPath = public_path('profile_images');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+
+            // ลบรูปเก่าหากมี
+            if ($user->profile_image) {
+                $oldImagePath = public_path('profile_images/' . $user->profile_image);
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+            }
+
+            // บันทึกรูปใหม่
+            $imageName = $user->user_id . '_' . time() . '.' . $request->profile_image->extension();
+            $request->profile_image->move($uploadPath, $imageName);
+
+            // อัปเดตฐานข้อมูล
+            DB::table('tb_user')
+                ->where('user_id', $user->user_id)
+                ->update([
+                    'profile_image' => $imageName,
+                    'updated_at' => now()
+                ]);
+        }
+
+        return redirect()->route('profile.edit')->with('success', 'รูปโปรไฟล์ได้รับการอัปเดตเรียบร้อยแล้ว');
+    }
+
+    /**
+     * Update user password.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updatePassword(Request $request)
+    {
+        $user = Auth::user();
+
+        $validatedData = $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        // ตรวจสอบรหัสผ่านปัจจุบัน
+        if (!password_verify($validatedData['current_password'], $user->password)) {
+            return redirect()->back()->withErrors(['current_password' => 'รหัสผ่านปัจจุบันไม่ถูกต้อง']);
+        }
+
+        // อัปเดตรหัสผ่านใหม่
+        DB::table('tb_user')
+            ->where('user_id', $user->user_id)
+            ->update([
+                'password' => bcrypt($validatedData['password']),
+                'updated_at' => now()
+            ]);
+
+        return redirect()->route('profile.edit')->with('success', 'รหัสผ่านได้รับการอัปเดตเรียบร้อยแล้ว');
+    }
+
+    /**
+     * Update user health information.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updateHealth(Request $request)
+    {
+        $user = Auth::user();
+
+        $validatedData = $request->validate([
+            'weight' => 'nullable|numeric|min:0|max:300',
+            'height' => 'nullable|numeric|min:0|max:300',
+            'birthdate' => 'nullable|date',
+            'gender' => 'nullable|string|in:male,female,other',
+        ]);
+
+        // อัปเดตข้อมูลสุขภาพ
+        DB::table('tb_user')
+            ->where('user_id', $user->user_id)
+            ->update([
+                'weight' => $validatedData['weight'],
+                'height' => $validatedData['height'],
+                'birthdate' => $validatedData['birthdate'],
+                'gender' => $validatedData['gender'],
+                'updated_at' => now()
+            ]);
+
+        return redirect()->route('profile.edit')->with('success', 'ข้อมูลสุขภาพได้รับการอัปเดตเรียบร้อยแล้ว');
     }
 }

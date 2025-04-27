@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -37,6 +38,17 @@ class User extends Authenticatable
         'last_login_at',
     ];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'birth_date' => 'date',
+        'password' => 'hashed',
+    ];
+
     public function userType()
     {
         return $this->belongsTo(MasterUserType::class, 'user_type_id', 'user_type_id');
@@ -47,9 +59,9 @@ class User extends Authenticatable
         return $this->belongsTo(MasterUserStatus::class, 'user_status_id', 'user_status_id');
     }
 
-    public function activities()
+    public function activities(): HasMany
     {
-        return $this->hasMany(Activity::class, 'user_id', 'user_id');
+        return $this->hasMany(Activity::class);
     }
 
     public function badges()
@@ -87,5 +99,39 @@ class User extends Authenticatable
     public function sessions()
     {
         return $this->hasMany(Session::class, 'user_id', 'user_id');
+    }
+
+    /**
+     * ความสัมพันธ์กับกิจกรรม (many-to-many)
+     */
+    public function events()
+    {
+        return $this->belongsToMany(Event::class, 'event_users', 'user_id', 'event_id')
+            ->withPivot('status', 'registered_at')
+            ->withTimestamps();
+    }
+
+    /**
+     * ความสัมพันธ์กับกิจกรรมที่ลงทะเบียน
+     */
+    public function eventRegistrations()
+    {
+        return $this->hasMany(EventUser::class, 'user_id', 'user_id');
+    }
+
+    /**
+     * ความสัมพันธ์กับกิจกรรมที่สร้าง
+     */
+    public function createdEvents()
+    {
+        return $this->hasMany(Event::class, 'created_by', 'user_id');
+    }
+
+    /**
+     * Get all of the user's activity goals.
+     */
+    public function activityGoals(): HasMany
+    {
+        return $this->hasMany(ActivityGoal::class);
     }
 }

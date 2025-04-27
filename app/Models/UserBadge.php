@@ -11,7 +11,17 @@ class UserBadge extends Model
 
     protected $table = 'tb_user_badge';
     protected $primaryKey = 'user_badge_id';
-    protected $fillable = ['user_id', 'badge_id'];
+    public $timestamps = true;
+
+    protected $fillable = [
+        'user_id',
+        'badge_id',
+        'earned_at'
+    ];
+
+    protected $casts = [
+        'earned_at' => 'datetime',
+    ];
 
     public function user()
     {

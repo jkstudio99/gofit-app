@@ -1,0 +1,37 @@
+/**
+ * dropdown-fix.css
+ * แก้ปัญหาการแสดงผล dropdown ใน Bootstrap
+ */
+
+/* ทำให้ dropdown แสดงผลถูกต้อง */
+.dropdown-menu.show {
+    display: block !important;
+    z-index: 9999 !important;
+    position: absolute !important;
+}
+
+/* แก้ปัญหาการซ้อนทับของ dropdown */
+.dropdown {
+    position: relative;
+}
+
+/* ปรับแต่ง dropdown items */
+.dropdown-item {
+    cursor: pointer;
+}
+
+/* แก้ไขปัญหา dropdown ซ่อนอยู่ใต้ elements อื่น */
+.dropdown-menu {
+    margin-top: 0.125rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* แสดง dropdown ทันทีเมื่อกดปุ่ม (ไม่ต้อง transition) */
+.dropdown-menu {
+    transition: none !important;
+}
+
+/* เพิ่ม pointer ให้กับ dropdown toggle */
+.dropdown-toggle {
+    cursor: pointer;
+}

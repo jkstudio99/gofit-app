@@ -9,6 +9,11 @@ use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\RewardController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\RunController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\Admin\EventController as AdminEventController;
+use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\ActivityGoalController;
 
 // หน้าหลัก
 Route::get('/', function () {
@@ -29,10 +34,20 @@ Route::get('/home', function() {
 // Route สำหรับผู้ใช้ทั่วไป
 Route::middleware(['auth'])->group(function () {
     // การวิ่ง
-    Route::get('/run', [RunActivityController::class, 'index'])->name('run.index');
+    Route::get('/run', [RunController::class, 'index'])->name('run.index');
+    Route::get('/run/test', [RunController::class, 'test'])->name('run.test');
     Route::post('/run/start', [RunActivityController::class, 'start'])->name('run.start');
+    Route::get('/run/test-start', function() {
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Test route works',
+            'time' => now()->format('H:i:s')
+        ]);
+    })->name('run.test.start');
     Route::post('/run/finish', [RunActivityController::class, 'finish'])->name('run.finish');
     Route::post('/run/updateRoute', [RunActivityController::class, 'updateRoute'])->name('run.updateRoute');
+    Route::post('/run/store', [RunController::class, 'store'])->name('run.store');
+    Route::get('/run/history', [RunController::class, 'history'])->name('run.history');
 
     // เหรียญตรา
     Route::get('/badges', [BadgeController::class, 'index'])->name('badges.index');
@@ -44,6 +59,24 @@ Route::middleware(['auth'])->group(function () {
     // โปรไฟล์ผู้ใช้
     Route::get('/profile', [DashboardController::class, 'profile'])->name('profile.edit');
     Route::put('/profile', [DashboardController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/profile/image', [DashboardController::class, 'updateProfileImage'])->name('profile.update-image');
+    Route::put('/profile/password', [DashboardController::class, 'updatePassword'])->name('profile.update-password');
+    Route::put('/profile/health', [DashboardController::class, 'updateHealth'])->name('profile.update-health');
+    Route::get('/profile/{username}', [DashboardController::class, 'show'])->name('profile.show');
+
+    // ส่วนของผู้ใช้ - กิจกรรม
+    Route::get('/events', [EventController::class, 'index'])->name('events.index');
+    Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+    Route::post('/events/{event}/register', [EventController::class, 'register'])->name('events.register');
+    Route::post('/events/{event}/cancel', [EventController::class, 'cancel'])->name('events.cancel');
+    Route::get('/my-events', [EventController::class, 'myEvents'])->name('events.my');
+
+    // Activity Routes
+    Route::resource('activities', ActivityController::class);
+    Route::post('/activities/{activity}/register', [ActivityController::class, 'register'])->name('activities.register');
+    Route::delete('/activities/{activity}/cancel-registration', [ActivityController::class, 'cancelRegistration'])->name('activities.cancel-registration');
+    Route::get('/my-activities', [ActivityController::class, 'myActivities'])->name('activities.my');
+    Route::resource('goals', ActivityGoalController::class);
 });
 
 // Route สำหรับ Admin
@@ -67,5 +100,24 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Redeems history
     Route::get('/redeems', [AdminController::class, 'redeems'])->name('redeems');
 
-    // ในระยะแรกจะมีแค่ dashboard ก่อน เราจะเพิ่ม controllers อื่นๆ ในภายหลัง
+    // จัดการกิจกรรม
+    Route::resource('events', AdminEventController::class);
+    Route::post('/events/{event}/participants/{user}/status', [AdminEventController::class, 'updateParticipantStatus'])
+        ->name('events.participants.status');
+    Route::get('/events/{event}/export', [AdminEventController::class, 'exportParticipants'])
+        ->name('events.export');
+});
+
+// Events routes
+Route::prefix('events')->name('events.')->group(function () {
+    Route::get('/', [App\Http\Controllers\EventController::class, 'index'])->name('index');
+    Route::get('/my-events', [App\Http\Controllers\EventController::class, 'myEvents'])
+        ->middleware('auth')->name('my-events');
+    Route::get('/{event}', [App\Http\Controllers\EventController::class, 'show'])->name('show');
+
+    // Registration routes (ต้องเข้าสู่ระบบ)
+    Route::middleware('auth')->group(function () {
+        Route::post('/{event}/register', [App\Http\Controllers\EventController::class, 'register'])->name('register');
+        Route::post('/{event}/cancel', [App\Http\Controllers\EventController::class, 'cancel'])->name('cancel');
+    });
 });

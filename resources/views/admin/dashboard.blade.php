@@ -160,9 +160,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($latestActivities ?? [] as $activity)
+                                @foreach($latestActivities ?? [] as $key => $activity)
                                 <tr>
-                                    <td>{{ $activity->user->username }}</td>
+                                    <td>{{ $activity->user->username ?? 'ไม่ระบุชื่อ' }}</td>
                                     <td>{{ $activity->activity_type }}</td>
                                     <td>{{ number_format($activity->distance, 2) }} กม.</td>
                                     <td>

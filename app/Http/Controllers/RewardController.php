@@ -8,6 +8,7 @@ use App\Models\Redeem;
 use App\Models\Activity;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class RewardController extends Controller
 {
@@ -17,78 +18,50 @@ class RewardController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $rewards = Reward::where('is_enabled', 1)
+                  ->orderBy('points_required', 'asc')
+                  ->get();
 
-        // Calculate user points based on total distance
-        $totalDistance = Activity::where('user_id', $user->user_id)
-            ->whereNotNull('end_time')
-            ->sum('distance');
+        $userPoints = $user->points;
+        $redeemedRewards = Redeem::where('user_id', $user->id)->get();
 
-        // Let's say 1 km = 1 point
-        $userPoints = floor($totalDistance);
-
-        // Get all available rewards
-        $rewards = Reward::orderBy('points_required', 'asc')->get();
-
-        // Get user's redeemed rewards
-        $redeemedRewards = Redeem::where('user_id', $user->user_id)
-            ->with('reward')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return view('rewards.index', compact('rewards', 'redeemedRewards', 'userPoints'));
+        return view('rewards.index', compact('rewards', 'userPoints', 'redeemedRewards'));
     }
 
     /**
      * Redeem a reward
      */
-    public function redeem(Request $request)
+    public function redeem(Reward $reward)
     {
-        $request->validate([
-            'reward_id' => 'required|exists:tb_reward,reward_id'
-        ]);
-
         $user = Auth::user();
-        $reward = Reward::findOrFail($request->reward_id);
-
-        // Calculate user points
-        $totalDistance = Activity::where('user_id', $user->user_id)
-            ->whereNotNull('end_time')
-            ->sum('distance');
-
-        $userPoints = floor($totalDistance);
 
         // Check if user has enough points
-        if ($userPoints < $reward->points_required) {
-            return redirect()->back()->with('error', 'Not enough points to redeem this reward');
+        if ($user->points < $reward->points_required) {
+            return redirect()->route('rewards.index')->with('error', 'Not enough points to redeem this reward');
         }
 
-        // Check if reward is available (quantity)
-        if ($reward->quantity <= 0) {
-            return redirect()->back()->with('error', 'This reward is out of stock');
-        }
-
-        DB::beginTransaction();
-
-        try {
-            // Create redemption record
+        // Check if reward is available
+        if ($reward->quantity > 0) {
+            // Create redeem record
             $redeem = new Redeem();
-            $redeem->user_id = $user->user_id;
+            $redeem->user_id = $user->id;
             $redeem->reward_id = $reward->reward_id;
             $redeem->points_used = $reward->points_required;
             $redeem->status = 'pending';
             $redeem->save();
 
-            // Reduce reward quantity
+            // Deduct points from user
+            $user->points -= $reward->points_required;
+            $user->save();
+
+            // Decrease reward quantity
             $reward->quantity -= 1;
             $reward->save();
 
-            DB::commit();
-
-            return redirect()->back()->with('success', 'Reward redeemed successfully! It will be processed shortly.');
-        } catch (\Exception $e) {
-            DB::rollback();
-            return redirect()->back()->with('error', 'An error occurred. Please try again.');
+            return redirect()->route('rewards.index')->with('success', 'Reward redeemed successfully');
         }
+
+        return redirect()->route('rewards.index')->with('error', 'This reward is out of stock');
     }
 
     /**
@@ -96,7 +69,7 @@ class RewardController extends Controller
      */
     public function create()
     {
-        //
+        return view('admin.rewards.create');
     }
 
     /**
@@ -104,7 +77,30 @@ class RewardController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'points_required' => 'required|integer|min:1',
+            'quantity' => 'required|integer|min:0',
+            'image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_enabled' => 'nullable',
+        ]);
+
+        $reward = new Reward();
+        $reward->name = $request->name;
+        $reward->description = $request->description;
+        $reward->points_required = $request->points_required;
+        $reward->quantity = $request->quantity;
+        $reward->is_enabled = $request->has('is_enabled') ? 1 : 0;
+
+        if ($request->hasFile('image_path')) {
+            $path = $request->file('image_path')->store('rewards', 'public');
+            $reward->image_path = $path;
+        }
+
+        $reward->save();
+
+        return redirect()->route('admin.rewards')->with('success', 'Reward created successfully');
     }
 
     /**
@@ -120,7 +116,7 @@ class RewardController extends Controller
      */
     public function edit(Reward $reward)
     {
-        //
+        return view('admin.rewards.edit', compact('reward'));
     }
 
     /**
@@ -128,7 +124,33 @@ class RewardController extends Controller
      */
     public function update(Request $request, Reward $reward)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'points_required' => 'required|integer|min:1',
+            'quantity' => 'required|integer|min:0',
+            'image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_enabled' => 'nullable',
+        ]);
+
+        $reward->name = $request->name;
+        $reward->description = $request->description;
+        $reward->points_required = $request->points_required;
+        $reward->quantity = $request->quantity;
+        $reward->is_enabled = $request->has('is_enabled') ? 1 : 0;
+
+        if ($request->hasFile('image_path')) {
+            // Delete old image if exists
+            if ($reward->image_path) {
+                Storage::disk('public')->delete($reward->image_path);
+            }
+            $path = $request->file('image_path')->store('rewards', 'public');
+            $reward->image_path = $path;
+        }
+
+        $reward->save();
+
+        return redirect()->route('admin.rewards')->with('success', 'Reward updated successfully');
     }
 
     /**
@@ -136,6 +158,27 @@ class RewardController extends Controller
      */
     public function destroy(Reward $reward)
     {
-        //
+        // Check if reward has been redeemed
+        $redeemedCount = Redeem::where('reward_id', $reward->reward_id)->count();
+
+        if ($redeemedCount > 0) {
+            return redirect()->route('admin.rewards')->with('error', 'Cannot delete reward that has been redeemed');
+        }
+
+        // Delete reward image if exists
+        if ($reward->image_path) {
+            Storage::disk('public')->delete($reward->image_path);
+        }
+
+        // Delete reward
+        $reward->delete();
+
+        return redirect()->route('admin.rewards')->with('success', 'Reward deleted successfully');
+    }
+
+    public function admin()
+    {
+        $rewards = Reward::orderBy('created_at', 'desc')->get();
+        return view('admin.rewards.index', compact('rewards'));
     }
 }

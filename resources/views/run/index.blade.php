@@ -51,16 +51,16 @@
                     </div>
 
                     <!-- ปุ่มควบคุม -->
-                    <div class="run-controls text-center">
-                        <button type="button" id="startRunBtn" class="btn btn-primary btn-lg px-5 py-3 me-2">
-                            <i class="fas fa-play me-2"></i> เริ่มวิ่ง
-                        </button>
-                        <button type="button" id="pauseRunBtn" class="btn btn-warning btn-lg px-5 py-3 me-2" disabled>
-                            <i class="fas fa-pause me-2"></i> พัก
-                        </button>
-                        <button type="button" id="stopRunBtn" class="btn btn-danger btn-lg px-5 py-3" disabled>
-                            <i class="fas fa-stop me-2"></i> หยุดวิ่ง
-                        </button>
+                    <div class="control-buttons mt-3">
+                        <button id="startRunBtn" class="btn btn-primary btn-lg w-100 mb-2" onclick="startRun()">เริ่มวิ่ง</button>
+                        <div class="row g-2 running-controls" style="display: none;">
+                            <div class="col">
+                                <button id="pauseRunBtn" class="btn btn-secondary btn-lg w-100" onclick="pauseRun()">หยุดชั่วคราว</button>
+                            </div>
+                            <div class="col">
+                                <button id="stopRunBtn" class="btn btn-danger btn-lg w-100" onclick="stopRun()">จบการวิ่ง</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -69,7 +69,12 @@
             <div class="card gofit-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">ประวัติการวิ่งล่าสุด</h5>
-                    <a href="#" class="btn btn-sm btn-outline-primary rounded-pill">ดูทั้งหมด</a>
+                    <div>
+                        <a href="{{ route('run.test') }}" class="btn btn-sm btn-warning rounded-pill me-2">
+                            <i class="fas fa-flask me-1"></i> ทดสอบการวิ่ง
+                        </a>
+                        <a href="{{ route('run.history') }}" class="btn btn-sm btn-outline-primary rounded-pill">ดูทั้งหมด</a>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <table class="gofit-table">
@@ -86,11 +91,16 @@
                         <tbody>
                             @forelse($recentActivities ?? [] as $activity)
                             <tr>
-                                <td>{{ $activity->start_time->format('d M Y, H:i') }}</td>
+                                <td>{{ $activity->start_time instanceof \Carbon\Carbon
+                                      ? $activity->start_time->format('d M Y, H:i')
+                                      : \Carbon\Carbon::parse($activity->start_time)->format('d M Y, H:i') }}</td>
                                 <td>{{ number_format($activity->distance, 2) }} กม.</td>
                                 <td>
                                     @if($activity->end_time)
-                                        {{ gmdate('H:i:s', $activity->end_time->diffInSeconds($activity->start_time)) }}
+                                        {{ $activity->end_time instanceof \Carbon\Carbon && $activity->start_time instanceof \Carbon\Carbon
+                                           ? gmdate('H:i:s', $activity->end_time->diffInSeconds($activity->start_time))
+                                           : gmdate('H:i:s', \Carbon\Carbon::parse($activity->end_time)->diffInSeconds(\Carbon\Carbon::parse($activity->start_time)))
+                                        }}
                                     @else
                                         <span class="badge bg-warning">กำลังดำเนินการ</span>
                                     @endif
@@ -98,7 +108,7 @@
                                 <td>{{ number_format($activity->average_speed, 1) }} กม./ชม.</td>
                                 <td>{{ number_format($activity->calories_burned, 0) }} kcal</td>
                                 <td>
-                                    <a href="#" class="btn btn-sm btn-outline-primary">
+                                    <a href="#" class="btn btn-sm btn-outline-primary show-run-map" data-id="{{ $activity->id }}" data-route="{{ $activity->route_gps_data }}" data-distance="{{ $activity->distance }}" data-time="{{ $activity->end_time ? gmdate('H:i:s', strtotime($activity->end_time) - strtotime($activity->start_time)) : '00:00:00' }}" data-calories="{{ $activity->calories_burned }}">
                                         <i class="fas fa-map-marked-alt"></i>
                                     </a>
                                 </td>
@@ -121,7 +131,7 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="activitySummaryModalLabel">สรุปกิจกรรมการวิ่ง</h5>
+                <h5 class="modal-title" id="activitySummaryModalLabel">สรุปการวิ่ง</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -151,20 +161,13 @@
                     <div id="summaryMap" style="height: 300px; width: 100%; border-radius: var(--radius-md);" class="mb-4"></div>
                 </div>
 
-                <div class="achievement-section mt-3">
-                    <h6>ความสำเร็จ</h6>
-                    <div class="achievement-badges d-flex flex-wrap gap-3 mt-2">
-                        <!-- Example badge that might be earned -->
-                        <div class="badge-earned p-2 rounded bg-light text-center">
-                            <div><i class="fas fa-medal text-warning fa-2x"></i></div>
-                            <div class="mt-1 badge bg-warning">การวิ่งครั้งแรก</div>
-                        </div>
-                    </div>
+                <div id="achievementContainer" class="row mt-4 g-3">
+                    <!-- พื้นที่สำหรับแสดงเหรียญรางวัล -->
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-                <button type="button" class="btn btn-primary" id="saveActivityBtn">บันทึกกิจกรรม</button>
+                <button type="button" class="btn btn-primary" id="saveActivityBtn">บันทึกการวิ่ง</button>
             </div>
         </div>
     </div>
@@ -203,6 +206,8 @@
 @endsection
 
 @section('scripts')
+<!-- Bootstrap JS Bundle (Popper included) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=geometry&callback=initMap" async defer></script>
 <script>
     let map;
@@ -217,6 +222,8 @@
     let pauseStartTime;
     let totalPausedTime = 0;
     let isRunning = false;
+    let simulationInterval;
+    let distance = 0;
 
     window.initMap = function() {
         // สร้างแผนที่เริ่มต้น
@@ -272,6 +279,44 @@
             );
         }
     };
+
+    // เพิ่มฟังก์ชันจำลองการวิ่ง
+    function simulateRunning() {
+        // ใช้ตำแหน่งปัจจุบันของ marker ถ้ามี หรือใช้ตำแหน่งกรุงเทพฯเป็นจุดเริ่มต้น
+        let currentLat = currentPositionMarker ? currentPositionMarker.getPosition().lat() : 13.7563;
+        let currentLng = currentPositionMarker ? currentPositionMarker.getPosition().lng() : 100.5018;
+
+        console.log("เริ่มจำลองการวิ่ง จากตำแหน่ง:", currentLat, currentLng);
+
+        // จำลองการวิ่งเป็นเส้นทางวงกลม
+        let angle = 0;
+        let radius = 0.001; // ประมาณ 100 เมตร
+
+        // จำลองการเคลื่อนที่ทุก 3 วินาที
+        simulationInterval = setInterval(() => {
+            // คำนวณตำแหน่งใหม่โดยใช้ฟังก์ชัน sin/cos เพื่อสร้างเส้นทางวงกลม
+            angle += (Math.PI / 18); // เพิ่มมุม 10 องศาต่อครั้ง
+
+            // สร้างตำแหน่งใหม่ในรูปแบบวงกลม + มีการเคลื่อนที่ไปข้างหน้าเล็กน้อย
+            let newLat = currentLat + radius * Math.sin(angle);
+            let newLng = currentLng + radius * Math.cos(angle);
+
+            // เพิ่มการเคลื่อนที่ไปข้างหน้าเล็กน้อย
+            currentLat += 0.00005; // เคลื่อนที่ไปทางเหนือเล็กน้อย
+
+            // จำลองการเรียก updatePosition
+            updatePosition({
+                coords: {
+                    latitude: newLat,
+                    longitude: newLng,
+                    accuracy: 10
+                }
+            });
+
+            console.log("จำลองตำแหน่งใหม่:", newLat, newLng);
+
+        }, 3000); // ทุก 3 วินาที
+    }
 
     // อัปเดตตำแหน่งและเส้นทาง
     function updatePosition(position) {
@@ -361,172 +406,167 @@
         ].join(':');
     }
 
+    // แสดงข้อความแจ้งเตือน
+    function showErrorAlert(message) {
+        Swal.fire({
+            icon: 'error',
+            title: 'ผิดพลาด',
+            text: message
+        });
+    }
+
+    function showWarningAlert(message) {
+        alert('คำเตือน: ' + message);
+    }
+
+    function showSuccessAlert(message) {
+        Swal.fire({
+            icon: 'success',
+            title: 'สำเร็จ',
+            text: message,
+            timer: 2000,
+            showConfirmButton: false
+        });
+    }
+
     // เริ่มการวิ่ง
-    document.getElementById('startRunBtn').addEventListener('click', function() {
-        // ขอสิทธิ์การเข้าถึงตำแหน่ง
-        if (navigator.geolocation) {
-            if (isPaused) {
-                // กรณีที่กลับมาวิ่งต่อหลังจากพัก
-                isPaused = false;
-                totalPausedTime += (new Date().getTime() - pauseStartTime);
-                this.disabled = true;
-                document.getElementById('pauseRunBtn').disabled = false;
-            } else {
-                // กรณีที่เริ่มวิ่งครั้งแรก
-                isRunning = true;
-                startTime = new Date().getTime();
-                routeCoordinates = [];
+    function startRun() {
+        if (isPaused) {
+            // กรณีที่กลับมาวิ่งต่อหลังจากพัก
+            isPaused = false;
+            totalPausedTime += (new Date().getTime() - pauseStartTime);
+            document.getElementById('startRunBtn').style.display = 'none';
+            document.querySelector('.running-controls').style.display = 'flex';
+            document.getElementById('pauseRunBtn').disabled = false;
 
-                // เริ่มติดตามตำแหน่ง
-                watchId = navigator.geolocation.watchPosition(
-                    updatePosition,
-                    (error) => {
-                        showErrorAlert("เกิดข้อผิดพลาดในการติดตามตำแหน่ง: " + error.message);
-                    },
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 5000,
-                        maximumAge: 0
-                    }
-                );
+            // เริ่มการจำลองอีกครั้ง
+            simulateRunning();
 
-                // เริ่ม timer
-                timerInterval = setInterval(function() {
-                    if (!isPaused) {
-                        calculateStats();
-                    }
-                }, 1000);
-
-                this.disabled = true;
-                document.getElementById('pauseRunBtn').disabled = false;
-                document.getElementById('stopRunBtn').disabled = false;
-            }
+            console.log("กลับมาวิ่งต่อแล้ว");
         } else {
-            showErrorAlert("เบราว์เซอร์ของคุณไม่รองรับการค้นหาตำแหน่ง");
+            // กรณีที่เริ่มวิ่งครั้งแรก
+            isRunning = true;
+            startTime = new Date().getTime();
+            routeCoordinates = [];
+
+            // แสดงปุ่มควบคุมการวิ่ง
+            document.getElementById('startRunBtn').style.display = 'none';
+            document.querySelector('.running-controls').style.display = 'flex';
+
+            // ใช้ฟังก์ชันจำลองแทนการใช้ GPS จริง
+            simulateRunning();
+
+            // เริ่ม timer
+            timerInterval = setInterval(function() {
+                if (!isPaused) {
+                    calculateStats();
+                }
+            }, 1000);
+
+            document.getElementById('pauseRunBtn').disabled = false;
+            document.getElementById('stopRunBtn').disabled = false;
+
+            console.log("เริ่มวิ่งแล้ว (จำลอง)");
         }
-    });
+    }
 
     // พักการวิ่ง
-    document.getElementById('pauseRunBtn').addEventListener('click', function() {
+    function pauseRun() {
         if (isRunning) {
             isPaused = true;
             pauseStartTime = new Date().getTime();
-            this.disabled = true;
-            document.getElementById('startRunBtn').disabled = false;
+
+            // เปลี่ยนไปแสดงปุ่ม Start และซ่อนปุ่มพัก
+            document.getElementById('startRunBtn').style.display = 'block';
+            document.getElementById('startRunBtn').textContent = 'วิ่งต่อ';
+            document.querySelector('.running-controls').style.display = 'none';
+
+            // พักการจำลองเมื่อกดพัก
+            clearInterval(simulationInterval);
+            console.log("พักการวิ่งแล้ว");
         }
-    });
+    }
 
     // หยุดการวิ่ง
-    document.getElementById('stopRunBtn').addEventListener('click', function() {
+    function stopRun() {
         if (isRunning || isPaused) {
-            // หยุดการติดตามตำแหน่ง
-            navigator.geolocation.clearWatch(watchId);
+            // หยุดการติดตาม
+            clearInterval(simulationInterval);
             clearInterval(timerInterval);
 
-            // รีเซ็ตสถานะ
             isRunning = false;
             isPaused = false;
 
             // รีเซ็ตปุ่ม
-            document.getElementById('startRunBtn').disabled = false;
-            document.getElementById('pauseRunBtn').disabled = true;
-            document.getElementById('stopRunBtn').disabled = true;
+            document.getElementById('startRunBtn').style.display = 'block';
+            document.getElementById('startRunBtn').textContent = 'เริ่มวิ่ง';
+            document.querySelector('.running-controls').style.display = 'none';
+            document.getElementById('pauseRunBtn').disabled = false;
+            document.getElementById('stopRunBtn').disabled = false;
 
-            // แสดงสรุปกิจกรรม
-            const distance = parseFloat(document.getElementById('distance').textContent);
-            const time = document.getElementById('time').textContent;
-            const calories = document.getElementById('calories').textContent;
+            // แสดงหน้าสรุปกิจกรรม
+            showActivitySummary();
 
-            // ตรวจสอบว่ามีการวิ่งจริงๆ หรือไม่
-            if (distance > 0.01) {
-                document.getElementById('summaryDistance').textContent = distance + " กม.";
-                document.getElementById('summaryTime').textContent = time;
-                document.getElementById('summaryCalories').textContent = calories + " kcal";
-
-                // สร้างแผนที่สรุป
-                setTimeout(() => {
-                    showSummaryMap();
-
-                    // แสดง modal สรุปกิจกรรม
-                    const summaryModal = new bootstrap.Modal(document.getElementById('activitySummaryModal'));
-                    summaryModal.show();
-                }, 500);
-            } else {
-                showWarningAlert("ระยะทางวิ่งน้อยเกินไป ไม่สามารถบันทึกกิจกรรมได้");
-            }
+            console.log("หยุดการวิ่งแล้ว");
         }
-    });
-
-    // แสดงแผนที่สรุป
-    function showSummaryMap() {
-        if (routeCoordinates.length === 0) return;
-
-        // สร้างแผนที่สรุป
-        summaryMap = new google.maps.Map(document.getElementById("summaryMap"), {
-            zoom: 15,
-            mapTypeId: google.maps.MapTypeId.ROADMAP,
-            mapTypeControl: false,
-            fullscreenControl: false,
-            streetViewControl: false
-        });
-
-        // สร้างเส้นทางบนแผนที่สรุป
-        const summaryPath = new google.maps.Polyline({
-            path: routeCoordinates,
-            geodesic: true,
-            strokeColor: "#2DC679",
-            strokeOpacity: 1.0,
-            strokeWeight: 4
-        });
-
-        summaryPath.setMap(summaryMap);
-
-        // สร้าง marker จุดเริ่มต้นและจุดสิ้นสุด
-        if (routeCoordinates.length > 1) {
-            // จุดเริ่มต้น (สีเขียว)
-            new google.maps.Marker({
-                position: routeCoordinates[0],
-                map: summaryMap,
-                icon: {
-                    path: google.maps.SymbolPath.CIRCLE,
-                    scale: 8,
-                    fillColor: "#2DC679",
-                    fillOpacity: 1,
-                    strokeColor: "#FFFFFF",
-                    strokeWeight: 2
-                }
-            });
-
-            // จุดสิ้นสุด (สีแดง)
-            new google.maps.Marker({
-                position: routeCoordinates[routeCoordinates.length - 1],
-                map: summaryMap,
-                icon: {
-                    path: google.maps.SymbolPath.CIRCLE,
-                    scale: 8,
-                    fillColor: "#FF4646",
-                    fillOpacity: 1,
-                    strokeColor: "#FFFFFF",
-                    strokeWeight: 2
-                }
-            });
-        }
-
-        // ปรับ zoom และ center ให้เห็นเส้นทางทั้งหมด
-        const bounds = new google.maps.LatLngBounds();
-        routeCoordinates.forEach(coord => {
-            bounds.extend(new google.maps.LatLng(coord.lat, coord.lng));
-        });
-        summaryMap.fitBounds(bounds);
     }
 
-    // บันทึกกิจกรรม
-    document.getElementById('saveActivityBtn').addEventListener('click', function() {
-        const distance = parseFloat(document.getElementById('distance').textContent);
-        const time = document.getElementById('time').textContent;
-        const calories = parseInt(document.getElementById('calories').textContent);
-        const speed = parseFloat(document.getElementById('speed').textContent);
+    function showActivitySummary() {
+        // สร้างแผนที่สรุป
+        if (!summaryMap) {
+            summaryMap = new google.maps.Map(document.getElementById("summaryMap"), {
+                zoom: 14,
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                mapTypeControl: false,
+                fullscreenControl: false,
+                streetViewControl: false
+            });
 
+            // สร้างเส้นทางบนแผนที่สรุป
+            new google.maps.Polyline({
+                path: routeCoordinates,
+                geodesic: true,
+                strokeColor: "#4CAF50", // สีเขียวสำหรับการวิ่งจริง
+                strokeOpacity: 1.0,
+                strokeWeight: 4,
+                map: summaryMap
+            });
+
+            // ปรับขอบเขตให้เห็นเส้นทางทั้งหมด
+            if (routeCoordinates.length > 0) {
+                const bounds = new google.maps.LatLngBounds();
+                for (const coord of routeCoordinates) {
+                    bounds.extend(new google.maps.LatLng(coord.lat, coord.lng));
+                }
+                summaryMap.fitBounds(bounds);
+            }
+        }
+
+        // อัปเดตข้อมูลสรุป
+        document.getElementById('summaryDistance').innerText = document.getElementById('distance').innerText + " กม.";
+        document.getElementById('summaryTime').innerText = document.getElementById('time').innerText;
+        document.getElementById('summaryCalories').innerText = document.getElementById('calories').innerText + " kcal";
+
+        // เตรียมพื้นที่สำหรับเหรียญรางวัล
+        document.getElementById('achievementContainer').innerHTML = '';
+
+        // แสดงหน้าต่างสรุป
+        const summaryModal = new bootstrap.Modal(document.getElementById('activitySummaryModal'));
+        summaryModal.show();
+    }
+
+    // ฟังก์ชันสำหรับบันทึกกิจกรรม (สามารถเรียกใช้ได้จากหลายที่)
+    document.getElementById('saveActivityBtn').addEventListener('click', function() {
+        const distance = parseFloat(document.getElementById('distance').innerText);
+        const time = document.getElementById('time').innerText;
+        const calories = parseInt(document.getElementById('calories').innerText);
+        const speed = parseFloat(document.getElementById('speed').innerText);
+
+        saveActivity(distance, time, calories, speed);
+    });
+
+    // ฟังก์ชันบันทึกกิจกรรม
+    function saveActivity(distance, time, calories, speed) {
         // สร้าง FormData เพื่อส่งข้อมูล
         const formData = new FormData();
         formData.append('distance', distance);
@@ -539,14 +579,21 @@
         // ส่งข้อมูลไปบันทึก
         fetch('{{ route("run.store") }}', {
             method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             body: formData
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Server response was not OK: ' + response.status);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
-                // ซ่อน modal
-                bootstrap.Modal.getInstance(document.getElementById('activitySummaryModal')).hide();
-
                 // แสดงข้อความสำเร็จ
                 showSuccessAlert("บันทึกกิจกรรมเรียบร้อยแล้ว!");
 
@@ -555,11 +602,84 @@
                     window.location.reload();
                 }, 2000);
             } else {
-                showErrorAlert("ไม่สามารถบันทึกกิจกรรมได้: " + data.message);
+                showErrorAlert("ไม่สามารถบันทึกกิจกรรมได้: " + (data.message || 'ไม่ทราบสาเหตุ'));
             }
         })
         .catch(error => {
+            console.error("Error saving activity:", error);
             showErrorAlert("เกิดข้อผิดพลาดในการบันทึกกิจกรรม: " + error);
+        });
+    }
+
+    // เพิ่มฟังก์ชันสำหรับแสดงแผนที่จากประวัติการวิ่ง
+    document.addEventListener('DOMContentLoaded', function() {
+        // ดักจับการคลิกปุ่มแสดงแผนที่
+        document.querySelectorAll('.show-run-map').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                // ดึงข้อมูลจาก data attributes
+                const routeData = this.getAttribute('data-route');
+                const distance = this.getAttribute('data-distance');
+                const time = this.getAttribute('data-time');
+                const calories = this.getAttribute('data-calories');
+
+                try {
+                    // แปลงข้อมูลเส้นทางจาก JSON string เป็น array
+                    const routeCoords = JSON.parse(routeData || '[]');
+
+                    // แสดงข้อมูลสรุป
+                    document.getElementById('summaryDistance').innerText = distance + " กม.";
+                    document.getElementById('summaryTime').innerText = time;
+                    document.getElementById('summaryCalories').innerText = calories + " kcal";
+
+                    // ซ่อนปุ่มบันทึกเพราะเป็นข้อมูลที่บันทึกแล้ว
+                    document.getElementById('saveActivityBtn').style.display = 'none';
+
+                    // สร้างแผนที่ใหม่สำหรับประวัติ
+                    summaryMap = new google.maps.Map(document.getElementById("summaryMap"), {
+                        zoom: 14,
+                        mapTypeId: google.maps.MapTypeId.ROADMAP,
+                        mapTypeControl: false,
+                        fullscreenControl: false,
+                        streetViewControl: false
+                    });
+
+                    // สร้างเส้นทางหากมีข้อมูล
+                    if (routeCoords.length > 0) {
+                        // สร้างเส้นทาง
+                        new google.maps.Polyline({
+                            path: routeCoords,
+                            geodesic: true,
+                            strokeColor: "#4CAF50",
+                            strokeOpacity: 1.0,
+                            strokeWeight: 4,
+                            map: summaryMap
+                        });
+
+                        // ปรับขอบเขตแผนที่ให้เห็นเส้นทางทั้งหมด
+                        const bounds = new google.maps.LatLngBounds();
+                        for (const coord of routeCoords) {
+                            bounds.extend(new google.maps.LatLng(coord.lat, coord.lng));
+                        }
+                        summaryMap.fitBounds(bounds);
+                    }
+
+                    // แสดง modal
+                    const summaryModal = new bootstrap.Modal(document.getElementById('activitySummaryModal'));
+                    summaryModal.show();
+
+                } catch (e) {
+                    console.error("เกิดข้อผิดพลาดในการแสดงข้อมูลเส้นทาง:", e);
+                    showErrorAlert("ไม่สามารถแสดงข้อมูลเส้นทางได้");
+                }
+            });
+        });
+
+        // เพิ่มตัวจัดการเมื่อ Modal ถูกปิด
+        document.getElementById('activitySummaryModal').addEventListener('hidden.bs.modal', function () {
+            // แสดงปุ่มบันทึกกลับมาเมื่อ modal ถูกปิด (เผื่อเปิดใหม่จากการวิ่งครั้งใหม่)
+            document.getElementById('saveActivityBtn').style.display = 'block';
         });
     });
 </script>

@@ -1,60 +1,91 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Your Badges</h4>
+<div class="container py-4">
+    <h2 class="mb-0">เหรียญตรา</h2>
+    <p class="text-muted">รวบรวมเหรียญตราจากการวิ่งของคุณ</p>
+
+    <div class="row mb-4 g-4">
+        <div class="col-md-12">
+            <div class="card h-100 p-3 shadow-sm">
+                <div class="card-body">
+                    <h4 class="mb-3">เหรียญตราของคุณ</h4>
+                    <p class="text-muted">รับเหรียญตราเมื่อคุณทำกิจกรรมต่างๆ ได้ตามเป้าหมาย</p>
+
+                    <div class="row row-cols-2 row-cols-md-5 g-3 mt-2">
+                        @foreach ($badges as $badge)
+                            <div class="col">
+                                <div class="text-center position-relative"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="{{ $badge->badge_desc }} - {{ $badge->isUnlocked() ? 'ปลดล็อคแล้ว' : $badge->progress() }}">
+                                    <img src="{{ asset('storage/' . $badge->badge_image) }}"
+                                        class="img-fluid rounded-circle p-1 {{ $badge->isUnlocked() ? 'border border-2 border-success' : 'opacity-50' }}"
+                                        style="width: 80px; height: 80px; object-fit: cover;"
+                                        alt="{{ $badge->badge_name }}">
+                                    <div class="small mt-2 text-truncate">{{ $badge->badge_name }}</div>
+                                    <div class="small mt-1 text-muted">{{ $badge->getRequirementText() }}</div>
+
+                                    @if (!$badge->isUnlocked())
+                                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
+                                            <div class="bg-dark bg-opacity-50 rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                                <i class="fas fa-lock text-white"></i>
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">เงื่อนไขการรับเหรียญตรา</h5>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <h5>Earned Badges ({{ count($userBadgeIds) }})</h5>
-                            <div class="row mt-3">
-                                @forelse($allBadges->whereIn('badge_id', $userBadgeIds) as $badge)
-                                <div class="col-md-3 mb-4">
-                                    <div class="badge-item earned">
-                                        <div class="badge-icon">
-                                            <i class="fa {{ $badge->badge_icon ?? 'fa-medal' }}"></i>
-                                        </div>
-                                        <div class="badge-details">
-                                            <h5>{{ $badge->badge_name }}</h5>
-                                            <p>{{ $badge->badge_description }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                @empty
-                                <div class="col-md-12">
-                                    <p class="text-center">You haven't earned any badges yet. Start running to earn your first badge!</p>
-                                </div>
-                                @endforelse
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr>
-
-                    <div class="row mt-4">
-                        <div class="col-md-12">
-                            <h5>Available Badges</h5>
-                            <div class="row mt-3">
-                                @foreach($allBadges->whereNotIn('badge_id', $userBadgeIds) as $badge)
-                                <div class="col-md-3 mb-4">
-                                    <div class="badge-item locked">
-                                        <div class="badge-icon">
-                                            <i class="fa {{ $badge->badge_icon ?? 'fa-medal' }}"></i>
-                                        </div>
-                                        <div class="badge-details">
-                                            <h5>{{ $badge->badge_name }}</h5>
-                                            <p>{{ $badge->badge_description }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                @endforeach
-                            </div>
-                        </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ประเภท</th>
+                                    <th>เงื่อนไข</th>
+                                    <th>คำอธิบาย</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><i class="fas fa-road me-2"></i> เหรียญจากระยะทาง</td>
+                                    <td>วิ่งให้ได้ตามระยะทางที่กำหนด</td>
+                                    <td>คุณจะได้รับเหรียญตราเมื่อวิ่งได้ระยะทางสะสมตามที่กำหนด เช่น 5 กม., 10 กม., 20 กม., 50 กม., 100 กม.</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-fire me-2"></i> เหรียญจากแคลอรี่</td>
+                                    <td>เผาผลาญแคลอรี่ตามที่กำหนด</td>
+                                    <td>คุณจะได้รับเหรียญตราเมื่อเผาผลาญแคลอรี่สะสมตามที่กำหนด เช่น 100, 500, 1,000, 2,500, 5,000 แคลอรี่</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-calendar-check me-2"></i> เหรียญจากการวิ่งติดต่อกัน</td>
+                                    <td>วิ่งติดต่อกันตามจำนวนวันที่กำหนด</td>
+                                    <td>คุณจะได้รับเหรียญตราเมื่อวิ่งติดต่อกันตามจำนวนวันที่กำหนด เช่น 3 วัน, 7 วัน, 14 วัน, 30 วัน</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-tachometer-alt me-2"></i> เหรียญจากความเร็ว</td>
+                                    <td>วิ่งด้วยความเร็วเฉลี่ยตามที่กำหนด</td>
+                                    <td>คุณจะได้รับเหรียญตราเมื่อวิ่งด้วยความเร็วเฉลี่ยตามที่กำหนด เช่น 5 กม./ชม., 8 กม./ชม., 10 กม./ชม.</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-medal me-2"></i> เหรียญจากการเข้าร่วมกิจกรรม</td>
+                                    <td>เข้าร่วมกิจกรรมตามจำนวนครั้งที่กำหนด</td>
+                                    <td>คุณจะได้รับเหรียญตราเมื่อเข้าร่วมกิจกรรมตามที่กำหนด เช่น เข้าร่วมกิจกรรม 1 ครั้ง, 3 ครั้ง, 5 ครั้ง</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -65,46 +96,38 @@
 
 @section('styles')
 <style>
-    .badge-item {
-        border-radius: 10px;
-        padding: 15px;
-        text-align: center;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .badge-item.earned {
-        background-color: #f0f7ff;
-        border: 2px solid #4a89dc;
-    }
-
-    .badge-item.locked {
-        background-color: #f5f5f5;
-        border: 2px dashed #aaa;
-        opacity: 0.8;
-    }
-
-    .badge-icon {
-        font-size: 3rem;
-        margin-bottom: 10px;
-        color: #4a89dc;
-    }
-
-    .badge-item.locked .badge-icon {
-        color: #888;
-    }
-
-    .badge-details h5 {
-        font-size: 1.1rem;
-        margin-bottom: 5px;
-    }
-
-    .badge-details p {
-        font-size: 0.85rem;
-        color: #666;
-    }
+/* เพิ่ม CSS เพื่อแก้ไข dropdown ในหน้าเหรียญตรา */
+.dropdown-menu.show {
+    display: block !important;
+    z-index: 9999 !important;
+}
 </style>
+@endsection
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // เพิ่ม event listener สำหรับ dropdown ในหน้าเหรียญตรา
+        var dropdownBtns = document.querySelectorAll('.dropdown-toggle');
+        dropdownBtns.forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var dropdownMenu = this.nextElementSibling;
+                if (dropdownMenu && dropdownMenu.classList.contains('dropdown-menu')) {
+                    dropdownMenu.classList.toggle('show');
+                }
+            });
+        });
+
+        // ปิด dropdown เมื่อคลิกที่อื่น
+        document.addEventListener('click', function(e) {
+            var dropdownMenus = document.querySelectorAll('.dropdown-menu.show');
+            dropdownMenus.forEach(function(menu) {
+                if (!menu.previousElementSibling.contains(e.target)) {
+                    menu.classList.remove('show');
+                }
+            });
+        });
+    });
+</script>
 @endsection

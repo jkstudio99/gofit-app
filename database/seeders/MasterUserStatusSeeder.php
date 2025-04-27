@@ -8,7 +8,10 @@ use Carbon\Carbon;
 
 class MasterUserStatusSeeder extends Seeder
 {
-    public function run()
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
     {
         DB::table('tb_master_user_status')->insert([
             [

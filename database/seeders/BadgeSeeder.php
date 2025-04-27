@@ -2,44 +2,48 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class BadgeSeeder extends Seeder
 {
-    public function run()
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
     {
+        // เพิ่มเหรียญตราเริ่มต้น
         DB::table('tb_badge')->insert([
             [
                 'badge_id' => 1,
-                'name' => 'นักวิ่งมือใหม่',
-                'description' => 'เผาผลาญ 100 แคลอรี่แรก',
-                'calories_required' => 100,
-                'image_url' => 'badges/beginner.png',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-                'isenabled' => 'Y',
+                'badge_name' => 'นักวิ่งมือใหม่',
+                'badge_desc' => 'เผาผลาญ 100 แคลอรี่แรก',
+                'type' => 'calories',
+                'criteria' => 100.00,
+                'badge_image' => 'badges/beginner.png',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'badge_id' => 2,
-                'name' => 'นักวิ่งระดับกลาง',
-                'description' => 'เผาผลาญ 500 แคลอรี่',
-                'calories_required' => 500,
-                'image_url' => 'badges/intermediate.png',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-                'isenabled' => 'Y',
+                'badge_name' => 'นักวิ่งระดับกลาง',
+                'badge_desc' => 'เผาผลาญ 500 แคลอรี่',
+                'type' => 'calories',
+                'criteria' => 500.00,
+                'badge_image' => 'badges/intermediate.png',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'badge_id' => 3,
-                'name' => 'นักวิ่งมืออาชีพ',
-                'description' => 'เผาผลาญ 1,000 แคลอรี่',
-                'calories_required' => 1000,
-                'image_url' => 'badges/pro.png',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-                'isenabled' => 'Y',
+                'badge_name' => 'นักวิ่งมืออาชีพ',
+                'badge_desc' => 'เผาผลาญ 1,000 แคลอรี่',
+                'type' => 'calories',
+                'criteria' => 1000.00,
+                'badge_image' => 'badges/pro.png',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
         ]);
     }
