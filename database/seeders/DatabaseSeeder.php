@@ -20,10 +20,15 @@ class DatabaseSeeder extends Seeder
             MasterUserStatusSeeder::class,
             RoleSeeder::class,
             BadgeSeeder::class,
+            BadgeCaloriesSeeder::class,
+            BadgeDistanceSeeder::class,
             RewardSeeder::class,
             UserSeeder::class,
             UserRoleSeeder::class,
+            UserStatusSeeder::class,
             ActivitySeeder::class,
+            ActivityGoalSeeder::class,
+            EventSeeder::class,
         ]);
     }
 }
