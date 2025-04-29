@@ -37,7 +37,12 @@ class Event extends Model
         'capacity',
         'image_url',
         'created_by',
-        'status'
+        'status',
+        'distance',
+        'event_name',
+        'event_desc',
+        'event_image',
+        'max_participants'
     ];
 
     /**
@@ -295,5 +300,51 @@ class Event extends Model
         } else {
             return 'กำลังดำเนินการ';
         }
+    }
+
+    // Accessor และ Mutator
+
+    // แมป event_name เป็น title
+    public function getEventNameAttribute()
+    {
+        return $this->title;
+    }
+
+    public function setEventNameAttribute($value)
+    {
+        $this->attributes['title'] = $value;
+    }
+
+    // แมป event_desc เป็น description
+    public function getEventDescAttribute()
+    {
+        return $this->description;
+    }
+
+    public function setEventDescAttribute($value)
+    {
+        $this->attributes['description'] = $value;
+    }
+
+    // แมป max_participants เป็น capacity
+    public function getMaxParticipantsAttribute()
+    {
+        return $this->capacity;
+    }
+
+    public function setMaxParticipantsAttribute($value)
+    {
+        $this->attributes['capacity'] = $value;
+    }
+
+    // แมป event_image เป็น image_url
+    public function getEventImageAttribute()
+    {
+        return $this->image_url;
+    }
+
+    public function setEventImageAttribute($value)
+    {
+        $this->attributes['image_url'] = $value;
     }
 }

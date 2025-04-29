@@ -116,7 +116,7 @@
         <div class="col-lg-4 col-md-6 mb-4">
             <div class="card h-100 shadow-sm hover-translate">
                 <div class="position-relative">
-                    <img src="{{ asset('storage/' . ($event->image_url ?? 'events/default.jpg')) }}"
+                    <img src="{{ asset('storage/' . ($event->event_image ?? $event->image_url ?? 'events/default.jpg')) }}"
                         class="card-img-top" alt="{{ $event->title }}"
                         style="height: 180px; object-fit: cover;">
                     <div class="position-absolute top-0 start-0 p-2">
@@ -200,7 +200,7 @@
             <a href="{{ route('events.show', $event->event_id) }}" class="list-group-item list-group-item-action p-3">
                 <div class="row align-items-center">
                     <div class="col-md-2 col-lg-1">
-                        <img src="{{ asset('storage/' . ($event->image_url ?? 'events/default.jpg')) }}"
+                        <img src="{{ asset('storage/' . ($event->event_image ?? $event->image_url ?? 'events/default.jpg')) }}"
                             class="img-fluid rounded" alt="{{ $event->title }}"
                             style="width: 70px; height: 70px; object-fit: cover;">
                     </div>

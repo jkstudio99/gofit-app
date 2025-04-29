@@ -202,6 +202,29 @@
                             </form>
                         </div>
                     </div>
+
+                    <!-- ส่วนลบบัญชี (แสดงเฉพาะสำหรับผู้ใช้ทั่วไป) -->
+                    @if($user->user_type_id == 1)
+                    <div class="card gofit-card mt-4">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                การจัดการบัญชี
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-3">ลบบัญชีของคุณ</h6>
+                            <p class="text-muted mb-3">
+                                เมื่อคุณลบบัญชีของคุณ ข้อมูลทั้งหมดของคุณจะถูกลบออกจากระบบอย่างถาวร ซึ่งรวมถึงประวัติการวิ่ง เป้าหมาย และข้อมูลส่วนตัวทั้งหมด
+                            </p>
+                            <div class="d-grid">
+                                <a href="{{ route('profile.delete.confirm') }}" class="btn btn-outline-danger">
+                                    <i class="fas fa-trash-alt me-1"></i> ลบบัญชีของฉัน
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>

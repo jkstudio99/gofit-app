@@ -96,7 +96,7 @@
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="card h-100 border-0 shadow-sm hover-translate">
                         <div class="position-relative">
-                            <img src="{{ asset('storage/' . ($event->image_url ?? 'events/default.jpg')) }}"
+                            <img src="{{ asset('storage/' . ($event->event_image ?? $event->image_url ?? 'events/default.jpg')) }}"
                                  class="card-img-top" alt="{{ $event->title }}"
                                  style="height: 160px; object-fit: cover;">
                             <div class="position-absolute top-0 start-0 p-2">
@@ -178,7 +178,7 @@
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <img src="{{ asset('storage/' . ($event->image_url ?? 'events/default.jpg')) }}"
+                                    <img src="{{ asset('storage/' . ($event->event_image ?? $event->image_url ?? 'events/default.jpg')) }}"
                                          alt="{{ $event->title }}"
                                          class="rounded me-3"
                                          style="width: 48px; height: 48px; object-fit: cover;">

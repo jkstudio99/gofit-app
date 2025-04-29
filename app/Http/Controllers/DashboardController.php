@@ -153,7 +153,7 @@ class DashboardController extends Controller
             'telephone' => 'nullable|string|max:10',
         ]);
 
-        // อัปเดตข้อมูลโดยใช้ DB::table
+        // อัปเดตข้อมูลโดยใช้ DB::table เนื่องจากมี linter error กับ update method
         DB::table('tb_user')
             ->where('user_id', $user->user_id)
             ->update([
@@ -273,5 +273,67 @@ class DashboardController extends Controller
             ]);
 
         return redirect()->route('profile.edit')->with('success', 'ข้อมูลสุขภาพได้รับการอัปเดตเรียบร้อยแล้ว');
+    }
+
+    /**
+     * แสดงหน้ายืนยันการลบบัญชีผู้ใช้
+     */
+    public function showDeleteAccountForm()
+    {
+        $user = Auth::user();
+        return view('profile.delete-account', compact('user'));
+    }
+
+    /**
+     * ลบบัญชีผู้ใช้
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function deleteAccount(Request $request)
+    {
+        // ตรวจสอบรหัสผ่าน
+        $validated = $request->validate([
+            'password' => 'required|string',
+        ]);
+
+        $user = Auth::user();
+        $userId = $user->user_id;
+
+        // ยืนยันรหัสผ่าน
+        if (!password_verify($validated['password'], $user->password)) {
+            return back()->withErrors(['password' => 'รหัสผ่านไม่ถูกต้อง']);
+        }
+
+        // ลบข้อมูลที่เกี่ยวข้อง
+        DB::transaction(function () use ($userId) {
+            // ลบข้อมูลกิจกรรม
+            DB::table('tb_activity')->where('user_id', $userId)->delete();
+
+            // ลบข้อมูลการลงทะเบียนกิจกรรม
+            DB::table('event_users')->where('user_id', $userId)->delete();
+
+            // ลบข้อมูลเป้าหมาย
+            DB::table('activity_goals')->where('user_id', $userId)->delete();
+
+            // ลบความสัมพันธ์กับเหรียญรางวัล
+            DB::table('tb_user_badge')->where('user_id', $userId)->delete();
+
+            // ลบความสัมพันธ์กับบทบาท
+            DB::table('tb_user_role')->where('user_id', $userId)->delete();
+
+            // ลบการแลกรางวัล
+            DB::table('tb_redeem')->where('user_id', $userId)->delete();
+
+            // ลบบัญชีผู้ใช้
+            DB::table('tb_user')->where('user_id', $userId)->delete();
+        });
+
+        // ออกจากระบบ
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login')->with('success', 'บัญชีของคุณถูกลบออกจากระบบเรียบร้อยแล้ว');
     }
 }

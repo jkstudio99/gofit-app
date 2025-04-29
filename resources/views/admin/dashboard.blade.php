@@ -84,6 +84,54 @@
         </div>
     </div>
 
+    <!-- เป้าหมายของผู้ใช้ -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card gofit-card bg-info bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="fw-bold fs-4">สถิติเป้าหมายของผู้ใช้</h3>
+                            <p class="mb-0">ดูสถิติการตั้งเป้าหมายของผู้ใช้งานทั้งหมดในระบบ</p>
+                        </div>
+                        <div>
+                            <i class="fas fa-bullseye fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{{ route('admin.goals.statistics') }}" class="text-info text-decoration-none">
+                        ไปยังหน้าสถิติเป้าหมาย <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- สถิติเหรียญตรา -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card gofit-card bg-warning bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="fw-bold fs-4">สถิติเหรียญตรา</h3>
+                            <p class="mb-0">วิเคราะห์การกระจายตัวของเหรียญตราและการได้รับเหรียญตราของผู้ใช้</p>
+                        </div>
+                        <div>
+                            <i class="fas fa-medal fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{{ route('admin.badges.statistics') }}" class="text-warning text-decoration-none">
+                        ไปยังหน้าสถิติเหรียญตรา <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main row -->
     <div class="row">
         <!-- Left col -->

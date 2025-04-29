@@ -195,8 +195,10 @@ class EventController extends Controller
     /**
      * ยกเลิกการลงทะเบียน
      */
-    public function cancelRegistration($id)
+    public function cancel($id)
     {
+        $event = Event::findOrFail($id);
+
         $registration = EventUser::where('event_id', $id)
             ->where('user_id', Auth::id())
             ->firstOrFail();
@@ -206,6 +208,14 @@ class EventController extends Controller
 
         return redirect()->route('events.show', $id)
             ->with('success', 'ยกเลิกการลงทะเบียนเรียบร้อยแล้ว');
+    }
+
+    /**
+     * ยกเลิกการลงทะเบียน (เพื่อความเข้ากันได้กับโค้ดเดิม)
+     */
+    public function cancelRegistration($id)
+    {
+        return $this->cancel($id);
     }
 
     /**

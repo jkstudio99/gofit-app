@@ -20,6 +20,7 @@ return new class extends Migration
             $table->dateTime('end_datetime');
             $table->integer('capacity')->default(0); // 0 = ไม่จำกัดจำนวน
             $table->string('image_url')->nullable();
+            $table->float('distance')->nullable(); // เพิ่มคอลัมน์ระยะทาง (กม.)
             $table->foreignId('created_by')->constrained('tb_user', 'user_id');
             $table->enum('status', ['published', 'draft', 'cancelled'])->default('draft');
             $table->timestamps();

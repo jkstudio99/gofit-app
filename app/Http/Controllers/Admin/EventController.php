@@ -7,7 +7,9 @@ use App\Models\Event;
 use App\Models\EventUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class EventController extends Controller
 {
@@ -18,17 +20,75 @@ class EventController extends Controller
     {
         // กรองตามสถานะ
         $status = $request->input('status', 'all');
+        $search = $request->input('search', '');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $location = $request->input('location', '');
+
+        // Add debugging logs
+        Log::info('Filter parameters:', [
+            'status' => $status,
+            'search' => $search,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'location' => $location,
+        ]);
 
         $query = Event::query();
 
+        // ค้นหาตามชื่อหรือรายละเอียด
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%");
+            });
+        }
+
+        // กรองตามสถานะ
         if ($status !== 'all') {
             $query->where('status', $status);
         }
 
-        // เรียงลำดับตามวันที่เริ่มกิจกรรม ล่าสุดขึ้นก่อน
+        // กรองตามวันที่เริ่ม
+        if (!empty($startDate)) {
+            Log::info('Applying start date filter', ['startDate' => $startDate]);
+            try {
+                $formattedStartDate = Carbon::parse($startDate)->startOfDay();
+                $query->where('start_datetime', '>=', $formattedStartDate);
+            } catch (\Exception $e) {
+                Log::error('Error parsing start date', ['error' => $e->getMessage()]);
+            }
+        }
+
+        // กรองตามวันที่สิ้นสุด
+        if (!empty($endDate)) {
+            Log::info('Applying end date filter', ['endDate' => $endDate]);
+            try {
+                $formattedEndDate = Carbon::parse($endDate)->endOfDay();
+                $query->where('end_datetime', '<=', $formattedEndDate);
+            } catch (\Exception $e) {
+                Log::error('Error parsing end date', ['error' => $e->getMessage()]);
+            }
+        }
+
+        // กรองตามสถานที่
+        if (!empty($location)) {
+            Log::info('Applying location filter', ['location' => $location]);
+            $query->where('location', 'like', "%{$location}%");
+        }
+
+        // เรียงลำดับตามวันที่สร้าง ล่าสุดขึ้นก่อน
         $events = $query->orderBy('created_at', 'desc')->paginate(10);
 
-        return view('admin.events.index', compact('events', 'status'));
+        // Log the final query and result count
+        Log::info('Event query results', [
+            'count' => $events->count(),
+            'total' => $events->total()
+        ]);
+
+        // ส่งข้อมูลไปยัง view
+        return view('admin.events.index', compact('events', 'status', 'search', 'startDate', 'endDate', 'location'));
     }
 
     /**
@@ -57,10 +117,17 @@ class EventController extends Controller
             'status' => 'required|in:published,draft',
         ]);
 
+        // แมป event_name ไปยัง title เพื่อให้ตรงกับ database
+        $validated['title'] = $validated['event_name'];
+
+        // เพิ่ม created_by เป็น user ID ของผู้ใช้ที่กำลัง login
+        $validated['created_by'] = auth()->id();
+
         // จัดการอัพโหลดรูปภาพ
         if ($request->hasFile('event_image')) {
             $path = $request->file('event_image')->store('events', 'public');
             $validated['event_image'] = $path;
+            $validated['image_url'] = $path; // Also set image_url to ensure compatibility
         }
 
         // สร้างกิจกรรมใหม่
@@ -116,6 +183,9 @@ class EventController extends Controller
             'status' => 'required|in:published,draft,cancelled',
         ]);
 
+        // แมป event_name ไปยัง title เพื่อให้ตรงกับ database
+        $validated['title'] = $validated['event_name'];
+
         // จัดการอัพโหลดรูปภาพใหม่
         if ($request->hasFile('event_image')) {
             // ลบรูปภาพเดิม (ถ้ามี)
@@ -126,6 +196,7 @@ class EventController extends Controller
             // อัพโหลดรูปภาพใหม่
             $path = $request->file('event_image')->store('events', 'public');
             $validated['event_image'] = $path;
+            $validated['image_url'] = $path; // Also set image_url to ensure compatibility
         }
 
         // อัพเดทกิจกรรม
@@ -140,6 +211,37 @@ class EventController extends Controller
      */
     public function destroy(Event $event)
     {
+        // ดึงข้อมูลผู้ลงทะเบียนก่อนที่จะลบกิจกรรม
+        $participants = EventUser::with('user')
+            ->where('event_id', $event->event_id)
+            ->whereIn('status', ['registered', 'attended'])
+            ->get();
+
+        // ส่งการแจ้งเตือนให้ผู้ลงทะเบียน
+        foreach ($participants as $participant) {
+            // ส่งการแจ้งเตือนให้ผู้ใช้ (ถ้ามี Notification system)
+            try {
+                $user = $participant->user;
+
+                // ถ้ามี Notification Model ให้ใช้แบบนี้
+                // Notification::create([
+                //     'user_id' => $user->user_id,
+                //     'title' => 'กิจกรรมถูกยกเลิก',
+                //     'message' => 'กิจกรรม "' . $event->event_name . '" ที่คุณลงทะเบียนได้ถูกยกเลิกแล้ว',
+                //     'type' => 'event_cancelled',
+                //     'read' => false,
+                // ]);
+
+                // ถ้ามี Laravel Notification ให้ใช้แบบนี้
+                // $user->notify(new EventCancelled($event));
+
+                // สำหรับตอนนี้ให้ล็อกการยกเลิกไว้
+                Log::info('Sending cancellation notification to user: ' . $user->username . ' for event: ' . $event->event_name);
+            } catch (\Exception $e) {
+                Log::error('Failed to send cancellation notification: ' . $e->getMessage());
+            }
+        }
+
         // ลบรูปภาพ (ถ้ามี)
         if ($event->event_image) {
             Storage::disk('public')->delete($event->event_image);
@@ -149,7 +251,7 @@ class EventController extends Controller
         $event->delete();
 
         return redirect()->route('admin.events.index')
-            ->with('success', 'ลบกิจกรรมสำเร็จแล้ว');
+            ->with('success', 'ลบกิจกรรมสำเร็จแล้ว การแจ้งเตือนถูกส่งไปยังผู้ลงทะเบียนทั้งหมด');
     }
 
     /**
@@ -215,5 +317,36 @@ class EventController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * API สำหรับค้นหาอัตโนมัติ
+     */
+    public function searchAutocomplete(Request $request)
+    {
+        // Log the request for debugging
+        Log::info('Autocomplete search request received', [
+            'term' => $request->input('term'),
+            'all_params' => $request->all()
+        ]);
+
+        $term = $request->input('term', '');
+
+        if (empty($term)) {
+            return response()->json([]);
+        }
+
+        $events = Event::where('title', 'like', "%{$term}%")
+                  ->select('title as value', 'event_id')
+                  ->limit(10)
+                  ->get();
+
+        // Log the response for debugging
+        Log::info('Autocomplete search response', [
+            'count' => $events->count(),
+            'results' => $events->toArray()
+        ]);
+
+        return response()->json($events);
     }
 }

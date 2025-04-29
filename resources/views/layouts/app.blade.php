@@ -75,11 +75,6 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('activities.*') ? 'active' : '' }}" href="{{ route('activities.index') }}">
-                                        <i class="fas fa-heartbeat"></i> การออกกำลังกาย
-                                    </a>
-                                </li>
-                                <li class="nav-item">
                                     <a class="nav-link {{ request()->routeIs('goals.*') ? 'active' : '' }}" href="{{ route('goals.index') }}">
                                         <i class="fas fa-bullseye"></i> เป้าหมาย
                                     </a>

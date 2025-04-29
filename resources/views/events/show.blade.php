@@ -46,7 +46,7 @@
         <!-- คอลัมน์ซ้าย: รูปภาพและข้อมูลหลัก -->
         <div class="col-lg-8 mb-4">
             <div class="card border-0 shadow-sm mb-4">
-                <img src="{{ asset('storage/' . ($event->image_url ?? 'events/default.jpg')) }}"
+                <img src="{{ asset('storage/' . ($event->event_image ?? $event->image_url ?? 'events/default.jpg')) }}"
                      class="card-img-top" alt="{{ $event->title }}"
                      style="height: 350px; object-fit: cover;">
                 <div class="card-body p-4">
@@ -82,10 +82,10 @@
                                     <div class="card-body">
                                         <h5 class="card-title"><i class="fas fa-calendar-alt text-primary me-2"></i> วันและเวลา</h5>
                                         <div class="mb-2">
-                                            <strong>เริ่ม:</strong> {{ \Carbon\Carbon::parse($event->start_datetime)->format('d M Y H:i') }} น.
+                                            <strong>เริ่ม:</strong> {{ \Carbon\Carbon::parse($event->start_datetime)->thaiDate() }} น.
                                         </div>
                                         <div>
-                                            <strong>สิ้นสุด:</strong> {{ \Carbon\Carbon::parse($event->end_datetime)->format('d M Y H:i') }} น.
+                                            <strong>สิ้นสุด:</strong> {{ \Carbon\Carbon::parse($event->end_datetime)->thaiDate() }} น.
                                         </div>
                                         @if (!$event->hasEnded())
                                             <div class="mt-3 small">

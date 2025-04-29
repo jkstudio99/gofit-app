@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tb_reward', function (Blueprint $table) {
-            $table->integer('quantity')->default(0)->after('point_cost');
+            $table->integer('quantity')->default(0)->after('points_required');
         });
     }
 

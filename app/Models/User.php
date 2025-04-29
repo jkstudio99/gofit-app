@@ -61,7 +61,7 @@ class User extends Authenticatable
 
     public function activities(): HasMany
     {
-        return $this->hasMany(Activity::class);
+        return $this->hasMany(Activity::class, 'user_id', 'user_id');
     }
 
     public function badges()

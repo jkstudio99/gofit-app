@@ -32,10 +32,74 @@ class Reward extends Model
         'name',
         'description',
         'points_required',
-        'quantity',
-        'image_path',
+        'required_badge_count',
+        'stock',
+        'image_url',
         'is_enabled',
     ];
+
+    /**
+     * Accessor สำหรับ point_cost
+     *
+     * @return int
+     */
+    public function getPointCostAttribute()
+    {
+        return $this->points_required;
+    }
+
+    /**
+     * Mutator สำหรับ point_cost
+     *
+     * @param int $value
+     * @return void
+     */
+    public function setPointCostAttribute($value)
+    {
+        $this->attributes['points_required'] = $value;
+    }
+
+    /**
+     * Accessor สำหรับ quantity
+     *
+     * @return int
+     */
+    public function getQuantityAttribute()
+    {
+        return $this->stock;
+    }
+
+    /**
+     * Mutator สำหรับ quantity
+     *
+     * @param int $value
+     * @return void
+     */
+    public function setQuantityAttribute($value)
+    {
+        $this->attributes['stock'] = $value;
+    }
+
+    /**
+     * Accessor สำหรับ image_path
+     *
+     * @return string|null
+     */
+    public function getImagePathAttribute()
+    {
+        return $this->image_url;
+    }
+
+    /**
+     * Mutator สำหรับ image_path
+     *
+     * @param string $value
+     * @return void
+     */
+    public function setImagePathAttribute($value)
+    {
+        $this->attributes['image_url'] = $value;
+    }
 
     /**
      * Get the redeems for the reward.

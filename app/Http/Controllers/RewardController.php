@@ -197,9 +197,147 @@ class RewardController extends Controller
     /**
      * Display admin rewards page
      */
-    public function admin()
+    public function admin(Request $request)
     {
-        $rewards = Reward::orderBy('points_required', 'asc')->get();
+        $query = Reward::query();
+
+        // Search
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%")
+                  ->orWhere('description', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        // Filter by status
+        if ($request->has('status') && !empty($request->status)) {
+            if ($request->status === 'enabled') {
+                $query->where('is_enabled', 1);
+            } elseif ($request->status === 'disabled') {
+                $query->where('is_enabled', 0);
+            }
+        }
+
+        // Filter by points
+        if ($request->has('min_points') && !empty($request->min_points)) {
+            $query->where('points_required', '>=', $request->min_points);
+        }
+
+        if ($request->has('max_points') && !empty($request->max_points)) {
+            $query->where('points_required', '<=', $request->max_points);
+        }
+
+        // Filter by stock
+        if ($request->has('stock') && !empty($request->stock)) {
+            if ($request->stock === 'in_stock') {
+                $query->where('stock', '>', 0);
+            } elseif ($request->stock === 'low_stock') {
+                $query->whereBetween('stock', [1, 10]);
+            } elseif ($request->stock === 'out_of_stock') {
+                $query->where('stock', 0);
+            }
+        }
+
+        // Sorting
+        if ($request->has('sort') && !empty($request->sort)) {
+            switch ($request->sort) {
+                case 'points-asc':
+                    $query->orderBy('points_required', 'asc');
+                    break;
+                case 'points-desc':
+                    $query->orderBy('points_required', 'desc');
+                    break;
+                case 'newest':
+                    $query->orderBy('created_at', 'desc');
+                    break;
+                case 'oldest':
+                    $query->orderBy('created_at', 'asc');
+                    break;
+                default:
+                    $query->orderBy('created_at', 'desc');
+            }
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $rewards = $query->paginate(15);
+        $rewards->appends($request->query());
+
         return view('admin.rewards.index', compact('rewards'));
     }
+
+    /**
+     * Display rewards statistics
+     */
+    public function statistics()
+    {
+        // รวมจำนวนรางวัลทั้งหมด
+        $totalRewards = Reward::count();
+
+        // รางวัลที่ยังมีของเหลืออยู่
+        $availableRewards = Reward::where('stock', '>', 0)->count();
+
+        // รางวัลที่หมดแล้ว
+        $outOfStockRewards = Reward::where('stock', 0)->count();
+
+        // จำนวนรางวัลที่มีการแลกทั้งหมด
+        $totalRedeems = Redeem::count();
+
+        // สถิติการแลกรางวัลรายเดือน (6 เดือนล่าสุด)
+        $monthlyRedeems = collect();
+        for ($i = 5; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $monthStart = $date->startOfMonth()->format('Y-m-d');
+            $monthEnd = $date->endOfMonth()->format('Y-m-d');
+            $monthName = $date->translatedFormat('F Y');
+
+            $count = Redeem::whereBetween('created_at', [$monthStart, $monthEnd])->count();
+
+            $monthlyRedeems->push([
+                'month' => $monthName,
+                'count' => $count
+            ]);
+        }
+
+        // รางวัลที่มีการแลกมากที่สุด
+        $topRedeemed = Reward::withCount('redeems')
+            ->orderBy('redeems_count', 'desc')
+            ->take(5)
+            ->get();
+
+        // ผู้ใช้ที่แลกรางวัลมากที่สุด
+        $topUsers = DB::table('tb_user')
+            ->select('tb_user.user_id', 'tb_user.username', DB::raw('COUNT(tb_redeem.redeem_id) as redeem_count'))
+            ->join('tb_redeem', 'tb_user.user_id', '=', 'tb_redeem.user_id')
+            ->groupBy('tb_user.user_id', 'tb_user.username')
+            ->orderBy('redeem_count', 'desc')
+            ->take(5)
+            ->get();
+
+        // สถานะการแลกรางวัล
+        $redeemStatuses = DB::table('tb_redeem')
+            ->select('status', DB::raw('COUNT(*) as count'))
+            ->groupBy('status')
+            ->get();
+
+        // การแลกรางวัลล่าสุด
+        $recentRedeems = Redeem::with(['user', 'reward'])
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
+
+        return view('admin.rewards.statistics', compact(
+            'totalRewards',
+            'availableRewards',
+            'outOfStockRewards',
+            'totalRedeems',
+            'monthlyRedeems',
+            'topRedeemed',
+            'topUsers',
+            'redeemStatuses',
+            'recentRedeems'
+        ));
+    }
 }
+
