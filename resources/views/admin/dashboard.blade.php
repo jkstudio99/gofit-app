@@ -82,6 +82,25 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card gofit-card bg-info bg-opacity-10 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="fw-bold fs-2">{{ $totalArticles ?? 0 }}</h3>
+                            <p class="mb-0">บทความสุขภาพ</p>
+                        </div>
+                        <div>
+                            <i class="fas fa-newspaper fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{{ route('admin.health-articles.index') }}" class="text-info text-decoration-none">รายละเอียดเพิ่มเติม <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- เป้าหมายของผู้ใช้ -->
@@ -126,6 +145,30 @@
                 <div class="card-footer bg-transparent border-0">
                     <a href="{{ route('admin.badges.statistics') }}" class="text-warning text-decoration-none">
                         ไปยังหน้าสถิติเหรียญตรา <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- สถิติบทความสุขภาพ -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card gofit-card bg-info bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="fw-bold fs-4">สถิติบทความสุขภาพ</h3>
+                            <p class="mb-0">ดูสถิติการอ่านและการมีส่วนร่วมกับบทความสุขภาพของผู้ใช้</p>
+                        </div>
+                        <div>
+                            <i class="fas fa-newspaper fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{{ route('admin.health-articles.statistics') }}" class="text-info text-decoration-none">
+                        ไปยังหน้าสถิติบทความ <i class="fas fa-arrow-right ms-1"></i>
                     </a>
                 </div>
             </div>

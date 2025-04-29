@@ -577,14 +577,81 @@
         </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="cta-section">
-        <div class="container text-center">
-            <h2 class="display-5 fw-bold mb-4">พร้อมเริ่มต้นการออกกำลังกายแบบสนุกแล้วหรือยัง?</h2>
-            <p class="lead mb-5">สมัครสมาชิกวันนี้ และเริ่มต้นเก็บเหรียญตราแรกของคุณ!</p>
-            <a href="{{ route('register') }}" class="btn btn-light btn-lg px-5">สมัครสมาชิกฟรี</a>
+<!-- Health Articles Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-lg-6">
+                <h2 class="section-title">บทความสุขภาพล่าสุด</h2>
+                <p class="text-muted">เรียนรู้เกี่ยวกับสุขภาพ การออกกำลังกาย และโภชนาการผ่านบทความที่เขียนโดยผู้เชี่ยวชาญ</p>
+            </div>
+            <div class="col-lg-6 text-end">
+                <a href="{{ route('health-articles.index') }}" class="btn btn-outline-primary">
+                    ดูบทความทั้งหมด <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
         </div>
-    </section>
+
+        <div class="row" id="health-articles-container">
+            <!-- Articles will be loaded here via AJAX -->
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100 article-placeholder">
+                    <div class="placeholder-glow">
+                        <div class="placeholder bg-secondary w-100" style="height: 200px;"></div>
+                    </div>
+                    <div class="card-body">
+                        <div class="placeholder-glow">
+                            <span class="placeholder col-6 bg-secondary"></span>
+                            <h5 class="placeholder col-8 mt-2"></h5>
+                            <p class="placeholder col-12 mt-2"></p>
+                            <p class="placeholder col-12"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100 article-placeholder">
+                    <div class="placeholder-glow">
+                        <div class="placeholder bg-secondary w-100" style="height: 200px;"></div>
+                    </div>
+                    <div class="card-body">
+                        <div class="placeholder-glow">
+                            <span class="placeholder col-6 bg-secondary"></span>
+                            <h5 class="placeholder col-8 mt-2"></h5>
+                            <p class="placeholder col-12 mt-2"></p>
+                            <p class="placeholder col-12"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100 article-placeholder">
+                    <div class="placeholder-glow">
+                        <div class="placeholder bg-secondary w-100" style="height: 200px;"></div>
+                    </div>
+                    <div class="card-body">
+                        <div class="placeholder-glow">
+                            <span class="placeholder col-6 bg-secondary"></span>
+                            <h5 class="placeholder col-8 mt-2"></h5>
+                            <p class="placeholder col-12 mt-2"></p>
+                            <p class="placeholder col-12"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+ <!-- CTA Section -->
+ <section class="cta-section">
+    <div class="container text-center">
+        <h2 class="display-5 fw-bold mb-4">พร้อมเริ่มต้นการออกกำลังกายแบบสนุกแล้วหรือยัง?</h2>
+        <p class="lead mb-5">สมัครสมาชิกวันนี้ และเริ่มต้นเก็บเหรียญตราแรกของคุณ!</p>
+        <a href="{{ route('register') }}" class="btn btn-light btn-lg px-5">สมัครสมาชิกฟรี</a>
+    </div>
+</section>
+
 
     <!-- Footer -->
     <footer>
@@ -628,5 +695,77 @@
             </div>
         </div>
     </footer>
-    </body>
+
+
+    @section('scripts')
+    <script>
+        // Load the latest health articles
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('{{ route("public.latest-health-articles") }}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const articlesContainer = document.getElementById('health-articles-container');
+
+                        // Clear placeholder cards
+                        articlesContainer.innerHTML = '';
+
+                        // Add each article
+                        data.articles.forEach(article => {
+                            const publishedDate = new Date(article.published_at);
+                            const formattedDate = publishedDate.toLocaleDateString('th-TH', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            });
+
+                            const thumbnailUrl = article.thumbnail
+                                ? `{{ asset('storage') }}/${article.thumbnail}`
+                                : '{{ asset("images/article-placeholder.jpg") }}';
+
+                            const articleCard = `
+                                <div class="col-md-4 mb-4">
+                                    <div class="card shadow-sm h-100">
+                                        <img src="${thumbnailUrl}" class="card-img-top" alt="${article.title}" style="height: 200px; object-fit: cover;">
+                                        <div class="card-body">
+                                            <span class="badge bg-primary mb-2">${article.category.category_name}</span>
+                                            <h5 class="card-title">${article.title}</h5>
+                                            <p class="card-text text-muted small">${formattedDate} | <i class="fas fa-eye me-1"></i> ${article.view_count} ครั้ง</p>
+                                            <a href="{{ url('health-articles') }}/${article.article_id}" class="btn btn-sm btn-outline-primary">อ่านบทความ</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+
+                            articlesContainer.innerHTML += articleCard;
+                        });
+
+                        // If no articles found
+                        if (data.articles.length === 0) {
+                            articlesContainer.innerHTML = `
+                                <div class="col-12 text-center py-5">
+                                    <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                                    <h4>ยังไม่มีบทความในขณะนี้</h4>
+                                    <p class="text-muted">โปรดกลับมาตรวจสอบในภายหลัง</p>
+                                </div>
+                            `;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading articles:', error);
+                    const articlesContainer = document.getElementById('health-articles-container');
+                    articlesContainer.innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <i class="fas fa-exclamation-circle fa-3x text-danger mb-3"></i>
+                            <h4>ไม่สามารถโหลดบทความได้</h4>
+                            <p class="text-muted">โปรดลองอีกครั้งในภายหลัง</p>
+                        </div>
+                    `;
+                });
+        });
+    </script>
+    @endsection
+</body>
 </html>
+

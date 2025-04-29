@@ -14,6 +14,9 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\ActivityGoalController;
+use App\Http\Controllers\HealthArticleController;
+use App\Http\Controllers\Admin\HealthArticleController as AdminHealthArticleController;
+use App\Http\Controllers\PublicHealthArticleController;
 
 // หน้าหลัก
 Route::get('/', function () {
@@ -75,6 +78,30 @@ Route::middleware(['auth'])->group(function () {
 
     // Activity Routes
     Route::resource('goals', ActivityGoalController::class);
+
+    // Health Articles Routes for Users
+    Route::get('/health-articles', [HealthArticleController::class, 'index'])
+        ->name('health-articles.index');
+
+    // Show single article
+    Route::get('/health-articles/{id}', [HealthArticleController::class, 'show'])
+        ->name('health-articles.show');
+
+    // Article interactions
+    Route::post('/health-articles/{id}/comment', [HealthArticleController::class, 'storeComment'])
+        ->name('health-articles.comment');
+    Route::post('/health-articles/{id}/like', [HealthArticleController::class, 'toggleLike'])
+        ->name('health-articles.like');
+    Route::post('/health-articles/{id}/save', [HealthArticleController::class, 'toggleSave'])
+        ->name('health-articles.save');
+    Route::post('/health-articles/{id}/share', [HealthArticleController::class, 'share'])
+        ->name('health-articles.share');
+    Route::delete('/health-articles/comments/{commentId}', [HealthArticleController::class, 'deleteComment'])
+        ->name('health-articles.delete-comment');
+
+    // Saved articles
+    Route::get('/my-saved-articles', [HealthArticleController::class, 'savedArticles'])
+        ->name('health-articles.saved');
 });
 
 // Route สำหรับ Admin
@@ -94,6 +121,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/users/{user}/reset-password', [AdminController::class, 'showResetPasswordForm'])->name('users.reset-password');
     Route::post('/users/{user}/reset-password', [AdminController::class, 'resetPassword'])->name('users.update-password');
     Route::post('/users/{user}/update-profile-image', [AdminController::class, 'updateProfileImage'])->name('users.update-profile-image');
+
+    // Image Upload for Summernote Editor
+    Route::post('/upload/image', [AdminHealthArticleController::class, 'uploadImage'])->name('upload.image');
 
     // User activities
     Route::get('/user-activities', [AdminController::class, 'userActivities'])->name('user-activities');
@@ -143,6 +173,37 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/events/{event}/participants/{user}/status', [AdminEventController::class, 'updateParticipantStatus'])
         ->name('events.participants.status');
     Route::get('/events/{event}/export', [AdminEventController::class, 'exportParticipants'])->name('events.export');
+
+    // Health Articles Management
+    Route::get('/health-articles', [AdminHealthArticleController::class, 'index'])
+        ->name('health-articles.index');
+    Route::get('/health-articles/create', [AdminHealthArticleController::class, 'create'])
+        ->name('health-articles.create');
+    Route::post('/health-articles', [AdminHealthArticleController::class, 'store'])
+        ->name('health-articles.store');
+    Route::get('/health-articles/{id}', [AdminHealthArticleController::class, 'show'])
+        ->name('health-articles.show');
+    Route::get('/health-articles/{id}/edit', [AdminHealthArticleController::class, 'edit'])
+        ->name('health-articles.edit');
+    Route::put('/health-articles/{id}', [AdminHealthArticleController::class, 'update'])
+        ->name('health-articles.update');
+    Route::delete('/health-articles/{id}', [AdminHealthArticleController::class, 'destroy'])
+        ->name('health-articles.destroy');
+    Route::patch('/health-articles/{id}/toggle-published', [AdminHealthArticleController::class, 'togglePublished'])
+        ->name('health-articles.toggle-published');
+
+    // Health Articles Statistics
+    Route::get('/health-articles-statistics', [AdminHealthArticleController::class, 'statistics'])
+        ->name('health-articles.statistics');
+
+    // Comments Management
+    Route::get('/article-comments', [AdminHealthArticleController::class, 'manageComments'])
+        ->name('health-articles.comments');
+    Route::delete('/article-comments/{commentId}', [AdminHealthArticleController::class, 'deleteComment'])
+        ->name('health-articles.delete-comment');
+
+    // Article Categories Management
+    Route::resource('article-categories', AdminHealthArticleController::class);
 });
 
 // Events routes
@@ -158,3 +219,7 @@ Route::prefix('events')->name('events.')->group(function () {
         Route::post('/{event}/cancel', [App\Http\Controllers\EventController::class, 'cancel'])->name('cancel');
     });
 });
+
+// Public health articles route for the welcome page
+Route::get('/latest-health-articles', [PublicHealthArticleController::class, 'latestArticles'])
+    ->name('public.latest-health-articles');

@@ -134,4 +134,45 @@ class User extends Authenticatable
     {
         return $this->hasMany(ActivityGoal::class);
     }
+
+    /**
+     * Get the health articles authored by the user.
+     */
+    public function healthArticles()
+    {
+        return $this->hasMany(HealthArticle::class, 'user_id', 'user_id');
+    }
+
+    /**
+     * Get the article comments created by the user.
+     */
+    public function articleComments()
+    {
+        return $this->hasMany(ArticleComment::class, 'user_id', 'user_id');
+    }
+
+    /**
+     * Get the article likes by the user.
+     */
+    public function articleLikes()
+    {
+        return $this->hasMany(ArticleLike::class, 'user_id', 'user_id');
+    }
+
+    /**
+     * Get the articles saved by the user.
+     */
+    public function savedArticles()
+    {
+        return $this->belongsToMany(HealthArticle::class, 'saved_articles', 'user_id', 'article_id')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get the article shares by the user.
+     */
+    public function articleShares()
+    {
+        return $this->hasMany(ArticleShare::class, 'user_id', 'user_id');
+    }
 }

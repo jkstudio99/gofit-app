@@ -239,7 +239,7 @@
                         <i class="fas fa-plus me-1"></i> เพิ่มรางวัลใหม่
                     </a>
                 </div>
-            @else
+                            @else
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                     @foreach($rewards as $reward)
                     <div class="col">
@@ -260,16 +260,16 @@
                                 @if($reward->quantity > 10)
                                     <span class="badge bg-success px-3 py-2">
                                         <i class="fas fa-cubes me-1"></i> เหลือ {{ $reward->quantity }} ชิ้น
-                                    </span>
-                                @elseif($reward->quantity > 0)
+                            </span>
+                            @elseif($reward->quantity > 0)
                                     <span class="badge bg-warning text-dark px-3 py-2">
                                         <i class="fas fa-exclamation-triangle me-1"></i> เหลือน้อย {{ $reward->quantity }} ชิ้น
                                     </span>
-                                @else
+                            @else
                                     <span class="badge bg-danger px-3 py-2">
                                         <i class="fas fa-times-circle me-1"></i> หมด
                                     </span>
-                                @endif
+                            @endif
                             </div>
 
                             <div class="reward-img-container">
@@ -282,10 +282,10 @@
                                         <img src="{{ asset('images/rewards/cap.png') }}" alt="{{ $reward->name }}" class="reward-img">
                                     @elseif(strpos(strtolower($reward->name), 'shirt') !== false || strpos(strtolower($reward->name), 'เสื้อ') !== false)
                                         <img src="{{ asset('images/rewards/tshirt.png') }}" alt="{{ $reward->name }}" class="reward-img">
-                                    @else
+                            @else
                                         <img src="{{ asset('images/rewards/gift.png') }}" alt="{{ $reward->name }}" class="reward-img">
                                     @endif
-                                @endif
+                            @endif
                             </div>
 
                             <div class="card-body text-center">
@@ -303,7 +303,7 @@
                                 <div class="d-flex justify-content-center">
                                     <a href="{{ route('admin.rewards.show', $reward->reward_id) }}" class="btn btn-sm btn-info reward-action-btn me-2" title="ดูรายละเอียด">
                                         <i class="fas fa-eye"></i>
-                                    </a>
+                                </a>
                                     <a href="{{ route('admin.rewards.edit', $reward->reward_id) }}" class="btn btn-sm btn-warning reward-action-btn me-2" title="แก้ไข">
                                         <i class="fas fa-edit"></i>
                                     </a>
@@ -317,8 +317,8 @@
                         </div>
                     </div>
                     @endforeach
-                </div>
-            @endif
+                            </div>
+                    @endif
         </div>
 
         <div class="card-footer bg-white py-3">
@@ -363,7 +363,7 @@
             .swal2-actions {
                 justify-content: center !important;
                 gap: 10px;
-            }
+        }
         `;
         document.head.appendChild(style);
     });
@@ -422,7 +422,7 @@
                     }
                 });
             });
+            });
         });
-    });
-</script>
+    </script>
 @endsection

@@ -233,6 +233,30 @@
                                     </li>
                                 </ul>
                             </li>
+
+                            <!-- Health Articles Management Dropdown -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle {{ request()->routeIs('admin.health-articles.*') ? 'active' : '' }}" href="#" id="articlesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-newspaper me-1"></i> บทความสุขภาพ
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="articlesDropdown">
+                                    <li>
+                                        <a class="dropdown-item {{ request()->routeIs('admin.health-articles.index') ? 'active' : '' }}" href="{{ route('admin.health-articles.index') }}">
+                                            <i class="fas fa-list me-1"></i> รายการบทความ
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item {{ request()->routeIs('admin.health-articles.create') ? 'active' : '' }}" href="{{ route('admin.health-articles.create') }}">
+                                            <i class="fas fa-plus me-1"></i> เพิ่มบทความใหม่
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item {{ request()->routeIs('admin.health-articles.statistics') ? 'active' : '' }}" href="{{ route('admin.health-articles.statistics') }}">
+                                            <i class="fas fa-chart-bar me-1"></i> สถิติบทความ
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
                         </ul>
 
                         <!-- Right Side Menu -->
