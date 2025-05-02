@@ -288,19 +288,32 @@
                                     <td>{{ $index + 1 }}</td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            @if($participant->user->profile_image)
-                                                <img src="{{ asset('storage/' . $participant->user->profile_image) }}"
-                                                     class="participant-img me-2" alt="{{ $participant->user->username }}"
-                                                     onerror="this.onerror=null; this.src='{{ asset('images/default-profile.jpg') }}';">
+                                            @if($participant->user)
+                                                @if($participant->user->profile_image)
+                                                    <img src="{{ asset('storage/' . $participant->user->profile_image) }}"
+                                                         class="participant-img me-2" alt="{{ $participant->user->username }}"
+                                                         onerror="this.onerror=null; this.src='{{ asset('images/default-profile.jpg') }}';">
+                                                @else
+                                                    <div class="participant-img me-2 bg-secondary d-flex justify-content-center align-items-center text-white">
+                                                        <i class="fas fa-user"></i>
+                                                    </div>
+                                                @endif
+                                                <span>{{ $participant->user->username }}</span>
                                             @else
-                                                <div class="participant-img me-2 bg-secondary d-flex justify-content-center align-items-center text-white">
-                                                    <i class="fas fa-user"></i>
+                                                <div class="participant-img me-2 bg-danger d-flex justify-content-center align-items-center text-white">
+                                                    <i class="fas fa-user-slash"></i>
                                                 </div>
+                                                <span>ผู้ใช้ถูกลบไปแล้ว</span>
                                             @endif
-                                            <span>{{ $participant->user->username }}</span>
                                         </div>
                                     </td>
-                                    <td>{{ $participant->user->firstname }} {{ $participant->user->lastname }}</td>
+                                    <td>
+                                        @if($participant->user)
+                                            {{ $participant->user->firstname }} {{ $participant->user->lastname }}
+                                        @else
+                                            <span class="text-muted">ไม่พบข้อมูล</span>
+                                        @endif
+                                    </td>
                                     <td>{{ \Carbon\Carbon::parse($participant->registered_at)->thaiDate() }} น.</td>
                                     <td>
                                         @if($participant->status == 'registered')
@@ -313,10 +326,16 @@
                                     </td>
                                     <td>
                                         <div class="d-flex">
-                                            <a href="{{ route('profile.show', $participant->user->username) }}"
-                                               class="btn btn-sm btn-info me-1" title="ดูโปรไฟล์">
-                                                <i class="fas fa-user"></i>
-                                            </a>
+                                            @if($participant->user)
+                                                <a href="{{ route('profile.show', $participant->user->username) }}"
+                                                   class="btn btn-sm btn-info me-1" title="ดูโปรไฟล์">
+                                                    <i class="fas fa-user"></i>
+                                                </a>
+                                            @else
+                                                <button class="btn btn-sm btn-secondary me-1" disabled title="ไม่พบผู้ใช้">
+                                                    <i class="fas fa-user-slash"></i>
+                                                </button>
+                                            @endif
                                             <div class="dropdown">
                                                 <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button"
                                                         id="statusDropdown{{ $participant->id }}" data-bs-toggle="dropdown"

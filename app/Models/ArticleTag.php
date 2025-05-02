@@ -14,7 +14,7 @@ class ArticleTag extends Model
      *
      * @var string
      */
-    protected $table = 'article_tags';
+    protected $table = 'tb_health_article_tags';
 
     /**
      * The primary key associated with the table.
@@ -34,11 +34,11 @@ class ArticleTag extends Model
     ];
 
     /**
-     * Get the articles that belong to the tag.
+     * The articles that belong to the tag.
      */
     public function articles()
     {
-        return $this->belongsToMany(HealthArticle::class, 'article_tag', 'tag_id', 'article_id')
+        return $this->belongsToMany(HealthArticle::class, 'tb_health_article_tag', 'tag_id', 'article_id')
                     ->withTimestamps();
     }
 }

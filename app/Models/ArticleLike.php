@@ -14,7 +14,7 @@ class ArticleLike extends Model
      *
      * @var string
      */
-    protected $table = 'article_likes';
+    protected $table = 'tb_health_article_likes';
 
     /**
      * The primary key associated with the table.

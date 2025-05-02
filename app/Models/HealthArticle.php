@@ -14,7 +14,7 @@ class HealthArticle extends Model
      *
      * @var string
      */
-    protected $table = 'health_articles';
+    protected $table = 'tb_health_articles';
 
     /**
      * The primary key associated with the table.
@@ -86,7 +86,7 @@ class HealthArticle extends Model
      */
     public function savedBy()
     {
-        return $this->belongsToMany(User::class, 'saved_articles', 'article_id', 'user_id')
+        return $this->belongsToMany(User::class, 'tb_health_article_saved', 'article_id', 'user_id')
                     ->withTimestamps();
     }
 
@@ -95,7 +95,7 @@ class HealthArticle extends Model
      */
     public function tags()
     {
-        return $this->belongsToMany(ArticleTag::class, 'article_tag', 'article_id', 'tag_id')
+        return $this->belongsToMany(ArticleTag::class, 'tb_health_article_tag', 'article_id', 'tag_id')
                     ->withTimestamps();
     }
 

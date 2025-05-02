@@ -85,7 +85,7 @@
                                     <div class="list-group-item list-group-item-action">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="mb-1">{{ ucfirst($activity->type) }}</h6>
+                                                <h6 class="mb-1">{{ ucfirst($activity->activity_type) }}</h6>
                                                 <p class="text-muted small mb-0">
                                                     {{ $activity->started_at->format('d M Y H:i') }}
                                                 </p>

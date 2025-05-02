@@ -14,7 +14,7 @@ class ArticleComment extends Model
      *
      * @var string
      */
-    protected $table = 'article_comments';
+    protected $table = 'tb_health_article_comments';
 
     /**
      * The primary key associated with the table.

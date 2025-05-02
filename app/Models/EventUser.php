@@ -11,9 +11,11 @@ class EventUser extends Model
     use HasFactory;
 
     /**
-     * ชื่อตาราง
+     * The table associated with the model.
+     *
+     * @var string
      */
-    protected $table = 'event_users';
+    protected $table = 'tb_event_users';
 
     /**
      * Primary key

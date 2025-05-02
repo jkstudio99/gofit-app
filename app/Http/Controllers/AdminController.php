@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\ActivityGoal;
 use App\Models\Event;
+use App\Http\Controllers\DashboardController;
 
 class AdminController extends Controller
 {
@@ -56,8 +57,19 @@ class AdminController extends Controller
                                     ->whereYear('created_at', Carbon::now()->year)
                                     ->count();
 
+        // จำนวนการวิ่งทั้งหมด
+        $totalRuns = \App\Models\Run::count();
+
+        // จำนวนการวิ่งในเดือนนี้
+        $monthlyRuns = \App\Models\Run::whereMonth('created_at', Carbon::now()->month)
+                                    ->whereYear('created_at', Carbon::now()->year)
+                                    ->count();
+
         // จำนวนเหรียญตราทั้งหมด
         $totalBadges = Badge::count();
+
+        // จำนวนบทความทั้งหมด
+        $totalArticles = \App\Models\HealthArticle::count();
 
         // จำนวนรางวัลทั้งหมด
         $totalRewards = Reward::count();
@@ -90,6 +102,12 @@ class AdminController extends Controller
                             ->limit(10)
                             ->get();
 
+        // การวิ่งล่าสุด 10 รายการ
+        $latestRuns = \App\Models\Run::with('user')
+                        ->orderBy('created_at', 'desc')
+                        ->limit(10)
+                        ->get();
+
         // สถิติกิจกรรมรายวันในสัปดาห์นี้
         $startOfWeek = Carbon::now()->startOfWeek();
         $endOfWeek = Carbon::now()->endOfWeek();
@@ -106,8 +124,89 @@ class AdminController extends Controller
 
         for ($day = clone $startOfWeek; $day <= $endOfWeek; $day->addDay()) {
             $dateString = $day->format('Y-m-d');
-            $dailyLabels[] = $day->format('D'); // วันในสัปดาห์ (Mon, Tue, etc.)
+            $dailyLabels[] = $day->translatedFormat('D'); // วันในสัปดาห์ในภาษาไทย (จ, อ, พ, etc.)
             $dailyActivities[] = $dailyStats->has($dateString) ? $dailyStats[$dateString]->count : 0;
+        }
+
+        // สร้างตัวแปรสำหรับใช้ในกราฟ
+        $activityLabels = $dailyLabels;
+        $activityData = $dailyActivities;
+        $runData = [];
+
+        // สถิติการวิ่งรายวันในสัปดาห์นี้
+        $runStats = \App\Models\Run::select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as count'))
+                    ->whereBetween('created_at', [$startOfWeek, $endOfWeek])
+                    ->groupBy('date')
+                    ->orderBy('date')
+                    ->get()
+                    ->keyBy('date');
+
+        for ($day = clone $startOfWeek; $day <= $endOfWeek; $day->addDay()) {
+            $dateString = $day->format('Y-m-d');
+            $runData[] = $runStats->has($dateString) ? $runStats[$dateString]->count : 0;
+        }
+
+        // สถิติรายเดือน (แบ่งเป็น 4 สัปดาห์)
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $endOfMonth = Carbon::now()->endOfMonth();
+        $activityDataMonth = [0, 0, 0, 0];
+        $runDataMonth = [0, 0, 0, 0];
+
+        // คำนวณสัปดาห์ทั้ง 4 สัปดาห์ในเดือน
+        $weeks = [];
+        $currentDay = clone $startOfMonth;
+        $weekNumber = 0;
+
+        while ($currentDay <= $endOfMonth) {
+            $weekStartDay = clone $currentDay;
+            $weekEndDay = (clone $currentDay)->endOfWeek();
+
+            // ถ้าสัปดาห์นี้เกินเดือนปัจจุบัน ให้เป็นวันสุดท้ายของเดือน
+            if ($weekEndDay > $endOfMonth) {
+                $weekEndDay = clone $endOfMonth;
+            }
+
+            $weeks[] = [
+                'start' => $weekStartDay,
+                'end' => $weekEndDay,
+                'number' => ++$weekNumber
+            ];
+
+            // ข้ามไปวันแรกของสัปดาห์ถัดไป
+            $currentDay = (clone $weekEndDay)->addDay();
+        }
+
+        // นับจำนวนกิจกรรมในแต่ละสัปดาห์
+        foreach ($weeks as $index => $week) {
+            if ($index < 4) { // จำกัดที่ 4 สัปดาห์
+                $activityCount = Activity::whereBetween('created_at', [$week['start'], $week['end']])
+                                       ->count();
+                $runCount = \App\Models\Run::whereBetween('created_at', [$week['start'], $week['end']])
+                                         ->count();
+
+                $activityDataMonth[$index] = $activityCount;
+                $runDataMonth[$index] = $runCount;
+            }
+        }
+
+        // สถิติรายปี (12 เดือน)
+        $activityDataYear = [];
+        $runDataYear = [];
+        $now = Carbon::now();
+
+        for ($i = 0; $i < 12; $i++) {
+            $month = (clone $now)->subMonths(11 - $i);
+
+            $activityCount = Activity::whereYear('created_at', $month->year)
+                                   ->whereMonth('created_at', $month->month)
+                                   ->count();
+
+            $runCount = \App\Models\Run::whereYear('created_at', $month->year)
+                                     ->whereMonth('created_at', $month->month)
+                                     ->count();
+
+            $activityDataYear[] = $activityCount;
+            $runDataYear[] = $runCount;
         }
 
         // แสดงผลโดยใช้ AdminLTE template
@@ -124,8 +223,27 @@ class AdminController extends Controller
             'latestActivities',
             'latestRedeems',
             'dailyLabels',
-            'dailyActivities'
+            'dailyActivities',
+            'totalRuns',
+            'monthlyRuns',
+            'totalArticles',
+            'latestRuns',
+            'activityLabels',
+            'activityData',
+            'runData',
+            'activityDataMonth',
+            'runDataMonth',
+            'activityDataYear',
+            'runDataYear'
         ));
+    }
+
+    /**
+     * แสดงหน้าแดชบอร์ดผู้ดูแลระบบ
+     */
+    public function dashboard()
+    {
+        return app(DashboardController::class)->adminDashboard();
     }
 
     /**

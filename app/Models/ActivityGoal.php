@@ -11,6 +11,13 @@ class ActivityGoal extends Model
     use HasFactory;
 
     /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'tb_activity_goals';
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -147,7 +154,7 @@ class ActivityGoal extends Model
         }
 
         // Check if activity type matches (if specific type is set)
-        if ($this->activity_type && $activity->type !== $this->activity_type) {
+        if ($this->activity_type && $activity->activity_type !== $this->activity_type) {
             return false;
         }
 

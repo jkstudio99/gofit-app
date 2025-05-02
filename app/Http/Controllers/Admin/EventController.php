@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class EventController extends Controller
 {
@@ -324,29 +325,81 @@ class EventController extends Controller
      */
     public function searchAutocomplete(Request $request)
     {
-        // Log the request for debugging
-        Log::info('Autocomplete search request received', [
-            'term' => $request->input('term'),
-            'all_params' => $request->all()
-        ]);
-
-        $term = $request->input('term', '');
-
-        if (empty($term)) {
-            return response()->json([]);
-        }
-
-        $events = Event::where('title', 'like', "%{$term}%")
-                  ->select('title as value', 'event_id')
-                  ->limit(10)
-                  ->get();
-
-        // Log the response for debugging
-        Log::info('Autocomplete search response', [
-            'count' => $events->count(),
-            'results' => $events->toArray()
-        ]);
+        $search = $request->input('query');
+        $events = Event::where('title', 'like', "%{$search}%")
+            ->orWhere('location', 'like', "%{$search}%")
+            ->select('event_id', 'title as value')
+            ->limit(10)
+            ->get();
 
         return response()->json($events);
+    }
+
+    /**
+     * แสดงสถิติและการวิเคราะห์กิจกรรมต่างๆ
+     */
+    public function statistics()
+    {
+        // จำนวนกิจกรรมทั้งหมด
+        $totalEvents = Event::count();
+
+        // จำนวนกิจกรรมตามสถานะ
+        $eventsByStatus = Event::select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->get();
+
+        // จำนวนผู้เข้าร่วมทั้งหมด
+        $totalParticipants = EventUser::where('status', 'registered')->count();
+
+        // จำนวนผู้เข้าร่วมทั้งหมดที่ check-in
+        $totalAttended = EventUser::where('status', 'attended')->count();
+
+        // กิจกรรมที่มีผู้ลงทะเบียนมากที่สุด
+        $mostPopularEvents = Event::withCount(['participants as registered_count' => function($query) {
+                $query->where('status', 'registered');
+            }])
+            ->orderBy('registered_count', 'desc')
+            ->take(5)
+            ->get();
+
+        // กิจกรรมที่กำลังจะจัดในอนาคต
+        $upcomingEvents = Event::where('start_datetime', '>', now())
+            ->where('status', 'published')
+            ->orderBy('start_datetime', 'asc')
+            ->take(5)
+            ->get();
+
+        // สถิติรายเดือน (6 เดือนล่าสุด)
+        $monthlyStats = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $startOfMonth = $month->copy()->startOfMonth();
+            $endOfMonth = $month->copy()->endOfMonth();
+
+            $eventCount = Event::whereBetween('created_at', [$startOfMonth, $endOfMonth])->count();
+            $participantCount = EventUser::whereBetween('created_at', [$startOfMonth, $endOfMonth])
+                ->where('status', 'registered')
+                ->count();
+
+            $monthlyStats[] = [
+                'month' => $month->translatedFormat('F Y'),
+                'event_count' => $eventCount,
+                'participant_count' => $participantCount
+            ];
+        }
+
+        // Completion rate
+        $completionRate = $totalEvents > 0 ? round(($totalAttended / $totalParticipants) * 100) : 0;
+
+        return view('admin.events.statistics', compact(
+            'totalEvents',
+            'eventsByStatus',
+            'totalParticipants',
+            'totalAttended',
+            'mostPopularEvents',
+            'upcomingEvents',
+            'monthlyStats',
+            'completionRate'
+        ));
     }
 }

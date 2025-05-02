@@ -16,15 +16,71 @@ class RewardController extends Controller
     /**
      * Display the rewards page
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
-        $rewards = Reward::where('is_enabled', 1)
-                  ->orderBy('points_required', 'asc')
-                  ->get();
+        $query = Reward::query();
 
-        $userPoints = $user->points;
-        $redeemedRewards = Redeem::where('user_id', $user->id)->get();
+        // Search
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%")
+                  ->orWhere('description', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        // Filter by availability status
+        if ($request->has('filter') && !empty($request->filter)) {
+            $userPoints = $user->getAvailablePoints();
+
+            switch ($request->filter) {
+                case 'available':
+                    // Rewards user can redeem (enough points and in stock)
+                    $query->where('is_enabled', 1)
+                          ->where('quantity', '>', 0)
+                          ->where('points_required', '<=', $userPoints);
+                    break;
+                case 'unavailable':
+                    // Rewards user doesn't have enough points for but are in stock
+                    $query->where('is_enabled', 1)
+                          ->where('quantity', '>', 0)
+                          ->where('points_required', '>', $userPoints);
+                    break;
+                case 'sold-out':
+                    // Out of stock rewards
+                    $query->where('quantity', 0);
+                    break;
+                default:
+                    // All enabled rewards
+                    $query->where('is_enabled', 1);
+            }
+        } else {
+            // Default filter: only enabled rewards
+            $query->where('is_enabled', 1);
+        }
+
+        // Sorting
+        if ($request->has('sort')) {
+            switch ($request->sort) {
+                case 'points-asc':
+                    $query->orderBy('points_required', 'asc');
+                    break;
+                case 'points-desc':
+                    $query->orderBy('points_required', 'desc');
+                    break;
+                default:
+                    $query->orderBy('created_at', 'desc');
+                    break;
+            }
+        } else {
+            // Default sorting
+            $query->orderBy('points_required', 'asc');
+        }
+
+        $rewards = $query->get();
+        $userPoints = $user->getAvailablePoints();
+        $redeemedRewards = Redeem::where('user_id', $user->user_id)->get();
 
         return view('rewards.index', compact('rewards', 'userPoints', 'redeemedRewards'));
     }
@@ -37,7 +93,9 @@ class RewardController extends Controller
         $user = Auth::user();
 
         // Check if user has enough points
-        if ($user->points < $reward->points_required) {
+        $availablePoints = $user->getAvailablePoints();
+
+        if ($availablePoints < $reward->points_required) {
             return redirect()->route('rewards.index')->with('error', 'คะแนนของคุณไม่เพียงพอที่จะแลกรางวัลนี้');
         }
 
@@ -51,16 +109,23 @@ class RewardController extends Controller
 
         try {
             // Create redeem record
-            Redeem::create([
+            $redeem = Redeem::create([
                 'user_id' => $user->user_id,
                 'reward_id' => $reward->reward_id,
-                'status' => 'pending'
+                'status' => 'pending',
+                'points_used' => $reward->points_required
             ]);
 
-            // Deduct points from user
-            DB::table('tb_user')
-                ->where('user_id', $user->user_id)
-                ->decrement('points', $reward->points_required);
+            // Record the points used in point history
+            DB::table('tb_point_history')->insert([
+                'user_id' => $user->user_id,
+                'points' => -$reward->points_required, // Negative value because points are spent
+                'description' => 'แลกรางวัล: ' . $reward->name,
+                'source_type' => 'reward',
+                'source_id' => $reward->reward_id,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
 
             // Decrease reward quantity
             DB::table('tb_reward')

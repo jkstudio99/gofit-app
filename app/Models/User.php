@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -24,6 +25,7 @@ class User extends Authenticatable
         'lastname',
         'email',
         'telephone',
+        'points',
         'gmail_user_id',
         'facebook_user_id',
     ];
@@ -101,12 +103,17 @@ class User extends Authenticatable
         return $this->hasMany(Session::class, 'user_id', 'user_id');
     }
 
+    public function pointHistory()
+    {
+        return $this->hasMany(PointHistory::class, 'user_id', 'user_id');
+    }
+
     /**
      * ความสัมพันธ์กับกิจกรรม (many-to-many)
      */
     public function events()
     {
-        return $this->belongsToMany(Event::class, 'event_users', 'user_id', 'event_id')
+        return $this->belongsToMany(Event::class, 'tb_event_users', 'user_id', 'event_id')
             ->withPivot('status', 'registered_at')
             ->withTimestamps();
     }
@@ -164,7 +171,7 @@ class User extends Authenticatable
      */
     public function savedArticles()
     {
-        return $this->belongsToMany(HealthArticle::class, 'saved_articles', 'user_id', 'article_id')
+        return $this->belongsToMany(HealthArticle::class, 'tb_health_article_saved', 'user_id', 'article_id')
                     ->withTimestamps();
     }
 
@@ -174,5 +181,36 @@ class User extends Authenticatable
     public function articleShares()
     {
         return $this->hasMany(ArticleShare::class, 'user_id', 'user_id');
+    }
+
+    /**
+     * ตรวจสอบว่าผู้ใช้มีสิทธิ์ Admin หรือไม่
+     */
+    public function isAdmin()
+    {
+        return $this->user_type_id == 1;
+    }
+
+    /**
+     * คำนวณคะแนนที่มีอยู่ของผู้ใช้โดยใช้ข้อมูลจากตาราง point_history
+     * คำนวณจาก: คะแนนที่ได้รับทั้งหมด - คะแนนที่ใช้ไปในการแลกรางวัล
+     *
+     * @return int
+     */
+    public function getAvailablePoints()
+    {
+        // คะแนนที่ได้รับทั้งหมดจาก point_history
+        $earnedPoints = DB::table('tb_point_history')
+            ->where('user_id', $this->user_id)
+            ->sum('points');
+
+        // คะแนนที่ใช้ไปในการแลกรางวัล
+        $spentPoints = Redeem::where('user_id', $this->user_id)
+            ->where('status', '!=', 'cancelled')
+            ->join('tb_reward', 'tb_redeem.reward_id', '=', 'tb_reward.reward_id')
+            ->sum('points_required');
+
+        // คำนวณคะแนนที่มีอยู่
+        return max(0, $earnedPoints - $spentPoints);
     }
 }

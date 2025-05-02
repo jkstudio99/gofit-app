@@ -16,9 +16,11 @@ class Event extends Model
     use HasFactory;
 
     /**
-     * ชื่อตาราง
+     * The table associated with the model.
+     *
+     * @var string
      */
-    protected $table = 'events';
+    protected $table = 'tb_events';
 
     /**
      * Primary key
@@ -67,7 +69,7 @@ class Event extends Model
      */
     public function participants(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'event_users', 'event_id', 'user_id')
+        return $this->belongsToMany(User::class, 'tb_event_users', 'event_id', 'user_id')
             ->withPivot('status', 'registered_at')
             ->withTimestamps();
     }
@@ -230,8 +232,12 @@ class Event extends Model
     /**
      * ตรวจสอบว่ากิจกรรมมีที่นั่งเต็มแล้วหรือไม่
      */
-    public function isFull()
+    public function isFull(): bool
     {
+        if ($this->capacity <= 0) {
+            return false; // ไม่จำกัดผู้เข้าร่วม
+        }
+
         return $this->active_registrations_count >= $this->capacity;
     }
 
@@ -267,12 +273,19 @@ class Event extends Model
     /**
      * ตรวจสอบว่าผู้ใช้ปัจจุบันได้ลงทะเบียนเข้าร่วมกิจกรรมนี้หรือไม่
      */
-    public function isRegistered()
+    public function isRegistered($userId = null): bool
     {
-        $user = Auth::user();
-        if (!$user) return false;
+        if (!$userId) {
+            if (!auth()->check()) {
+                return false;
+            }
+            $userId = auth()->id();
+        }
 
-        return $this->participants()->wherePivot('user_id', $user->user_id)->exists();
+        return $this->registrations()
+            ->where('user_id', $userId)
+            ->where('status', 'registered')
+            ->exists();
     }
 
     /**

@@ -268,8 +268,8 @@
                                     <span class="badge badge-outline-success"><i class="fas fa-check-circle me-1"></i>ใช้งาน</span>
                                 @else
                                     <span class="badge badge-outline-danger"><i class="fas fa-ban me-1"></i>ระงับการใช้งาน</span>
-                                @endif
-                            </td>
+                            @endif
+                        </td>
                         <td>{{ $user->created_at->format('d/m/Y H:i') }}</td>
                         <td>
                             <div class="d-flex">
@@ -312,8 +312,8 @@
                 {{ $users->appends(request()->query())->links() }}
             </div>
         </div>
+        </div>
     </div>
-</div>
 @stop
 
 @section('scripts')

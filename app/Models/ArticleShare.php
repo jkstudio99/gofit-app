@@ -14,7 +14,7 @@ class ArticleShare extends Model
      *
      * @var string
      */
-    protected $table = 'article_shares';
+    protected $table = 'tb_health_article_shares';
 
     /**
      * The primary key associated with the table.

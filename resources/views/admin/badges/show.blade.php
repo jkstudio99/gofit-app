@@ -267,6 +267,87 @@
             @endif
         </div>
     </div>
+
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-info-circle me-2 text-primary"></i> ข้อมูลเหรียญตรา</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="text-muted">ชื่อเหรียญตรา</label>
+                    <div class="fw-bold">{{ $badge->badge_name }}</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="text-muted">ประเภท</label>
+                    <div>
+                        @if($badge->type == 'distance')
+                            <span class="badge bg-info text-dark">
+                                <i class="fas fa-route me-1"></i> ระยะทาง
+                            </span>
+                        @elseif($badge->type == 'calories')
+                            <span class="badge bg-danger">
+                                <i class="fas fa-fire-alt me-1"></i> แคลอรี่
+                            </span>
+                        @elseif($badge->type == 'streak')
+                            <span class="badge bg-warning text-dark">
+                                <i class="fas fa-calendar-check me-1"></i> ต่อเนื่อง
+                            </span>
+                        @elseif($badge->type == 'speed')
+                            <span class="badge bg-success">
+                                <i class="fas fa-tachometer-alt me-1"></i> ความเร็ว
+                            </span>
+                        @elseif($badge->type == 'event')
+                            <span class="badge bg-primary">
+                                <i class="fas fa-calendar-day me-1"></i> กิจกรรม
+                            </span>
+                        @else
+                            <span class="badge bg-secondary">
+                                <i class="fas fa-medal me-1"></i> {{ $badge->type }}
+                            </span>
+                        @endif
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="text-muted">เกณฑ์</label>
+                    <div class="fw-bold">
+                        @if($badge->type == 'distance')
+                            {{ $badge->criteria }} กิโลเมตร
+                        @elseif($badge->type == 'calories')
+                            {{ $badge->criteria }} แคลอรี่
+                        @elseif($badge->type == 'streak')
+                            {{ $badge->criteria }} วันติดต่อกัน
+                        @elseif($badge->type == 'speed')
+                            {{ $badge->criteria }} กม./ชม.
+                        @elseif($badge->type == 'event')
+                            {{ $badge->criteria }} กิจกรรม
+                        @else
+                            {{ $badge->criteria }}
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="text-muted">คะแนนที่จะได้รับ</label>
+                    <div class="fw-bold">
+                        <span class="badge bg-warning text-dark p-2">
+                            <i class="fas fa-coins me-1"></i> {{ $badge->points ?? 100 }} คะแนน
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="text-muted">จำนวนผู้ได้รับ</label>
+                    <div class="fw-bold">{{ $badge->users()->count() }} คน</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="text-muted">วันที่สร้าง</label>
+                    <div>{{ $badge->created_at->format('d/m/Y H:i') }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 

@@ -14,7 +14,7 @@ class SavedArticle extends Model
      *
      * @var string
      */
-    protected $table = 'saved_articles';
+    protected $table = 'tb_health_article_saved';
 
     /**
      * The primary key associated with the table.

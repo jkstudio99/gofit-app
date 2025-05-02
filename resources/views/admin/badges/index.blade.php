@@ -96,6 +96,12 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0">จัดการเหรียญตรา</h1>
         <div class="d-flex gap-2">
+            <a href="{{ route('admin.badges.statistics') }}" class="btn btn-info">
+                <i class="fas fa-chart-pie me-2"></i>สถิติ
+            </a>
+            <a href="{{ route('admin.badges.history') }}" class="btn btn-success">
+                <i class="fas fa-history me-2"></i>ประวัติการได้รับ
+            </a>
             <a href="{{ route('admin.badges.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus me-2"></i>เพิ่มเหรียญตราใหม่
             </a>
@@ -290,11 +296,31 @@
 
                             <div class="card-body text-center">
                                 <h5 class="card-title">{{ $badge->badge_name }}</h5>
-                                <p class="card-text text-muted small">{{ Str::limit($badge->badge_description, 100) }}</p>
+                                <p class="card-text text-muted small">{{ Str::limit($badge->badge_desc, 100) }}</p>
 
-                                <div class="mt-2">
-                                    <strong class="d-block">เงื่อนไข:</strong>
-                                    <span class="badge bg-light text-dark">{{ $badge->getRequirementText() }}</span>
+                                <!-- แสดงค่าเกณฑ์และคะแนนที่จะได้รับ -->
+                                <div class="badge-details d-flex flex-column gap-2 mb-3">
+                                    <div class="badge-criteria d-flex align-items-center">
+                                        <span class="badge bg-light text-dark me-2">
+                                            @if($badge->type == 'distance')
+                                                <i class="fas fa-route me-1 text-primary"></i> {{ $badge->criteria }} กม.
+                                            @elseif($badge->type == 'calories')
+                                                <i class="fas fa-fire-alt me-1 text-danger"></i> {{ $badge->criteria }} แคลอรี่
+                                            @elseif($badge->type == 'streak')
+                                                <i class="fas fa-calendar-check me-1 text-success"></i> {{ $badge->criteria }} วัน
+                                            @elseif($badge->type == 'speed')
+                                                <i class="fas fa-tachometer-alt me-1 text-info"></i> {{ $badge->criteria }} กม./ชม.
+                                            @elseif($badge->type == 'event')
+                                                <i class="fas fa-calendar-day me-1 text-primary"></i> {{ $badge->criteria }} กิจกรรม
+                                            @else
+                                                <i class="fas fa-medal me-1"></i> {{ $badge->criteria }}
+                                            @endif
+                                        </span>
+
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="fas fa-coins me-1"></i> {{ $badge->points ?? 100 }} คะแนน
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
 

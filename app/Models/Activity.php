@@ -31,7 +31,7 @@ class Activity extends Model
      */
     protected $fillable = [
         'user_id',
-        'type',
+        'activity_type',
         'distance',
         'duration',
         'calories',
@@ -110,6 +110,27 @@ class Activity extends Model
     }
 
     /**
+     * Get the activity type (accessor for backward compatibility)
+     *
+     * @return string
+     */
+    public function getTypeAttribute()
+    {
+        return $this->activity_type;
+    }
+
+    /**
+     * Set the activity type (mutator for backward compatibility)
+     *
+     * @param string $value
+     * @return void
+     */
+    public function setTypeAttribute($value)
+    {
+        $this->attributes['activity_type'] = $value;
+    }
+
+    /**
      * Get activities by type.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $query
@@ -118,7 +139,7 @@ class Activity extends Model
      */
     public function scopeOfType($query, $type)
     {
-        return $query->where('type', $type);
+        return $query->where('activity_type', $type);
     }
 
     /**

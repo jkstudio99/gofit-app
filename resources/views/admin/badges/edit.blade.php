@@ -109,6 +109,22 @@
                                 </small>
                             </div>
                         </div>
+
+                        <!-- คะแนนที่จะได้รับ -->
+                        <div class="mb-3">
+                            <label for="points" class="form-label required-field">คะแนนที่จะได้รับ</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control @error('points') is-invalid @enderror"
+                                       id="points" name="points" value="{{ old('points', $badge->points) }}" min="0" required>
+                                <span class="input-group-text">คะแนน</span>
+                                @error('points')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <small class="form-text text-muted">
+                                คะแนนที่ผู้ใช้จะได้รับเมื่อปลดล็อคเหรียญตรานี้
+                            </small>
+                        </div>
                     </div>
 
                     <div class="col-md-4">

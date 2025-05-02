@@ -8,19 +8,100 @@ use App\Models\UserBadge;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use App\Models\Activity;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class BadgeController extends Controller
 {
     /**
      * Display all badges and the user's earned badges
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
-        $badges = Badge::all();
-        $userBadges = UserBadge::where('user_id', $user->id)->get();
+        $query = Badge::query();
 
-        return view('badges.index', compact('badges', 'userBadges'));
+        // ล้างแคชของผู้ใช้ (ถ้ามี) ทุกครั้งที่เข้าหน้านี้
+        if (class_exists('Illuminate\Support\Facades\Cache')) {
+            Cache::forget('user_badges_' . $user->user_id);
+            Cache::forget('user_stats_' . $user->user_id);
+        }
+
+        // Check if user has any activities
+        $hasActivities = \App\Models\Activity::where('user_id', $user->user_id)
+            ->where('activity_type', 'running')
+            ->where('is_test', false)
+            ->exists();
+
+        // คำนวณใหม่ทุกครั้ง: รวมระยะทางที่ผู้ใช้วิ่งได้
+        $totalDistance = \App\Models\Activity::where('user_id', $user->user_id)
+            ->where('activity_type', 'running')
+            ->where('is_test', false)
+            ->sum('distance');
+
+        // คำนวณใหม่ทุกครั้ง: รวมแคลอรี่ที่ผู้ใช้เผาผลาญได้
+        $totalCalories = \App\Models\Activity::where('user_id', $user->user_id)
+            ->where('activity_type', 'running')
+            ->where('is_test', false)
+            ->sum('calories_burned');
+
+        // บันทึก log เพื่อการตรวจสอบ
+        Log::info('User badge progress stats:', [
+            'user_id' => $user->user_id,
+            'total_distance' => $totalDistance,
+            'total_calories' => $totalCalories,
+            'has_activities' => $hasActivities
+        ]);
+
+        // Filter by badge type
+        if ($request->has('type') && !empty($request->type)) {
+            $query->where('type', $request->type);
+        }
+
+        // Get badges with a custom property indicating if it's unlocked
+        $badges = $query->get()->map(function ($badge) use ($user) {
+            // Check if the user has earned this badge
+            $isUnlocked = UserBadge::where('user_id', $user->user_id)
+                ->where('badge_id', $badge->badge_id)
+                ->exists();
+
+            // เพิ่มคุณสมบัติแบบ dynamic ให้กับอ็อบเจกต์ Badge
+            $badge->setAttribute('isUnlocked', $isUnlocked);
+
+            // ใช้เมธอดจาก Model ในการคำนวณความคืบหน้า
+            $progressPercent = $badge->calculateProgressPercentage();
+
+            // ตรวจสอบว่าเป็นค่าที่ถูกต้อง
+            if (is_nan($progressPercent) || is_infinite($progressPercent)) {
+                $progressPercent = 0;
+            }
+
+            $badge->setAttribute('calculatedProgress', round($progressPercent, 1));
+
+            return $badge;
+        });
+
+        // Calculate statistics
+        $totalBadges = Badge::count();
+        $unlockedCount = UserBadge::where('user_id', $user->user_id)->distinct('badge_id')->count();
+        $lockedCount = $totalBadges - $unlockedCount;
+        $progressPercentage = $totalBadges > 0 ? round(($unlockedCount / $totalBadges) * 100, 0) : 0;
+
+        // Get badge types for filter options
+        $badgeTypes = Badge::select('type')->distinct()->pluck('type');
+
+        return view('badges.index', compact(
+            'badges',
+            'totalBadges',
+            'unlockedCount',
+            'lockedCount',
+            'progressPercentage',
+            'badgeTypes',
+            'hasActivities',
+            'totalDistance',
+            'totalCalories'
+        ));
     }
 
     /**
@@ -81,15 +162,17 @@ class BadgeController extends Controller
             'badge_name' => 'required|string|max:255',
             'badge_description' => 'required|string',
             'badge_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'requirement_type' => 'required|string',
-            'requirement_value' => 'required|numeric',
+            'type' => 'required|string',
+            'criteria' => 'required|numeric',
+            'points' => 'required|integer|min:0',
         ]);
 
         $badge = new Badge();
         $badge->badge_name = $request->badge_name;
-        $badge->badge_description = $request->badge_description;
-        $badge->requirement_type = $request->requirement_type;
-        $badge->requirement_value = $request->requirement_value;
+        $badge->badge_desc = $request->badge_description;
+        $badge->type = $request->type;
+        $badge->criteria = $request->criteria;
+        $badge->points = $request->points;
 
         if ($request->hasFile('badge_image')) {
             $path = $request->file('badge_image')->store('badges', 'public');
@@ -98,7 +181,7 @@ class BadgeController extends Controller
 
         $badge->save();
 
-        return redirect()->route('admin.badges')->with('success', 'Badge created successfully');
+        return redirect()->route('admin.badges.index')->with('success', 'Badge created successfully');
     }
 
     /**
@@ -126,14 +209,16 @@ class BadgeController extends Controller
             'badge_name' => 'required|string|max:255',
             'badge_description' => 'required|string',
             'badge_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'requirement_type' => 'required|string',
-            'requirement_value' => 'required|numeric',
+            'type' => 'required|string',
+            'criteria' => 'required|numeric',
+            'points' => 'required|integer|min:0',
         ]);
 
         $badge->badge_name = $request->badge_name;
-        $badge->badge_description = $request->badge_description;
-        $badge->requirement_type = $request->requirement_type;
-        $badge->requirement_value = $request->requirement_value;
+        $badge->badge_desc = $request->badge_description;
+        $badge->type = $request->type;
+        $badge->criteria = $request->criteria;
+        $badge->points = $request->points;
 
         if ($request->hasFile('badge_image')) {
             // Delete old image if exists
@@ -146,7 +231,7 @@ class BadgeController extends Controller
 
         $badge->save();
 
-        return redirect()->route('admin.badges')->with('success', 'Badge updated successfully');
+        return redirect()->route('admin.badges.index')->with('success', 'Badge updated successfully');
     }
 
     /**
@@ -165,7 +250,7 @@ class BadgeController extends Controller
         // Delete badge
         $badge->delete();
 
-        return redirect()->route('admin.badges')->with('success', 'Badge deleted successfully');
+        return redirect()->route('admin.badges.index')->with('success', 'Badge deleted successfully');
     }
 
     /**
@@ -293,4 +378,246 @@ class BadgeController extends Controller
             'topUsers'
         ));
     }
+
+    /**
+     * ปลดล็อคเหรียญตราสำหรับผู้ใช้ปัจจุบัน
+     * เมื่อปลดล็อคแล้วผู้ใช้จะได้รับคะแนน
+     */
+    public function unlockBadge(Request $request, $badgeId)
+    {
+        $user = Auth::user();
+        $badge = Badge::findOrFail($badgeId);
+
+        // ตรวจสอบว่าผู้ใช้ปลดล็อคเหรียญนี้ไปแล้วหรือไม่
+        $alreadyUnlocked = UserBadge::where('user_id', $user->user_id)
+            ->where('badge_id', $badge->badge_id)
+            ->exists();
+
+        if ($alreadyUnlocked) {
+            return redirect()->back()->with('error', 'คุณได้ปลดล็อคเหรียญตรานี้ไปแล้ว');
+        }
+
+        // ตรวจสอบว่าผู้ใช้มีความคืบหน้าถึงเกณฑ์หรือไม่
+        $isEligible = false;
+
+        switch ($badge->type) {
+            case 'distance':
+                $totalDistance = Activity::where('user_id', $user->user_id)
+                    ->where('activity_type', 'running')
+                    ->where('is_test', false)
+                    ->sum('distance');
+                $isEligible = $totalDistance >= $badge->criteria;
+                break;
+
+            case 'calories':
+                $totalCalories = Activity::where('user_id', $user->user_id)
+                    ->where('activity_type', 'running')
+                    ->where('is_test', false)
+                    ->sum('calories_burned');
+                $isEligible = $totalCalories >= $badge->criteria;
+                break;
+
+            // สำหรับประเภทอื่นๆ จะเพิ่มเติมตรงนี้
+            case 'streak':
+                // ตรวจสอบวันวิ่งต่อเนื่อง
+                $streakDays = $this->calculateStreak($user->user_id);
+                $isEligible = $streakDays >= $badge->criteria;
+                break;
+
+            case 'speed':
+                // ตรวจสอบความเร็วสูงสุด
+                $maxSpeed = Activity::where('user_id', $user->user_id)
+                    ->where('activity_type', 'running')
+                    ->where('is_test', false)
+                    ->max('avg_speed');
+                $isEligible = $maxSpeed >= $badge->criteria;
+                break;
+
+            case 'event':
+                // ตรวจสอบจำนวนกิจกรรมที่เข้าร่วม
+                $eventCount = DB::table('tb_event_users')
+                    ->where('user_id', $user->user_id)
+                    ->where('status', 'attended')
+                    ->count();
+                $isEligible = $eventCount >= $badge->criteria;
+                break;
+
+            default:
+                return redirect()->back()->with('error', 'ประเภทของเหรียญตราไม่ถูกต้อง');
+        }
+
+        if (!$isEligible) {
+            return redirect()->back()->with('error', 'คุณยังไม่บรรลุเงื่อนไขในการปลดล็อคเหรียญตรานี้');
+        }
+
+        // เริ่มทำ Transaction
+        DB::beginTransaction();
+
+        try {
+            // สร้างรายการปลดล็อคเหรียญตรา
+            UserBadge::create([
+                'user_id' => $user->user_id,
+                'badge_id' => $badge->badge_id,
+                'earned_at' => now()
+            ]);
+
+            // ใช้คะแนนจากฐานข้อมูลแทนการคำนวณ
+            $pointsEarned = $badge->points;
+
+            // บันทึกประวัติการได้รับคะแนน
+            DB::table('tb_point_history')->insert([
+                'user_id' => $user->user_id,
+                'points' => $pointsEarned,
+                'description' => 'ได้รับเหรียญตรา: ' . $badge->badge_name,
+                'source_type' => 'badge',
+                'source_id' => $badge->badge_id,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            DB::commit();
+
+            // ใช้ session เพื่อบอก SweetAlert ให้แสดงการแจ้งเตือนความสำเร็จ
+            session()->flash('badge_unlocked', [
+                'badge_name' => $badge->badge_name,
+                'points' => $pointsEarned,
+                'image' => $badge->badge_image
+            ]);
+
+            return redirect()->back()->with('success', 'ยินดีด้วย! คุณได้ปลดล็อคเหรียญตรา "' . $badge->badge_name . '" และได้รับ ' . $pointsEarned . ' คะแนน');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            return redirect()->back()->with('error', 'เกิดข้อผิดพลาดในการปลดล็อคเหรียญตรา: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * คำนวณจำนวนวันที่วิ่งต่อเนื่อง
+     */
+    private function calculateStreak($userId)
+    {
+        $activities = Activity::where('user_id', $userId)
+            ->where('activity_type', 'running')
+            ->where('is_test', false)
+            ->orderBy('activity_date', 'desc')
+            ->get()
+            ->groupBy(function($activity) {
+                return date('Y-m-d', strtotime($activity->activity_date));
+            });
+
+        if ($activities->isEmpty()) {
+            return 0;
+        }
+
+        $streak = 0;
+        $today = now()->startOfDay();
+        $checkDate = clone $today;
+
+        foreach ($activities as $date => $activitiesOnDate) {
+            $activityDate = \Carbon\Carbon::parse($date)->startOfDay();
+
+            // ตรวจสอบว่าเป็นวันที่ต่อเนื่องหรือไม่
+            if ($checkDate->diffInDays($activityDate) <= 1) {
+                $streak++;
+                $checkDate = $activityDate->subDay();
+            } else {
+                break;
+            }
+        }
+
+        return $streak;
+    }
+
+    /**
+     * แสดงประวัติการได้รับเหรียญตรา
+     */
+    public function history()
+    {
+        $user = Auth::user();
+
+        // ดึงข้อมูลเหรียญตราที่ผู้ใช้ได้รับ พร้อมเรียงตามวันที่ได้รับล่าสุด
+        $badgeHistory = UserBadge::where('user_id', $user->user_id)
+            ->join('tb_badge', 'tb_user_badge.badge_id', '=', 'tb_badge.badge_id')
+            ->select('tb_user_badge.*', 'tb_badge.badge_name', 'tb_badge.badge_desc', 'tb_badge.badge_image', 'tb_badge.type', 'tb_badge.criteria')
+            ->orderBy('tb_user_badge.earned_at', 'desc')
+            ->get();
+
+        // ดึงข้อมูลเกี่ยวกับคะแนนที่ได้รับจากเหรียญตรา
+        $pointsHistory = \App\Models\PointHistory::where('user_id', $user->user_id)
+            ->where('source_type', 'badge')
+            ->get()
+            ->keyBy('source_id');
+
+        return view('badges.history', compact('badgeHistory', 'pointsHistory'));
+    }
+
+    /**
+     * แสดงประวัติการได้รับเหรียญตราสำหรับแอดมิน (ดูทั้งหมดหรือเฉพาะ user)
+     */
+    public function adminHistory(Request $request)
+    {
+        // ตัวกรอง
+        $query = UserBadge::query()
+            ->join('tb_badge', 'tb_user_badge.badge_id', '=', 'tb_badge.badge_id')
+            ->join('tb_user', 'tb_user_badge.user_id', '=', 'tb_user.user_id')
+            ->select(
+                'tb_user_badge.*',
+                'tb_badge.badge_name',
+                'tb_badge.badge_desc',
+                'tb_badge.badge_image',
+                'tb_badge.type',
+                'tb_badge.criteria',
+                'tb_user.username',
+                'tb_user.firstname',
+                'tb_user.lastname'
+            );
+
+        // กรองตาม user ถ้ามีการระบุ
+        if ($request->has('user_id') && $request->user_id) {
+            $query->where('tb_user_badge.user_id', $request->user_id);
+        }
+
+        // กรองตามประเภทเหรียญ
+        if ($request->has('badge_type') && $request->badge_type) {
+            $query->where('tb_badge.type', $request->badge_type);
+        }
+
+        // กรองตามช่วงเวลา
+        if ($request->has('date_start') && $request->date_start) {
+            $query->whereDate('tb_user_badge.earned_at', '>=', $request->date_start);
+        }
+
+        if ($request->has('date_end') && $request->date_end) {
+            $query->whereDate('tb_user_badge.earned_at', '<=', $request->date_end);
+        }
+
+        // เรียงลำดับ
+        $query->orderBy('tb_user_badge.earned_at', 'desc');
+
+        // ดึงข้อมูลพร้อมแบ่งหน้า
+        $badgeHistory = $query->paginate(15);
+
+        // ดึงข้อมูลคะแนนที่ได้รับจากเหรียญตรา
+        $badgeIds = $badgeHistory->pluck('badge_id')->toArray();
+        $userIds = $badgeHistory->pluck('user_id')->toArray();
+
+        $pointsHistory = \App\Models\PointHistory::whereIn('user_id', $userIds)
+            ->where('source_type', 'badge')
+            ->whereIn('source_id', $badgeIds)
+            ->get()
+            ->groupBy(function($item) {
+                return $item->user_id . '_' . $item->source_id;
+            });
+
+        // ดึงผู้ใช้ทั้งหมดสำหรับตัวกรอง
+        $users = \App\Models\User::orderBy('username')->get();
+
+        // ดึงประเภทเหรียญสำหรับตัวกรอง
+        $badgeTypes = Badge::select('type')->distinct()->get();
+
+        return view('admin.badges.history', compact('badgeHistory', 'pointsHistory', 'users', 'badgeTypes'));
+    }
 }
+

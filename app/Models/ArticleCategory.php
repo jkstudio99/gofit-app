@@ -14,7 +14,7 @@ class ArticleCategory extends Model
      *
      * @var string
      */
-    protected $table = 'article_categories';
+    protected $table = 'tb_health_article_categories';
 
     /**
      * The primary key associated with the table.

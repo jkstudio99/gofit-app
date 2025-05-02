@@ -59,15 +59,23 @@
                                         <i class="fas fa-running"></i> วิ่ง
                                     </a>
                                 </li> --}}
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('badges.*') ? 'active' : '' }}" href="{{ route('badges.index') }}">
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle {{ request()->routeIs('badges.*') ? 'active' : '' }}" href="#" id="badgesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="fas fa-medal"></i> เหรียญตรา
                                     </a>
+                                    <ul class="dropdown-menu" aria-labelledby="badgesDropdown">
+                                        <li><a class="dropdown-item" href="{{ route('badges.index') }}"><i class="fas fa-medal me-2"></i> เหรียญตราทั้งหมด</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('badges.history') }}"><i class="fas fa-history me-2"></i> ประวัติการได้รับเหรียญตรา</a></li>
+                                    </ul>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('rewards.*') ? 'active' : '' }}" href="{{ route('rewards.index') }}">
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle {{ request()->routeIs('rewards.*') ? 'active' : '' }}" href="#" id="rewardsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="fas fa-gift"></i> รางวัล
                                     </a>
+                                    <ul class="dropdown-menu" aria-labelledby="rewardsDropdown">
+                                        <li><a class="dropdown-item" href="{{ route('rewards.index') }}"><i class="fas fa-gift me-2"></i> รางวัลทั้งหมด</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('rewards.history') }}"><i class="fas fa-history me-2"></i> ประวัติการแลกรางวัล</a></li>
+                                    </ul>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link {{ request()->routeIs('events.*') ? 'active' : '' }}" href="{{ route('events.index') }}">
@@ -192,40 +200,69 @@
     <!-- สคริปต์สำหรับ SweetAlert สำหรับ Session Flash Messages -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // แสดง SweetAlert สำหรับ Session Messages
-            const successMessage = "{{ session('success') }}";
-            const errorMessage = "{{ session('error') }}";
-            const warningMessage = "{{ session('warning') }}";
-
-            if (successMessage) {
+            // ถ้ามีข้อความ Success จาก session flash
+            @if(session('success'))
                 Swal.fire({
                     title: 'สำเร็จ!',
-                    text: successMessage,
+                    text: "{{ session('success') }}",
                     icon: 'success',
                     confirmButtonText: 'ตกลง',
-                    confirmButtonColor: '#2DC679'
+                    confirmButtonColor: '#28a745'
                 });
-            }
+            @endif
 
-            if (errorMessage) {
+            // ถ้ามีข้อความ Error จาก session flash
+            @if(session('error'))
                 Swal.fire({
-                    title: 'ผิดพลาด!',
-                    text: errorMessage,
+                    title: 'ข้อผิดพลาด!',
+                    text: "{{ session('error') }}",
                     icon: 'error',
                     confirmButtonText: 'ตกลง',
-                    confirmButtonColor: '#FF4646'
+                    confirmButtonColor: '#dc3545'
                 });
-            }
+            @endif
 
-            if (warningMessage) {
+            // ถ้าปลดล็อคเหรียญตราสำเร็จ แสดงผลตามนี้
+            @if(session('badge_unlocked'))
                 Swal.fire({
-                    title: 'คำเตือน!',
-                    text: warningMessage,
-                    icon: 'warning',
+                    title: 'ยินดีด้วย!',
+                    html: `
+                        <div class="text-center mb-3">
+                            <img src="{{ asset('storage/' . session('badge_unlocked.image')) }}"
+                                 alt="{{ session('badge_unlocked.badge_name') }}"
+                                 style="max-height: 120px; max-width: 120px; margin-bottom: 15px;">
+                            <h5 class="mb-2">{{ session('badge_unlocked.badge_name') }}</h5>
+                            <div class="text-success mb-3">คุณได้ปลดล็อคเหรียญตรารายการนี้แล้ว!</div>
+                            <div class="text-primary">
+                                <i class="fas fa-coins text-warning me-1"></i> <strong>{{ session('badge_unlocked.points') }} คะแนน</strong>
+                            </div>
+                        </div>
+                    `,
+                    icon: false,
                     confirmButtonText: 'ตกลง',
-                    confirmButtonColor: '#FFB800'
+                    confirmButtonColor: '#28a745'
                 });
-            }
+            @endif
+
+            // แสดง toast แจ้งเตือน
+            @if(session('toast'))
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.onmouseenter = Swal.stopTimer;
+                        toast.onmouseleave = Swal.resumeTimer;
+                    }
+                });
+
+                Toast.fire({
+                    icon: '{{ session('toast.type') }}',
+                    title: '{{ session('toast.message') }}'
+                });
+            @endif
         });
     </script>
 

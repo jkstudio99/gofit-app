@@ -10,20 +10,89 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class EventController extends Controller
 {
     /**
      * แสดงรายการกิจกรรมทั้งหมด
      */
-    public function index()
+    public function index(Request $request)
     {
-        $events = Event::where('status', 'published')
-            ->where('end_datetime', '>=', now())
-            ->orderBy('start_datetime')
-            ->paginate(12);
+        // เริ่มต้นด้วยการดึงข้อมูลทั้งหมด แล้วค่อยกรองตามเงื่อนไข
+        $query = Event::query();
 
-        return view('events.index', compact('events'));
+        // เพิ่มเงื่อนไขสถานะ published สำหรับผู้ใช้ทั่วไป (ไม่ใช่แอดมิน)
+        if (Auth::check() && Auth::user()->role_id == 1) {
+            // แอดมินเห็นทุกสถานะ
+            Log::info('User is admin, showing all events');
+        } else {
+            // ผู้ใช้ทั่วไปเห็นเฉพาะที่ published
+            $query->where('status', 'published');
+            Log::info('User is not admin or not logged in, showing only published events');
+        }
+
+        // ค้นหาตามคำค้น
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('title', 'like', "%{$searchTerm}%")
+                  ->orWhere('description', 'like', "%{$searchTerm}%")
+                  ->orWhere('location', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        // กรองตามประเภท
+        if ($request->has('category') && !empty($request->category)) {
+            $query->where('category', $request->category);
+        }
+
+        // กรองตามสถานะ
+        if ($request->has('status')) {
+            if ($request->status == 'upcoming') {
+                $query->where('start_datetime', '>', now());
+            } elseif ($request->status == 'active') {
+                $query->where('start_datetime', '<=', now())
+                      ->where('end_datetime', '>=', now());
+            } elseif ($request->status == 'past') {
+                $query->where('end_datetime', '<', now());
+            }
+            // 'all' ไม่ต้องมีเงื่อนไขพิเศษ
+        }
+
+        // จัดเรียง
+        if ($request->has('sort')) {
+            if ($request->sort == 'date_asc') {
+                $query->orderBy('start_datetime', 'asc');
+            } elseif ($request->sort == 'date_desc') {
+                $query->orderBy('start_datetime', 'desc');
+            } elseif ($request->sort == 'popularity') {
+                $query->withCount('participants')
+                      ->orderBy('participants_count', 'desc');
+            }
+        } else {
+            $query->orderBy('start_datetime', 'asc');
+        }
+
+        // ดึงข้อมูลเพิ่มเติม
+        $query->withCount(['participants' => function($query) {
+            $query->where('status', 'registered');
+        }]);
+
+        // บันทึก log เพื่อตรวจสอบจำนวนกิจกรรมทั้งหมดก่อนแบ่งหน้า
+        $totalCount = $query->count();
+        Log::info('Event count before pagination: ' . $totalCount);
+
+        // แบ่งหน้า - เพิ่มจำนวนรายการต่อหน้าเป็น 20
+        $events = $query->paginate(20);
+
+        // ดึงหมวดหมู่ของกิจกรรม
+        $categories = Event::select('category')
+            ->distinct()
+            ->whereNotNull('category')
+            ->pluck('category');
+
+        return view('events.index', compact('events', 'categories', 'totalCount'));
     }
 
     /**
@@ -42,7 +111,17 @@ class EventController extends Controller
                 ->first();
         }
 
-        return view('events.show', compact('event', 'userRegistration'));
+        // ดึงกิจกรรมที่เกี่ยวข้อง (มีประเภทเดียวกัน แต่ไม่ใช่กิจกรรมปัจจุบัน)
+        $relatedEvents = Event::where('status', 'published')
+            ->where('event_id', '!=', $id)
+            ->when($event->category, function($query) use ($event) {
+                return $query->where('category', $event->category);
+            })
+            ->latest('created_at')
+            ->take(3)
+            ->get();
+
+        return view('events.show', compact('event', 'userRegistration', 'relatedEvents'));
     }
 
     /**
@@ -199,14 +278,30 @@ class EventController extends Controller
     {
         $event = Event::findOrFail($id);
 
+        // ตรวจสอบว่ามีการลงทะเบียนแล้วหรือไม่
         $registration = EventUser::where('event_id', $id)
             ->where('user_id', Auth::id())
-            ->firstOrFail();
+            ->where('status', 'registered')
+            ->first();
 
-        // เปลี่ยนสถานะเป็นยกเลิก
-        $registration->update(['status' => 'cancelled']);
+        if (!$registration) {
+            return redirect()->route('events.show', $id)
+                ->with('error', 'คุณไม่ได้ลงทะเบียนเข้าร่วมกิจกรรมนี้');
+        }
 
+        // ตรวจสอบว่าสามารถยกเลิกได้หรือไม่ (ยกเลิกได้เฉพาะก่อนเริ่มกิจกรรม)
+        if ($event->hasStarted()) {
         return redirect()->route('events.show', $id)
+                ->with('error', 'ไม่สามารถยกเลิกการลงทะเบียนได้เนื่องจากกิจกรรมเริ่มแล้ว');
+        }
+
+        // อัปเดตสถานะเป็น "ยกเลิก"
+        $registration->update([
+            'status' => 'cancelled',
+            'cancelled_at' => now()
+        ]);
+
+        return redirect()->back()
             ->with('success', 'ยกเลิกการลงทะเบียนเรียบร้อยแล้ว');
     }
 
@@ -260,16 +355,50 @@ class EventController extends Controller
     }
 
     /**
-     * แสดงกิจกรรมของผู้ใช้ปัจจุบัน
+     * แสดงกิจกรรมของผู้ใช้ที่ลงทะเบียนหรือเป็นผู้จัด
      */
-    public function myEvents()
+    public function myEvents(Request $request)
     {
-        $registeredEvents = Auth::user()->eventRegistrations()
-            ->where('status', 'registered')
-            ->with('event')
-            ->get()
-            ->pluck('event');
+        $user = Auth::user();
+        $status = $request->input('status', 'all');
 
-        return view('events.my-events', compact('registeredEvents'));
+        // สร้าง query สำหรับการลงทะเบียนของผู้ใช้
+        $query = EventUser::where('user_id', $user->user_id)
+            ->with(['event' => function($query) {
+                $query->withCount('participants');
+            }]);
+
+        // กรองตามสถานะการลงทะเบียน
+        if ($status === 'cancelled') {
+            $query->where('status', 'cancelled');
+        } elseif ($status !== 'all') {
+            $query->where('status', 'registered');
+
+            // กรองตามสถานะกิจกรรม
+            if ($status === 'upcoming') {
+                $query->whereHas('event', function($q) {
+                    $q->where('start_datetime', '>', now());
+                });
+            } elseif ($status === 'active') {
+                $query->whereHas('event', function($q) {
+                    $q->where('start_datetime', '<=', now())
+                      ->where('end_datetime', '>=', now());
+                });
+            } elseif ($status === 'past') {
+                $query->whereHas('event', function($q) {
+                    $q->where('end_datetime', '<', now());
+                });
+            }
+        }
+
+        // เรียงลำดับตามวันที่เริ่มกิจกรรม (ใช้ left join แทนเพื่อให้ได้ข้อมูลทั้งหมด)
+        $query->select('tb_event_users.*')
+              ->leftJoin('tb_events', 'tb_event_users.event_id', '=', 'tb_events.event_id')
+              ->orderBy('tb_events.start_datetime', 'asc');
+
+        // ดึงข้อมูล
+        $registrations = $query->paginate(9);
+
+        return view('events.my-events', compact('registrations', 'status'));
     }
 }

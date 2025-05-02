@@ -227,13 +227,12 @@
                     <!-- ปุ่มลงทะเบียน -->
                     @if (!$event->hasEnded())
                         @if (auth()->check())
-                            @if ($isRegistered)
+                            @if ($userRegistration && $userRegistration->status == 'registered')
                                 <div class="alert alert-success mb-3">
                                     <i class="fas fa-check-circle me-2"></i> คุณได้ลงทะเบียนเข้าร่วมกิจกรรมนี้แล้ว
                                 </div>
-                                <form action="{{ route('events.unregister', $event->event_id) }}" method="POST" onsubmit="return confirm('คุณแน่ใจหรือไม่ที่จะยกเลิกการลงทะเบียน?')">
+                                <form action="{{ route('events.cancel', $event->event_id) }}" method="POST" onsubmit="return confirm('คุณแน่ใจหรือไม่ที่จะยกเลิกการลงทะเบียน?')">
                                     @csrf
-                                    @method('DELETE')
                                     <button type="submit" class="btn btn-outline-danger w-100">
                                         <i class="fas fa-times-circle me-1"></i> ยกเลิกการลงทะเบียน
                                     </button>
@@ -289,35 +288,46 @@
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="mb-0">ผู้เข้าร่วม ({{ $participants->count() }})</h4>
-                        @if ($participants->count() > 5 && $participants->count() < $event->capacity)
-                            <a href="{{ route('events.participants', $event->event_id) }}" class="btn btn-sm btn-outline-primary">ดูทั้งหมด</a>
+                        <h4 class="mb-0">ผู้เข้าร่วม ({{ $event->activeParticipants()->count() }})</h4>
+                        @if ($event->activeParticipants()->count() > 5 && auth()->check() && auth()->user()->id == $event->created_by)
+                            <a href="{{ route('admin.events.show', $event->event_id) }}" class="btn btn-sm btn-outline-primary">ดูทั้งหมด</a>
                         @endif
                     </div>
 
-                    @if ($participants->count() > 0)
+                    @if ($event->activeParticipants()->count() > 0)
                         <ul class="list-group list-group-flush">
-                            @foreach ($participants->take(5) as $participant)
+                            @foreach ($event->activeParticipants()->take(5)->get() as $participant)
                                 <li class="list-group-item px-0 py-2 border-0">
                                     <div class="d-flex align-items-center">
-                                        <img src="{{ asset('storage/' . ($participant->user->profile_image ?? 'profile/default.jpg')) }}"
-                                            alt="{{ $participant->user->name }}"
-                                            class="rounded-circle me-3"
-                                            style="width: 40px; height: 40px; object-fit: cover;">
-                                        <div>
-                                            <a href="{{ route('profile.show', $participant->user->username) }}" class="text-decoration-none">
-                                                <div class="fw-medium">{{ $participant->user->name }}</div>
-                                            </a>
-                                            <div class="small text-muted">ลงทะเบียนเมื่อ {{ $participant->created_at->diffForHumans() }}</div>
-                                        </div>
+                                        @if($participant->user)
+                                            <img src="{{ asset('storage/' . ($participant->user->profile_image ?? 'profile/default.jpg')) }}"
+                                                alt="{{ $participant->user->name }}"
+                                                class="rounded-circle me-3"
+                                                style="width: 40px; height: 40px; object-fit: cover;">
+                                            <div>
+                                                <a href="{{ route('profile.show', $participant->user->username) }}" class="text-decoration-none">
+                                                    <div class="fw-medium">{{ $participant->user->name }}</div>
+                                                </a>
+                                                <div class="small text-muted">ลงทะเบียนเมื่อ {{ $participant->created_at->diffForHumans() }}</div>
+                                            </div>
+                                        @else
+                                            <img src="{{ asset('storage/profile/default.jpg') }}"
+                                                alt="ผู้ใช้ที่ถูกลบไปแล้ว"
+                                                class="rounded-circle me-3"
+                                                style="width: 40px; height: 40px; object-fit: cover;">
+                                            <div>
+                                                <div class="fw-medium">ผู้ใช้ที่ถูกลบไปแล้ว</div>
+                                                <div class="small text-muted">ลงทะเบียนเมื่อ {{ $participant->created_at->diffForHumans() }}</div>
+                                            </div>
+                                        @endif
                                     </div>
                                 </li>
                             @endforeach
                         </ul>
-                        @if ($participants->count() > 5)
+                        @if ($event->activeParticipants()->count() > 5)
                             <div class="text-center mt-2">
-                                <a href="{{ route('events.participants', $event->event_id) }}" class="text-decoration-none">
-                                    ดูผู้เข้าร่วมทั้งหมด ({{ $participants->count() }})
+                                <a href="{{ route('admin.events.show', $event->event_id) }}" class="text-decoration-none">
+                                    ดูผู้เข้าร่วมทั้งหมด ({{ $event->activeParticipants()->count() }})
                                 </a>
                             </div>
                         @endif

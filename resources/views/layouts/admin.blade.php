@@ -22,10 +22,81 @@
 
     <!-- เพิ่ม styles ถ้ามี -->
     <style>
+        /* Global Admin Styling */
+        body {
+            background-color: #f9f9f9;
+        }
+
+        /* Card styles */
+        .card {
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            border: 0 !important;
+            border-radius: 0.75rem !important;
+            box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.15) !important;
+        }
+
+        /* Hover effect for elements with special hover class */
+        .hover-shadow:hover {
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+            transition: box-shadow 0.3s ease-in-out;
+        }
+
+        /* Chart styles */
+        .apexcharts-tooltip {
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+            border: none;
+        }
+
+        .apexcharts-tooltip-title {
+            background: #f8f9fa !important;
+            border-bottom: 1px solid #eee !important;
+        }
+
+        .apexcharts-xaxistooltip {
+            border: none;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        }
+
         /* Navbar user dropdown styles */
         .navbar .dropdown-menu {
             border-radius: 0.5rem;
             box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        /* CSS แก้ไขปัญหา dropdown */
+        .dropdown-menu {
+            position: absolute;
+            display: none;
+            z-index: 1000;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-toggle::after {
+            display: inline-block;
+            margin-left: 0.255em;
+            content: "";
+            border-top: 0.3em solid;
+            border-right: 0.3em solid transparent;
+            border-bottom: 0;
+            border-left: 0.3em solid transparent;
+        }
+
+        .dropdown-toggle:not(.show)::after {
+            transform: rotate(0deg);
+            transition: transform 0.2s;
+        }
+
+        .dropdown-toggle.show::after {
+            transform: rotate(180deg);
+            transition: transform 0.2s;
         }
 
         .navbar .dropdown-header {
@@ -183,7 +254,7 @@
 
                             <!-- Badges and Rewards Dropdown -->
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle {{ request()->routeIs('admin.badges.*') || request()->routeIs('admin.rewards') || request()->routeIs('admin.redeems') ? 'active' : '' }}" href="#" id="rewardsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <a class="nav-link dropdown-toggle {{ request()->routeIs('admin.badges.*') || request()->routeIs('admin.rewards') || request()->routeIs('admin.redeems') ? 'active' : '' }}" href="#" id="rewardsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" onclick="return false;">
                                     <i class="fas fa-medal me-1"></i> รางวัลและเหรียญตรา
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="rewardsDropdown">
@@ -195,6 +266,11 @@
                                     <li>
                                         <a class="dropdown-item {{ request()->routeIs('admin.badges.statistics') ? 'active' : '' }}" href="{{ route('admin.badges.statistics') }}">
                                             <i class="fas fa-chart-pie me-1"></i> สถิติเหรียญตรา
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item {{ request()->routeIs('admin.badges.history') ? 'active' : '' }}" href="{{ route('admin.badges.history') }}">
+                                            <i class="fas fa-history me-1"></i> ประวัติการได้รับเหรียญตรา
                                         </a>
                                     </li>
                                     <li>
@@ -217,7 +293,7 @@
 
                             <!-- Events Management Dropdown -->
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle {{ request()->routeIs('admin.events.*') ? 'active' : '' }}" href="#" id="eventsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <a class="nav-link dropdown-toggle {{ request()->routeIs('admin.events.*') ? 'active' : '' }}" href="#" id="eventsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" onclick="return false;">
                                     <i class="fas fa-calendar-alt me-1"></i> จัดการกิจกรรม
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="eventsDropdown">
@@ -236,7 +312,7 @@
 
                             <!-- Health Articles Management Dropdown -->
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle {{ request()->routeIs('admin.health-articles.*') ? 'active' : '' }}" href="#" id="articlesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <a class="nav-link dropdown-toggle {{ request()->routeIs('admin.health-articles.*') ? 'active' : '' }}" href="#" id="articlesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" onclick="return false;">
                                     <i class="fas fa-newspaper me-1"></i> บทความสุขภาพ
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="articlesDropdown">
@@ -262,7 +338,7 @@
                         <!-- Right Side Menu -->
                         <ul class="navbar-nav ms-auto">
                             <li class="nav-item dropdown">
-                                <a id="userDropdown" class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <a id="userDropdown" class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="return false;">
                                     @if(Auth::user()->profile_image)
                                         <img src="{{ asset('profile_images/' . Auth::user()->profile_image) }}" class="rounded-circle me-2 admin-profile-img" width="32" height="32" alt="Profile" style="object-fit: cover;">
                                     @else
@@ -319,45 +395,97 @@
         </footer>
     </div>
 
-    <!-- SweetAlert2 JS -->
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
-    <!-- แสดง SweetAlert จาก session flash messages -->
+    <!-- สคริปต์สำหรับ SweetAlert -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // ถ้ามีข้อความ Success จาก session flash
             @if(session('success'))
                 Swal.fire({
-                    icon: 'success',
-                    title: 'สำเร็จ',
+                    title: 'สำเร็จ!',
                     text: "{{ session('success') }}",
+                    icon: 'success',
                     confirmButtonText: 'ตกลง',
                     confirmButtonColor: '#28a745'
                 });
             @endif
 
+            // ถ้ามีข้อความ Error จาก session flash
             @if(session('error'))
                 Swal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
+                    title: 'ข้อผิดพลาด!',
                     text: "{{ session('error') }}",
+                    icon: 'error',
                     confirmButtonText: 'ตกลง',
                     confirmButtonColor: '#dc3545'
                 });
             @endif
 
-            @if(session('warning'))
+            // ถ้ามีการปลดล็อคเหรียญตรา
+            @if(session('badge_unlocked'))
                 Swal.fire({
-                    icon: 'warning',
-                    title: 'คำเตือน',
-                    text: "{{ session('warning') }}",
+                    title: 'ยินดีด้วย!',
+                    html: '<div class="text-center">' +
+                          '<img src="{{ asset('storage/' . session('badge_unlocked.image')) }}" class="img-fluid mb-3" style="max-height: 150px;"><br>' +
+                          'ปลดล็อคเหรียญตรา <strong>{{ session('badge_unlocked.badge_name') }}</strong><br>' +
+                          'สำเร็จและเพิ่ม <strong>{{ session('badge_unlocked.points') }} คะแนน</strong>' +
+                          '</div>',
+                    icon: 'success',
                     confirmButtonText: 'ตกลง',
-                    confirmButtonColor: '#ffc107'
+                    confirmButtonColor: '#28a745'
                 });
             @endif
         });
     </script>
 
-    <!-- เพิ่ม scripts ถ้ามี -->
     @yield('scripts')
+
+    <!-- เพิ่ม JavaScript สำหรับ custom dropdown handling -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // สร้าง Bootstrap Dropdown objects และจัดการด้วย JS
+            var dropdownElements = document.querySelectorAll('.dropdown-toggle');
+
+            dropdownElements.forEach(function(dropdownToggle) {
+                dropdownToggle.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    var dropdownMenu = this.nextElementSibling;
+
+                    // ปิด dropdowns อื่นๆ ที่เปิดอยู่
+                    document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
+                        if (menu !== dropdownMenu && menu.classList.contains('show')) {
+                            menu.classList.remove('show');
+                        }
+                    });
+
+                    // สลับสถานะของ dropdown ปัจจุบัน
+                    dropdownMenu.classList.toggle('show');
+                });
+            });
+
+            // ปิด dropdown เมื่อคลิกที่อื่น
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('.dropdown')) {
+                    document.querySelectorAll('.dropdown-menu.show').forEach(function(dropdown) {
+                        dropdown.classList.remove('show');
+                    });
+                }
+            });
+
+            // ให้สามารถคลิกที่ dropdown-item ได้
+            document.querySelectorAll('.dropdown-item').forEach(function(item) {
+                item.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                });
+            });
+        });
+    </script>
 </body>
 </html>

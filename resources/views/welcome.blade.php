@@ -577,71 +577,6 @@
         </div>
     </section>
 
-<!-- Health Articles Section -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <div class="row mb-4">
-            <div class="col-lg-6">
-                <h2 class="section-title">บทความสุขภาพล่าสุด</h2>
-                <p class="text-muted">เรียนรู้เกี่ยวกับสุขภาพ การออกกำลังกาย และโภชนาการผ่านบทความที่เขียนโดยผู้เชี่ยวชาญ</p>
-            </div>
-            <div class="col-lg-6 text-end">
-                <a href="{{ route('health-articles.index') }}" class="btn btn-outline-primary">
-                    ดูบทความทั้งหมด <i class="fas fa-arrow-right ms-2"></i>
-                </a>
-            </div>
-        </div>
-
-        <div class="row" id="health-articles-container">
-            <!-- Articles will be loaded here via AJAX -->
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm h-100 article-placeholder">
-                    <div class="placeholder-glow">
-                        <div class="placeholder bg-secondary w-100" style="height: 200px;"></div>
-                    </div>
-                    <div class="card-body">
-                        <div class="placeholder-glow">
-                            <span class="placeholder col-6 bg-secondary"></span>
-                            <h5 class="placeholder col-8 mt-2"></h5>
-                            <p class="placeholder col-12 mt-2"></p>
-                            <p class="placeholder col-12"></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm h-100 article-placeholder">
-                    <div class="placeholder-glow">
-                        <div class="placeholder bg-secondary w-100" style="height: 200px;"></div>
-                    </div>
-                    <div class="card-body">
-                        <div class="placeholder-glow">
-                            <span class="placeholder col-6 bg-secondary"></span>
-                            <h5 class="placeholder col-8 mt-2"></h5>
-                            <p class="placeholder col-12 mt-2"></p>
-                            <p class="placeholder col-12"></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm h-100 article-placeholder">
-                    <div class="placeholder-glow">
-                        <div class="placeholder bg-secondary w-100" style="height: 200px;"></div>
-                    </div>
-                    <div class="card-body">
-                        <div class="placeholder-glow">
-                            <span class="placeholder col-6 bg-secondary"></span>
-                            <h5 class="placeholder col-8 mt-2"></h5>
-                            <p class="placeholder col-12 mt-2"></p>
-                            <p class="placeholder col-12"></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
 
  <!-- CTA Section -->
  <section class="cta-section">
@@ -764,8 +699,383 @@
                     `;
                 });
         });
+
+        // Cookie Consent Banner
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user already accepted cookies
+            if (!localStorage.getItem('cookie_consent')) {
+                setTimeout(function() {
+                    document.getElementById('cookie-banner').style.display = 'block';
+                }, 1000);
+            }
+
+            // Handle accept all cookies
+            document.getElementById('accept-all-cookies').addEventListener('click', function() {
+                acceptCookies('all');
+            });
+
+            // Handle accept necessary cookies only
+            document.getElementById('accept-necessary-cookies').addEventListener('click', function() {
+                acceptCookies('necessary');
+            });
+
+            // Handle cookie settings
+            document.getElementById('cookie-settings').addEventListener('click', function() {
+                document.getElementById('cookie-banner').style.display = 'none';
+                document.getElementById('cookie-settings-modal').style.display = 'block';
+            });
+
+            // Handle close cookie settings
+            document.getElementById('close-cookie-settings').addEventListener('click', function() {
+                document.getElementById('cookie-settings-modal').style.display = 'none';
+                document.getElementById('cookie-banner').style.display = 'block';
+            });
+
+            // Handle save cookie settings
+            document.getElementById('save-cookie-settings').addEventListener('click', function() {
+                const preferences = {
+                    necessary: true, // Always true
+                    functional: document.getElementById('functional-cookies').checked,
+                    analytics: document.getElementById('analytics-cookies').checked,
+                    marketing: document.getElementById('marketing-cookies').checked
+                };
+
+                localStorage.setItem('cookie_consent', 'custom');
+                localStorage.setItem('cookie_preferences', JSON.stringify(preferences));
+
+                document.getElementById('cookie-settings-modal').style.display = 'none';
+                showCookieConfirmation();
+
+                // Apply cookie settings
+                applyCookieSettings(preferences);
+            });
+        });
+
+        function acceptCookies(type) {
+            // Save consent to localStorage
+            localStorage.setItem('cookie_consent', type);
+
+            const preferences = {
+                necessary: true,
+                functional: type === 'all',
+                analytics: type === 'all',
+                marketing: type === 'all'
+            };
+
+            localStorage.setItem('cookie_preferences', JSON.stringify(preferences));
+
+            // Hide banner
+            document.getElementById('cookie-banner').style.display = 'none';
+
+            // Show confirmation message
+            showCookieConfirmation();
+
+            // Apply cookie settings
+            applyCookieSettings(preferences);
+        }
+
+        function showCookieConfirmation() {
+            const confirmation = document.getElementById('cookie-confirmation');
+            confirmation.style.display = 'block';
+
+            setTimeout(function() {
+                confirmation.style.opacity = '0';
+                setTimeout(function() {
+                    confirmation.style.display = 'none';
+                    confirmation.style.opacity = '1';
+                }, 500);
+            }, 3000);
+        }
+
+        function applyCookieSettings(preferences) {
+            // Apply necessary cookies - always enabled
+
+            // Apply functional cookies if enabled
+            if (preferences.functional) {
+                // Example: enable theme preferences, language settings
+                // setupFunctionalCookies();
+            }
+
+            // Apply analytics cookies if enabled
+            if (preferences.analytics) {
+                // Example: initialize Google Analytics
+                // setupAnalyticsCookies();
+            }
+
+            // Apply marketing cookies if enabled
+            if (preferences.marketing) {
+                // Example: initialize Facebook Pixel
+                // setupMarketingCookies();
+            }
+        }
     </script>
     @endsection
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-banner" class="cookie-banner" style="display: none;">
+        <div class="cookie-content">
+            <h4>เราใช้คุกกี้เพื่อมอบประสบการณ์ที่ดีที่สุดให้คุณ</h4>
+            <p>GoFit ใช้คุกกี้เพื่อปรับปรุงประสบการณ์การใช้งานของคุณ เพื่อวิเคราะห์การใช้งานเว็บไซต์ และเพื่อช่วยในกิจกรรมทางการตลาดของเรา <a href="{{ url('/privacy-policy') }}">นโยบายความเป็นส่วนตัว</a></p>
+            <div class="cookie-buttons">
+                <button id="accept-necessary-cookies" class="btn btn-gofit-outline">ยอมรับเฉพาะที่จำเป็น</button>
+                <button id="cookie-settings" class="btn btn-gofit-outline">ตั้งค่าคุกกี้</button>
+                <button id="accept-all-cookies" class="btn btn-gofit">ยอมรับทั้งหมด</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cookie Settings Modal -->
+    <div id="cookie-settings-modal" class="cookie-modal" style="display: none;">
+        <div class="cookie-modal-content">
+            <div class="cookie-modal-header">
+                <h4>ตั้งค่าความเป็นส่วนตัวของคุกกี้</h4>
+                <button id="close-cookie-settings" class="close-button">&times;</button>
+            </div>
+            <div class="cookie-modal-body">
+                <div class="cookie-option">
+                    <div>
+                        <h5>คุกกี้ที่จำเป็น</h5>
+                        <p>คุกกี้เหล่านี้จำเป็นสำหรับการทำงานของเว็บไซต์และไม่สามารถปิดได้</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" checked disabled>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="cookie-option">
+                    <div>
+                        <h5>คุกกี้ฟังก์ชันการใช้งาน</h5>
+                        <p>ช่วยให้เว็บไซต์จดจำตัวเลือกของคุณ เช่น ธีม ภาษา และการตั้งค่าอื่นๆ</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="functional-cookies">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="cookie-option">
+                    <div>
+                        <h5>คุกกี้การวิเคราะห์</h5>
+                        <p>ช่วยให้เราเข้าใจวิธีที่ผู้ใช้โต้ตอบกับเว็บไซต์ของเรา</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="analytics-cookies">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="cookie-option">
+                    <div>
+                        <h5>คุกกี้การตลาด</h5>
+                        <p>ช่วยให้เราสามารถแสดงโฆษณาที่เกี่ยวข้องกับความสนใจของคุณ</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="marketing-cookies">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="cookie-modal-footer">
+                <button id="save-cookie-settings" class="btn btn-gofit">บันทึกการตั้งค่า</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cookie Confirmation Message -->
+    <div id="cookie-confirmation" class="cookie-confirmation" style="display: none;">
+        <p><i class="fas fa-check-circle"></i> บันทึกการตั้งค่าคุกกี้แล้ว</p>
+    </div>
+
+    <style>
+        /* Cookie Banner Styles */
+        .cookie-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            padding: 1rem;
+            border-top: 3px solid var(--color-primary);
+        }
+
+        .cookie-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .cookie-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        /* Cookie Modal Styles */
+        .cookie-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cookie-modal-content {
+            background-color: white;
+            border-radius: var(--radius-lg);
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .cookie-modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cookie-modal-body {
+            padding: 1.5rem;
+        }
+
+        .cookie-modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            text-align: right;
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--color-text-secondary);
+        }
+
+        .cookie-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .cookie-option:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .cookie-option h5 {
+            margin-bottom: 0.5rem;
+        }
+
+        .cookie-option p {
+            color: var(--color-text-secondary);
+            margin-bottom: 0;
+        }
+
+        /* Switch Toggle */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: var(--color-primary);
+        }
+
+        input:disabled + .slider {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .slider.round {
+            border-radius: 24px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* Cookie Confirmation */
+        .cookie-confirmation {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--color-primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            z-index: 1000;
+            transition: opacity 0.5s;
+        }
+
+        .cookie-confirmation p {
+            margin: 0;
+        }
+
+        .cookie-confirmation i {
+            margin-right: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .cookie-buttons {
+                flex-direction: column;
+            }
+
+            .cookie-buttons button {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
 </body>
 </html>
+
 

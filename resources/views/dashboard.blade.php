@@ -127,6 +127,39 @@
                 </div>
             </div>
 
+            <!-- Rewards Section -->
+            <div class="row my-4">
+                <div class="col-md-12">
+                    <div class="card gofit-card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">รางวัลของฉัน</h5>
+                            <div>
+                                <a href="{{ route('rewards.history') }}" class="btn btn-sm btn-outline-secondary rounded-pill me-2">
+                                    <i class="fas fa-history me-1"></i> ประวัติการแลก
+                                </a>
+                                <a href="{{ route('rewards.index') }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                    <i class="fas fa-gift me-1"></i> ดูทั้งหมด
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0">คะแนนสะสมของคุณ</h6>
+                                    <div class="d-flex align-items-center mt-2">
+                                        <i class="fas fa-coins text-warning me-2 fa-2x"></i>
+                                        <span class="fs-4 fw-bold">{{ Auth::user()->points ?? 0 }}</span>
+                                    </div>
+                                </div>
+                                <a href="{{ route('rewards.index') }}" class="btn btn-primary">
+                                    <i class="fas fa-exchange-alt me-1"></i> แลกรางวัล
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Recent Activities -->
             <div class="row">
                 <div class="col-md-12 mb-4">
@@ -233,6 +266,9 @@
 @endsection
 
 @section('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin="" />
 <style>
     .run-stat {
         border-radius: var(--radius-md);
@@ -244,13 +280,22 @@
         transform: translateY(-5px);
         box-shadow: var(--shadow-md);
     }
+
+    #summaryMap {
+        height: 300px;
+        width: 100%;
+        border-radius: var(--radius-md);
+        z-index: 1;
+    }
 </style>
 @endsection
 
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=geometry" async defer></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // ตัวอย่างกราฟ
@@ -287,7 +332,7 @@
             yaxis: {
                 labels: {
                     formatter: function (value) {
-                        return value.toFixed(1);
+                        return (parseFloat(value) || 0).toFixed(1);
                     }
                 }
             }
@@ -319,19 +364,8 @@
                     document.getElementById('summaryTime').innerText = time;
                     document.getElementById('summaryCalories').innerText = calories + " kcal";
 
-                    // สร้างแผนที่
-                    if (!window.google || !google.maps) {
-                        console.log("Google Maps ยังโหลดไม่เสร็จ กำลังรอ...");
-                        // รอให้ Google Maps API โหลดเสร็จ
-                        const waitForMaps = setInterval(() => {
-                            if (window.google && google.maps) {
-                                clearInterval(waitForMaps);
-                                initSummaryMap(routeCoords);
-                            }
-                        }, 500);
-                    } else {
-                        initSummaryMap(routeCoords);
-                    }
+                    // สร้างแผนที่ด้วย Leaflet
+                    initSummaryMap(routeCoords);
 
                     // แสดง modal
                     const summaryModal = new bootstrap.Modal(document.getElementById('activitySummaryModal'));
@@ -345,35 +379,48 @@
         });
 
         function initSummaryMap(routeCoords) {
-            // สร้างแผนที่ใหม่สำหรับประวัติ
-            summaryMap = new google.maps.Map(document.getElementById("summaryMap"), {
-                zoom: 14,
-                center: { lat: 13.7563, lng: 100.5018 }, // กรุงเทพฯ (ค่าเริ่มต้น)
-                mapTypeId: google.maps.MapTypeId.ROADMAP,
-                mapTypeControl: false,
-                fullscreenControl: false,
-                streetViewControl: false
-            });
+            // ลบแผนที่เก่าถ้ามี
+            if (summaryMap) {
+                summaryMap.remove();
+            }
+
+            // สร้างแผนที่ใหม่ด้วย Leaflet
+            summaryMap = L.map('summaryMap').setView([13.7563, 100.5018], 13); // กรุงเทพฯ (ค่าเริ่มต้น)
+
+            // เพิ่ม OpenStreetMap tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(summaryMap);
 
             // สร้างเส้นทางหากมีข้อมูล
             if (routeCoords && routeCoords.length > 0) {
+                // แปลงรูปแบบข้อมูลสำหรับ Leaflet (Leaflet ใช้ [lat, lng] ในขณะที่ Google Maps ใช้ {lat, lng})
+                const latLngs = routeCoords.map(coord => [coord.lat, coord.lng]);
+
                 // สร้างเส้นทาง
-                new google.maps.Polyline({
-                    path: routeCoords,
-                    geodesic: true,
-                    strokeColor: "#4CAF50",
-                    strokeOpacity: 1.0,
-                    strokeWeight: 4,
-                    map: summaryMap
-                });
+                const polyline = L.polyline(latLngs, {
+                    color: '#4CAF50',
+                    weight: 4,
+                    opacity: 1
+                }).addTo(summaryMap);
+
+                // เพิ่มมาร์คเกอร์จุดเริ่มต้นและจุดสิ้นสุด
+                if (latLngs.length > 0) {
+                    L.marker(latLngs[0]).addTo(summaryMap)
+                        .bindPopup('<strong>จุดเริ่มต้น</strong>').openPopup();
+
+                    L.marker(latLngs[latLngs.length - 1]).addTo(summaryMap)
+                        .bindPopup('<strong>จุดสิ้นสุด</strong>');
+                }
 
                 // ปรับขอบเขตแผนที่ให้เห็นเส้นทางทั้งหมด
-                const bounds = new google.maps.LatLngBounds();
-                for (const coord of routeCoords) {
-                    bounds.extend(new google.maps.LatLng(coord.lat, coord.lng));
-                }
-                summaryMap.fitBounds(bounds);
+                summaryMap.fitBounds(polyline.getBounds());
             }
+
+            // Resize map เมื่อ modal แสดงเสร็จสมบูรณ์
+            document.getElementById('activitySummaryModal').addEventListener('shown.bs.modal', function() {
+                summaryMap.invalidateSize();
+            });
         }
     });
 </script>

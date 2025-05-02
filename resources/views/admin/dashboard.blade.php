@@ -3,362 +3,453 @@
 @section('title', 'แดชบอร์ด')
 
 @section('content')
-    <h1 class="mb-4">แดชบอร์ดผู้ดูแลระบบ</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="m-0">แดชบอร์ดผู้ดูแลระบบ</h2>
+        <a href="{{ route('admin.reports.index') }}" class="btn btn-primary">
+            <i class="fas fa-chart-line me-1"></i> รายงานและสถิติทั้งหมด
+        </a>
+    </div>
 
-    <!-- Small boxes (Stat box) -->
+    <!-- ข้อมูลสรุปสำคัญ -->
     <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card gofit-card bg-primary bg-opacity-10 h-100">
-                <div class="card-body">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{{ route('admin.users.index') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-3">
+                    <div class="card-body py-4">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h3 class="fw-bold fs-2">{{ $totalUsers ?? 0 }}</h3>
-                            <p class="mb-0">ผู้ใช้งานทั้งหมด</p>
+                                <h2 class="fs-1 fw-bold mb-0 text-primary">{{ $totalUsers ?? 0 }}</h2>
+                                <p class="text-muted mb-0">ผู้ใช้งานทั้งหมด</p>
                         </div>
-                        <div>
+                            <div class="rounded-circle bg-primary bg-opacity-10 p-0" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
                             <i class="fas fa-users fa-2x text-primary"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="card-footer bg-transparent border-0">
-                    <a href="{{ route('admin.users.index') }}" class="text-primary text-decoration-none">รายละเอียดเพิ่มเติม <i class="fas fa-arrow-right ms-1"></i></a>
-                </div>
-            </div>
+            </a>
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card gofit-card bg-success bg-opacity-10 h-100">
-                <div class="card-body">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{{ route('admin.run.stats') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-3">
+                    <div class="card-body py-4">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h3 class="fw-bold fs-2">{{ $totalActivities ?? 0 }}</h3>
-                            <p class="mb-0">กิจกรรมทั้งหมด</p>
+                                <h2 class="fs-1 fw-bold mb-0 text-success">{{ $totalRuns ?? 0 }}</h2>
+                                <p class="text-muted mb-0">การวิ่งทั้งหมด</p>
                         </div>
-                        <div>
+                            <div class="rounded-circle bg-success bg-opacity-10 p-0" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
                             <i class="fas fa-running fa-2x text-success"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="card-footer bg-transparent border-0">
-                    <a href="{{ route('admin.user-activities') }}" class="text-success text-decoration-none">รายละเอียดเพิ่มเติม <i class="fas fa-arrow-right ms-1"></i></a>
-                </div>
-            </div>
+            </a>
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card gofit-card bg-warning bg-opacity-10 h-100">
-                <div class="card-body">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{{ route('admin.badges.index') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-3">
+                    <div class="card-body py-4">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h3 class="fw-bold fs-2">{{ $totalBadges ?? 0 }}</h3>
-                            <p class="mb-0">เหรียญตราทั้งหมด</p>
+                                <h2 class="fs-1 fw-bold mb-0 text-warning">{{ $totalBadges ?? 0 }}</h2>
+                                <p class="text-muted mb-0">เหรียญตราทั้งหมด</p>
                         </div>
-                        <div>
+                            <div class="rounded-circle bg-warning bg-opacity-10 p-0" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
                             <i class="fas fa-medal fa-2x text-warning"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="card-footer bg-transparent border-0">
-                    <a href="{{ route('admin.badges.index') }}" class="text-warning text-decoration-none">รายละเอียดเพิ่มเติม <i class="fas fa-arrow-right ms-1"></i></a>
-                </div>
-            </div>
+            </a>
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card gofit-card bg-danger bg-opacity-10 h-100">
-                <div class="card-body">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{{ route('admin.health-articles.index') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-3">
+                    <div class="card-body py-4">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h3 class="fw-bold fs-2">{{ $totalRewards ?? 0 }}</h3>
-                            <p class="mb-0">รางวัลทั้งหมด</p>
+                                <h2 class="fs-1 fw-bold mb-0 text-info">{{ $totalArticles ?? 0 }}</h2>
+                                <p class="text-muted mb-0">บทความสุขภาพ</p>
+                            </div>
+                            <div class="rounded-circle bg-info bg-opacity-10 p-0" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-newspaper fa-2x text-info"></i>
                         </div>
-                        <div>
-                            <i class="fas fa-gift fa-2x text-danger"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer bg-transparent border-0">
-                    <a href="{{ route('admin.rewards') }}" class="text-danger text-decoration-none">รายละเอียดเพิ่มเติม <i class="fas fa-arrow-right ms-1"></i></a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card gofit-card bg-info bg-opacity-10 h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h3 class="fw-bold fs-2">{{ $totalArticles ?? 0 }}</h3>
-                            <p class="mb-0">บทความสุขภาพ</p>
-                        </div>
-                        <div>
-                            <i class="fas fa-newspaper fa-2x text-info"></i>
                         </div>
                     </div>
                 </div>
-                <div class="card-footer bg-transparent border-0">
-                    <a href="{{ route('admin.health-articles.index') }}" class="text-info text-decoration-none">รายละเอียดเพิ่มเติม <i class="fas fa-arrow-right ms-1"></i></a>
-                </div>
-            </div>
+            </a>
         </div>
-    </div>
+                        </div>
 
-    <!-- เป้าหมายของผู้ใช้ -->
-    <div class="row mb-4">
-        <div class="col-lg-12">
-            <div class="card gofit-card bg-info bg-opacity-10">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h3 class="fw-bold fs-4">สถิติเป้าหมายของผู้ใช้</h3>
-                            <p class="mb-0">ดูสถิติการตั้งเป้าหมายของผู้ใช้งานทั้งหมดในระบบ</p>
-                        </div>
-                        <div>
-                            <i class="fas fa-bullseye fa-2x text-info"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer bg-transparent border-0">
-                    <a href="{{ route('admin.goals.statistics') }}" class="text-info text-decoration-none">
-                        ไปยังหน้าสถิติเป้าหมาย <i class="fas fa-arrow-right ms-1"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- สถิติเหรียญตรา -->
-    <div class="row mb-4">
-        <div class="col-lg-12">
-            <div class="card gofit-card bg-warning bg-opacity-10">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h3 class="fw-bold fs-4">สถิติเหรียญตรา</h3>
-                            <p class="mb-0">วิเคราะห์การกระจายตัวของเหรียญตราและการได้รับเหรียญตราของผู้ใช้</p>
-                        </div>
-                        <div>
-                            <i class="fas fa-medal fa-2x text-warning"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer bg-transparent border-0">
-                    <a href="{{ route('admin.badges.statistics') }}" class="text-warning text-decoration-none">
-                        ไปยังหน้าสถิติเหรียญตรา <i class="fas fa-arrow-right ms-1"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- สถิติบทความสุขภาพ -->
-    <div class="row mb-4">
-        <div class="col-lg-12">
-            <div class="card gofit-card bg-info bg-opacity-10">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h3 class="fw-bold fs-4">สถิติบทความสุขภาพ</h3>
-                            <p class="mb-0">ดูสถิติการอ่านและการมีส่วนร่วมกับบทความสุขภาพของผู้ใช้</p>
-                        </div>
-                        <div>
-                            <i class="fas fa-newspaper fa-2x text-info"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer bg-transparent border-0">
-                    <a href="{{ route('admin.health-articles.statistics') }}" class="text-info text-decoration-none">
-                        ไปยังหน้าสถิติบทความ <i class="fas fa-arrow-right ms-1"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main row -->
     <div class="row">
-        <!-- Left col -->
-        <div class="col-lg-7 mb-4">
-            <!-- Custom tabs (Charts with tabs)-->
-            <div class="card gofit-card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-chart-line me-2"></i>
-                        สถิติกิจกรรมประจำสัปดาห์
-                    </h5>
+        <!-- กราฟสถิติกิจกรรม -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 border-0">
+                    <h5 class="m-0 fw-bold">สถิติกิจกรรมรายสัปดาห์</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="periodDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            สัปดาห์นี้
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="periodDropdown">
+                            <li><a class="dropdown-item period-select" href="#" data-period="week">สัปดาห์นี้</a></li>
+                            <li><a class="dropdown-item period-select" href="#" data-period="month">เดือนนี้</a></li>
+                            <li><a class="dropdown-item period-select" href="#" data-period="quarter">3 เดือนล่าสุด</a></li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="activityChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                    <div class="chart-container" style="position: relative; height:300px;">
+                        <div id="activityChart"></div>
                     </div>
                 </div>
             </div>
+        </div>
 
+        <!-- สรุปข้อมูลเดือนนี้ -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="m-0 fw-bold">สรุปข้อมูลเดือนนี้</h5>
+                    <span class="badge bg-light text-dark">{{ Carbon\Carbon::now()->locale('th')->translatedFormat('F') }} 2568</span>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-2" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-list-check text-primary"></i>
+                                </div>
+                                <span>กิจกรรมใหม่</span>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold text-primary fs-5">{{ $monthlyActivities ?? 0 }}</span>
+                                <span class="text-muted ms-1 small">/ {{ $totalActivities ?? 0 }}</span>
+                            </div>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            @php
+                                $percentage = $totalActivities > 0 ? min(100, ($monthlyActivities ?? 0) / $totalActivities * 100) : 0;
+                                $formattedPercentage = number_format($percentage, 0);
+                            @endphp
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $percentage }}%" aria-valuenow="{{ $percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <div class="text-end mt-1">
+                            <span class="text-muted small">{{ $formattedPercentage }}% ของกิจกรรมทั้งหมด</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-success bg-opacity-10 p-2 me-2" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-running text-success"></i>
+                                </div>
+                                <span>การวิ่งใหม่</span>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold text-success fs-5">{{ $monthlyRuns ?? 0 }}</span>
+                                <span class="text-muted ms-1 small">/ {{ $totalRuns ?? 0 }}</span>
+                            </div>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            @php
+                                $percentage = $totalRuns > 0 ? min(100, ($monthlyRuns ?? 0) / $totalRuns * 100) : 0;
+                                $formattedPercentage = number_format($percentage, 0);
+                            @endphp
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ $percentage }}%" aria-valuenow="{{ $percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <div class="text-end mt-1">
+                            <span class="text-muted small">{{ $formattedPercentage }}% ของการวิ่งทั้งหมด</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-warning bg-opacity-10 p-2 me-2" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-gift text-warning"></i>
+                                </div>
+                                <span>การแลกรางวัล</span>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold text-warning fs-5">{{ $monthlyRedeems ?? 0 }}</span>
+                                <span class="text-muted ms-1 small">/ {{ $totalRedeems ?? 0 }}</span>
+                            </div>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            @php
+                                $totalRedeems = isset($totalRedeems) ? $totalRedeems : 0;
+                                $percentage = $totalRedeems > 0 ? min(100, ($monthlyRedeems ?? 0) / $totalRedeems * 100) : 0;
+                                $formattedPercentage = number_format($percentage, 0);
+                            @endphp
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ $percentage }}%" aria-valuenow="{{ $percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <div class="text-end mt-1">
+                            <span class="text-muted small">{{ $formattedPercentage }}% ของการแลกรางวัลทั้งหมด</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
             <!-- ผู้ใช้ที่มีกิจกรรมมากที่สุด -->
-            <div class="card gofit-card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-trophy me-2"></i>
-                        ผู้ใช้ที่มีกิจกรรมมากที่สุด
-                    </h5>
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 border-0">
+                    <h5 class="m-0 fw-bold">ผู้ใช้ที่มีกิจกรรมมากที่สุด</h5>
+                    <a href="{{ route('admin.users.index', ['sort' => 'activity']) }}" class="btn btn-sm btn-outline-primary">ดูทั้งหมด</a>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-striped mb-0">
-                            <thead>
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
                                 <tr>
-                                    <th style="width: 10px">#</th>
+                                    <th class="ps-3">#</th>
                                     <th>ชื่อผู้ใช้</th>
-                                    <th>ชื่อ-นามสกุล</th>
+                                    <th>กิจกรรม</th>
+                                    <th class="text-end pe-3">สัดส่วน</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($topUsers ?? [] as $index => $user)
+                                    @if($index < 5)
+                                    <tr>
+                                        <td class="ps-3">{{ $index + 1 }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="rounded-circle bg-light p-2 me-2" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                                    <i class="fas fa-user fa-lg text-secondary"></i>
+                                                </div>
+                                                <div>{{ $user->firstname }} {{ $user->lastname }}</div>
+                                            </div>
+                                        </td>
+                                        <td>{{ $user->activity_count }}</td>
+                                        <td class="text-end pe-3">
+                                            <div class="progress" style="height: 6px;">
+                                                @php
+                                                    $maxCount = $topUsers->max('activity_count');
+                                                    $percentage = $maxCount > 0 ? ($user->activity_count / $maxCount * 100) : 0;
+                                                @endphp
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ $percentage }}%"></div>
+                                            </div>
+                                    </td>
+                                </tr>
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @if(($topUsers ?? []) && count($topUsers) > 5)
+                    <div class="p-2 border-top d-flex justify-content-center">
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#topUsersModal">
+                            แสดงผู้ใช้เพิ่มเติม
+                        </button>
+                    </div>
+                    @endif
+                    </div>
+                </div>
+            </div>
+
+        <!-- การวิ่งล่าสุด -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 border-0">
+                    <h5 class="m-0 fw-bold">การวิ่งล่าสุด</h5>
+                    <a href="{{ route('admin.run.stats') }}" class="btn btn-sm btn-outline-primary">ดูทั้งหมด</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">ผู้ใช้</th>
+                                    <th>ระยะทาง</th>
+                                    <th>แคลอรี่</th>
+                                    <th class="text-end pe-3">วันที่</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php $count = 0; @endphp
+                                @foreach($latestRuns ?? [] as $run)
+                                    @if($count < 5)
+                                    <tr>
+                                        <td class="ps-3">{{ $run->user->username ?? 'ไม่ระบุชื่อ' }}</td>
+                                        <td>{{ number_format($run->distance, 2) }} กม.</td>
+                                        <td>{{ number_format($run->calories_burned) }} kcal</td>
+                                        <td class="text-end pe-3">{{ $run->created_at->format('d/m/Y H:i') }}</td>
+                                    </tr>
+                                    @php $count++; @endphp
+                                        @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @if(($latestRuns ?? []) && count($latestRuns) > 5)
+                    <div class="p-2 border-top d-flex justify-content-center">
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#latestRunsModal">
+                            แสดงกิจกรรมเพิ่มเติม
+                        </button>
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- เมนูลัด -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="m-0 fw-bold">เมนูลัดจัดการระบบ</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{{ route('admin.users.index') }}" class="text-decoration-none">
+                                <div class="d-flex align-items-center p-3 rounded bg-light hover-shadow">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-users fa-lg text-primary"></i>
+                                    </div>
+                                    <span>จัดการผู้ใช้งาน</span>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{{ route('admin.badges.index') }}" class="text-decoration-none">
+                                <div class="d-flex align-items-center p-3 rounded bg-light hover-shadow">
+                                    <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-medal fa-lg text-warning"></i>
+                                    </div>
+                                    <span>จัดการเหรียญตรา</span>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{{ route('admin.rewards') }}" class="text-decoration-none">
+                                <div class="d-flex align-items-center p-3 rounded bg-light hover-shadow">
+                                    <div class="rounded-circle bg-danger bg-opacity-10 p-3 me-3" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-gift fa-lg text-danger"></i>
+                    </div>
+                                    <span>จัดการรางวัล</span>
+                        </div>
+                            </a>
+                        </div>
+
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{{ route('admin.health-articles.index') }}" class="text-decoration-none">
+                                <div class="d-flex align-items-center p-3 rounded bg-light hover-shadow">
+                                    <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-newspaper fa-lg text-info"></i>
+                    </div>
+                                    <span>จัดการบทความ</span>
+                        </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals for expanded tables -->
+    <div class="modal fade" id="topUsersModal" tabindex="-1" aria-labelledby="topUsersModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="topUsersModalLabel">ผู้ใช้ที่มีกิจกรรมมากที่สุด</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">#</th>
+                                    <th>ชื่อผู้ใช้</th>
                                     <th>จำนวนกิจกรรม</th>
+                                    <th class="text-end pe-3">การมีส่วนร่วม</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($topUsers ?? [] as $index => $user)
                                 <tr>
-                                    <td>{{ $index + 1 }}</td>
-                                    <td>{{ $user->username }}</td>
-                                    <td>{{ $user->firstname }} {{ $user->lastname }}</td>
+                                    <td class="ps-3">{{ $index + 1 }}</td>
                                     <td>
-                                        <span class="badge bg-primary">{{ $user->activity_count }}</span>
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-light p-2 me-2" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-user fa-lg text-secondary"></i>
+                                            </div>
+                                            <div>{{ $user->firstname }} {{ $user->lastname }}</div>
+                                        </div>
                                     </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- กิจกรรมล่าสุด -->
-            <div class="card gofit-card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-running me-2"></i>
-                        กิจกรรมล่าสุด
-                    </h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-sm mb-0">
-                            <thead>
-                                <tr>
-                                    <th>ผู้ใช้</th>
-                                    <th>ประเภทกิจกรรม</th>
-                                    <th>ระยะทาง</th>
-                                    <th>ระยะเวลา</th>
-                                    <th>วันที่</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($latestActivities ?? [] as $key => $activity)
-                                <tr>
-                                    <td>{{ $activity->user->username ?? 'ไม่ระบุชื่อ' }}</td>
-                                    <td>{{ $activity->activity_type }}</td>
-                                    <td>{{ number_format($activity->distance, 2) }} กม.</td>
-                                    <td>
-                                        @if($activity->end_time)
+                                    <td>{{ $user->activity_count }}</td>
+                                    <td class="text-end pe-3">
+                                        <div class="progress" style="height: 6px;">
                                             @php
-                                            if(is_string($activity->start_time) || is_string($activity->end_time)) {
-                                                $start = is_string($activity->start_time) ? strtotime($activity->start_time) : $activity->start_time->timestamp;
-                                                $end = is_string($activity->end_time) ? strtotime($activity->end_time) : $activity->end_time->timestamp;
-                                                echo gmdate('H:i:s', $end - $start);
-                                            } else {
-                                                echo gmdate('H:i:s', $activity->end_time->diffInSeconds($activity->start_time));
-                                            }
+                                                $maxCount = $topUsers->max('activity_count');
+                                                $percentage = $maxCount > 0 ? ($user->activity_count / $maxCount * 100) : 0;
                                             @endphp
-                                        @else
-                                            <span class="badge bg-warning">กำลังดำเนินการ</span>
-                                        @endif
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ $percentage }}%"></div>
+                                        </div>
                                     </td>
-                                    <td>{{ $activity->created_at->format('d/m/Y H:i') }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
                 </div>
-            </div>
-        </div>
-        <!-- /.Left col -->
-
-        <!-- right col (We are only adding the ID to make the widgets sortable)-->
-        <div class="col-lg-5">
-            <!-- สรุปข้อมูลเดือนนี้ -->
-            <div class="card gofit-card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-calendar-alt me-2"></i>
-                        สรุปข้อมูลเดือนนี้
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex p-3 mb-3 bg-info bg-opacity-10 rounded align-items-center">
-                        <div class="me-3">
-                            <i class="fas fa-user-plus fa-2x text-info"></i>
-                        </div>
-                        <div>
-                            <div class="text-muted">ผู้ใช้ใหม่</div>
-                            <div class="fs-5 fw-bold">{{ $newUsers ?? 0 }} คน</div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex p-3 mb-3 bg-success bg-opacity-10 rounded align-items-center">
-                        <div class="me-3">
-                            <i class="fas fa-walking fa-2x text-success"></i>
-                        </div>
-                        <div>
-                            <div class="text-muted">กิจกรรมทั้งหมด</div>
-                            <div class="fs-5 fw-bold">{{ $monthlyActivities ?? 0 }} กิจกรรม</div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex p-3 bg-warning bg-opacity-10 rounded align-items-center">
-                        <div class="me-3">
-                            <i class="fas fa-exchange-alt fa-2x text-warning"></i>
-                        </div>
-                        <div>
-                            <div class="text-muted">การแลกรางวัล</div>
-                            <div class="fs-5 fw-bold">{{ $monthlyRedeems ?? 0 }} ครั้ง</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                    <a href="{{ route('admin.users.index', ['sort' => 'activity']) }}" class="btn btn-primary">ดูทั้งหมด</a>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- การแลกรางวัลล่าสุด -->
-            <div class="card gofit-card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-gift me-2"></i>
-                        การแลกรางวัลล่าสุด
-                    </h5>
+    <div class="modal fade" id="latestRunsModal" tabindex="-1" aria-labelledby="latestRunsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="latestRunsModalLabel">การวิ่งล่าสุด</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="card-body p-0">
+                <div class="modal-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-sm mb-0">
-                            <thead>
+                        <table class="table mb-0">
+                            <thead class="table-light">
                                 <tr>
-                                    <th>ผู้ใช้</th>
-                                    <th>รางวัล</th>
-                                    <th>เหรียญที่ใช้</th>
-                                    <th>วันที่</th>
+                                    <th class="ps-3">ผู้ใช้</th>
+                                    <th>ระยะทาง</th>
+                                    <th>แคลอรี่</th>
+                                    <th class="text-end pe-3">วันที่</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($latestRedeems ?? [] as $redeem)
+                                @foreach($latestRuns ?? [] as $run)
                                 <tr>
-                                    <td>{{ $redeem->user->username }}</td>
-                                    <td>{{ $redeem->reward->reward_name }}</td>
-                                    <td>{{ $redeem->points_used }}</td>
-                                    <td>{{ $redeem->created_at->format('d/m/Y H:i') }}</td>
+                                    <td class="ps-3">{{ $run->user->username ?? 'ไม่ระบุชื่อ' }}</td>
+                                    <td>{{ number_format($run->distance, 2) }} กม.</td>
+                                    <td>{{ number_format($run->calories_burned) }} kcal</td>
+                                    <td class="text-end pe-3">{{ $run->created_at->format('d/m/Y H:i') }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
                 </div>
-                <div class="card-footer text-center">
-                    <a href="{{ route('admin.redeems') }}" class="text-decoration-none">ดูทั้งหมด</a>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                    <a href="{{ route('admin.run.stats') }}" class="btn btn-primary">ดูทั้งหมด</a>
                 </div>
             </div>
         </div>
@@ -366,34 +457,202 @@
 @endsection
 
 @section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // สร้างกราฟสถิติกิจกรรม
-        var ctx = document.getElementById('activityChart').getContext('2d');
-        var activityChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์'],
-                datasets: [{
-                    label: 'จำนวนกิจกรรม',
-                    data: [12, 19, 8, 15, 12, 28, 20],
-                    borderColor: '#36A2EB',
-                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
+        // ชื่อวันในสัปดาห์
+        var defaultLabelsWeek = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์'];
+
+        // รับข้อมูลจริงที่ส่งมาจาก Controller
+        var activityLabels = {!! isset($activityLabels) ? json_encode($activityLabels) : json_encode(defaultLabelsWeek) !!};
+        var activityDataWeek = {!! isset($activityData) ? json_encode($activityData) : json_encode([0, 0, 0, 0, 0, 0, 0]) !!};
+        var runDataWeek = {!! isset($runData) ? json_encode($runData) : json_encode([0, 0, 0, 0, 0, 0, 0]) !!};
+
+        // ข้อมูลรายเดือน
+        var defaultLabelsMonth = ['สัปดาห์ที่ 1', 'สัปดาห์ที่ 2', 'สัปดาห์ที่ 3', 'สัปดาห์ที่ 4'];
+
+        // รับข้อมูลรายเดือนจริงจาก server หรือใช้ข้อมูลจำลองถ้าไม่มี
+        var activityDataMonth = {!! isset($activityDataMonth) ? json_encode($activityDataMonth) : json_encode([0, 0, 0, 0]) !!};
+        var runDataMonth = {!! isset($runDataMonth) ? json_encode($runDataMonth) : json_encode([0, 0, 0, 0]) !!};
+
+        // ข้อมูลรายปี (12 เดือน)
+        var defaultLabelsQuarter = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
+        // รับข้อมูลรายปีจริงจาก server หรือใช้ข้อมูลจำลองถ้าไม่มี
+        var activityDataYear = {!! isset($activityDataYear) ? json_encode($activityDataYear) : json_encode([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) !!};
+        var runDataYear = {!! isset($runDataYear) ? json_encode($runDataYear) : json_encode([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) !!};
+
+        var currentLabels = activityLabels;
+        var currentActivityData = activityDataWeek;
+        var currentRunData = runDataWeek;
+        var periodTitle = 'สถิติกิจกรรมรายสัปดาห์';
+
+        // สร้างกราฟ
+        var options = {
+            series: [
+                {
+                    name: 'กิจกรรมทั้งหมด',
+                    data: currentActivityData
+                },
+                {
+                    name: 'การวิ่ง',
+                    data: currentRunData
+                }
+            ],
+            chart: {
+                height: 300,
+                type: 'area',
+                fontFamily: 'Prompt, sans-serif',
+                toolbar: {
+                    show: false
+                },
+                zoom: {
+                    enabled: false
+                },
+                locales: [{
+                    name: 'th',
+                    options: {
+                        months: ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                                'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'],
+                        shortMonths: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+                                    'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'],
+                        days: ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'],
+                        shortDays: ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส']
+                    }
+                }],
+                defaultLocale: 'th'
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 3
+            },
+            colors: ['#36A2EB', '#2DC679'],
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.7,
+                    opacityTo: 0.2,
+                    stops: [0, 90, 100]
+                }
+            },
+            markers: {
+                size: 5,
+                hover: {
+                    size: 7
+                }
+            },
+            xaxis: {
+                categories: currentLabels,
+                labels: {
+                    style: {
+                        fontSize: '12px'
+                    }
+                }
+            },
+            yaxis: {
+                title: {
+                    text: 'จำนวนกิจกรรม'
+                },
+                min: 0
+            },
+            legend: {
+                position: 'top',
+                horizontalAlign: 'right',
+                offsetY: -15
+            },
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return val + " กิจกรรม"
                     }
                 }
             }
+        };
+
+        var chart = new ApexCharts(document.getElementById('activityChart'), options);
+        chart.render();
+
+        // เปลี่ยนช่วงเวลาแสดงผล
+        document.querySelectorAll('.period-select').forEach(function(item) {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                var period = this.getAttribute('data-period');
+
+                // อัพเดทปุ่ม dropdown
+                document.getElementById('periodDropdown').innerText = this.innerText;
+
+                // อัพเดทข้อมูลตามช่วงเวลา
+                if (period === 'week') {
+                    currentLabels = defaultLabelsWeek;
+                    currentActivityData = activityDataWeek;
+                    currentRunData = runDataWeek;
+                    periodTitle = 'สถิติกิจกรรมรายสัปดาห์';
+                } else if (period === 'month') {
+                    currentLabels = defaultLabelsMonth;
+                    currentActivityData = activityDataMonth;
+                    currentRunData = runDataMonth;
+                    periodTitle = 'สถิติกิจกรรมรายเดือน';
+                } else if (period === 'quarter') {
+                    currentLabels = defaultLabelsQuarter;
+                    currentActivityData = activityDataYear;
+                    currentRunData = runDataYear;
+                    periodTitle = 'สถิติกิจกรรมรายปี';
+                }
+
+                // อัพเดทชื่อหัวข้อ
+                document.querySelector('.card-header h5').innerText = periodTitle;
+
+                // อัพเดทกราฟ
+                chart.updateOptions({
+                    xaxis: {
+                        categories: currentLabels
+                    }
+                });
+
+                chart.updateSeries([
+                    {
+                        name: 'กิจกรรมทั้งหมด',
+                        data: currentActivityData
+                    },
+                    {
+                        name: 'การวิ่ง',
+                        data: currentRunData
+                    }
+                ]);
+            });
         });
     });
 </script>
+<style>
+    body {
+        background-color: #f9f9f9;
+    }
+    .hover-shadow:hover {
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+        transition: box-shadow 0.3s ease-in-out;
+    }
+    .card {
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.15) !important;
+    }
+    .apexcharts-tooltip {
+        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        border: none;
+    }
+    .apexcharts-tooltip-title {
+        background: #f8f9fa !important;
+        border-bottom: 1px solid #eee !important;
+    }
+    .apexcharts-xaxistooltip {
+        border: none;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+    }
+</style>
 @endsection

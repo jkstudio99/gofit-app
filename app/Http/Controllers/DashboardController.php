@@ -9,6 +9,10 @@ use App\Models\UserBadge;
 use App\Models\Badge;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Models\Reward;
+use App\Models\Run;
+use App\Models\User;
+use App\Models\Redeem;
 
 class DashboardController extends Controller
 {
@@ -335,5 +339,104 @@ class DashboardController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login')->with('success', 'บัญชีของคุณถูกลบออกจากระบบเรียบร้อยแล้ว');
+    }
+
+    public function adminDashboard()
+    {
+        // Get total users
+        $totalUsers = User::count();
+
+        // Get total activities
+        $totalActivities = Activity::count();
+
+        // Get total runs
+        $totalRuns = Run::count();
+
+        // Get total badges
+        $totalBadges = Badge::count();
+
+        // Get total rewards
+        $totalRewards = Reward::count();
+
+        // Get new users this month
+        $newUsers = User::whereMonth('created_at', date('m'))
+            ->whereYear('created_at', date('Y'))
+            ->count();
+
+        // Get monthly activities
+        $monthlyActivities = Activity::whereMonth('created_at', date('m'))
+            ->whereYear('created_at', date('Y'))
+            ->count();
+
+        // Get monthly runs
+        $monthlyRuns = Run::whereMonth('created_at', date('m'))
+            ->whereYear('created_at', date('Y'))
+            ->count();
+
+        // Get monthly redeems
+        $monthlyRedeems = Redeem::whereMonth('created_at', date('m'))
+            ->whereYear('created_at', date('Y'))
+            ->count();
+
+        // Get top users
+        $topUsers = User::select('tb_user.*', DB::raw('COUNT(tb_activity.activity_id) as activity_count'))
+            ->leftJoin('tb_activity', 'tb_user.user_id', '=', 'tb_activity.user_id')
+            ->groupBy('tb_user.user_id')
+            ->orderBy('activity_count', 'desc')
+            ->take(5)
+            ->get();
+
+        // Get latest activities
+        $latestActivities = Activity::with('user')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        // Get latest runs
+        $latestRuns = Run::with('user')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        // Get latest redeems
+        $latestRedeems = Redeem::with(['user', 'reward'])
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        // Get weekly activity data
+        $activityLabels = [];
+        $activityData = [];
+        $runData = [];
+
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::today()->subDays($i);
+            $activityLabels[] = $date->locale('th')->format('D d');
+
+            $activityCount = Activity::whereDate('created_at', $date)->count();
+            $activityData[] = $activityCount;
+
+            $runCount = Run::whereDate('created_at', $date)->count();
+            $runData[] = $runCount;
+        }
+
+        return view('admin.dashboard', compact(
+            'totalUsers',
+            'totalActivities',
+            'totalRuns',
+            'totalBadges',
+            'totalRewards',
+            'newUsers',
+            'monthlyActivities',
+            'monthlyRuns',
+            'monthlyRedeems',
+            'topUsers',
+            'latestActivities',
+            'latestRuns',
+            'latestRedeems',
+            'activityLabels',
+            'activityData',
+            'runData'
+        ));
     }
 }

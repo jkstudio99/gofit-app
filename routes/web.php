@@ -40,6 +40,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/run', [RunController::class, 'index'])->name('run.index');
     Route::get('/run/test', [RunController::class, 'test'])->name('run.test');
     Route::post('/run/start', [RunActivityController::class, 'start'])->name('run.start');
+    Route::get('/run/check-active', [RunActivityController::class, 'checkActiveActivity'])->name('run.check-active');
     Route::get('/run/test-start', function() {
         return response()->json([
             'status' => 'success',
@@ -51,13 +52,20 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/run/updateRoute', [RunActivityController::class, 'updateRoute'])->name('run.updateRoute');
     Route::post('/run/store', [RunController::class, 'store'])->name('run.store');
     Route::get('/run/history', [RunController::class, 'history'])->name('run.history');
+    Route::get('/run/show/{id}', [RunController::class, 'show'])->name('run.show');
+    Route::post('/run/destroy', [RunController::class, 'destroy'])->name('run.destroy');
 
     // เหรียญตรา
     Route::get('/badges', [BadgeController::class, 'index'])->name('badges.index');
+    Route::post('/badges/{badge}/unlock', [BadgeController::class, 'unlockBadge'])->name('badges.unlock');
+    Route::get('/badges/history', [BadgeController::class, 'history'])->name('badges.history');
 
     // รางวัล
     Route::get('/rewards', [RewardController::class, 'index'])->name('rewards.index');
     Route::get('/rewards/{reward}/redeem', [RewardController::class, 'redeem'])->name('rewards.redeem');
+    Route::get('/rewards/history', [App\Http\Controllers\RedeemController::class, 'index'])->name('rewards.history');
+    Route::post('/rewards/redeem/{redeem}/cancel', [App\Http\Controllers\RedeemController::class, 'cancel'])->name('rewards.redeem.cancel');
+    Route::get('/rewards/redeem/{redeem}', [App\Http\Controllers\RedeemController::class, 'show'])->name('rewards.redeem.show');
 
     // โปรไฟล์ผู้ใช้
     Route::get('/profile', [DashboardController::class, 'profile'])->name('profile.edit');
@@ -102,6 +110,11 @@ Route::middleware(['auth'])->group(function () {
     // Saved articles
     Route::get('/my-saved-articles', [HealthArticleController::class, 'savedArticles'])
         ->name('health-articles.saved');
+
+    // Sessions routes
+    Route::get('/sessions', [App\Http\Controllers\SessionController::class, 'userSessions'])->name('sessions');
+    Route::delete('/sessions/{sessionId}', [App\Http\Controllers\SessionController::class, 'destroySpecificSession'])->name('sessions.destroy');
+    Route::delete('/sessions', [App\Http\Controllers\SessionController::class, 'destroyAllUserSessions'])->name('sessions.destroy.all');
 });
 
 // Route สำหรับ Admin
@@ -131,6 +144,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Badges management - improved CRUD
     Route::get('/badges', [BadgeController::class, 'admin'])->name('badges.index');
     Route::get('/badges/statistics', [BadgeController::class, 'statistics'])->name('badges.statistics');
+    Route::get('/badges/history', [BadgeController::class, 'adminHistory'])->name('badges.history');
     Route::get('/badges/create', [BadgeController::class, 'create'])->name('badges.create');
     Route::post('/badges', [BadgeController::class, 'store'])->name('badges.store');
     Route::get('/badges/users/{badge}', [BadgeController::class, 'badgeUsers'])->name('badges.users');
@@ -150,7 +164,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/rewards/{reward}', [RewardController::class, 'destroy'])->name('rewards.destroy');
 
     // Redeems history
-    Route::get('/redeems', [AdminController::class, 'redeems'])->name('redeems');
+    Route::get('/redeems', [App\Http\Controllers\RedeemController::class, 'adminIndex'])->name('redeems');
+    Route::post('/redeems/{redeem}/status', [App\Http\Controllers\RedeemController::class, 'updateStatus'])->name('redeems.update-status');
 
     // สถิติเป้าหมายของผู้ใช้
     Route::get('/goals/statistics', [AdminController::class, 'goalStatistics'])->name('goals.statistics');
@@ -173,6 +188,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/events/{event}/participants/{user}/status', [AdminEventController::class, 'updateParticipantStatus'])
         ->name('events.participants.status');
     Route::get('/events/{event}/export', [AdminEventController::class, 'exportParticipants'])->name('events.export');
+    Route::get('/events/statistics', [AdminEventController::class, 'statistics'])->name('events.statistics');
 
     // Health Articles Management
     Route::get('/health-articles', [AdminHealthArticleController::class, 'index'])
@@ -204,6 +220,43 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Article Categories Management
     Route::resource('article-categories', AdminHealthArticleController::class);
+
+    // Run statistics routes
+    Route::get('/run/stats', [App\Http\Controllers\Admin\RunStatisticsController::class, 'index'])->name('run.stats');
+    Route::get('/run/calendar', [App\Http\Controllers\Admin\RunStatisticsController::class, 'calendar'])->name('run.calendar');
+    Route::get('/run/user-stats/{userId}', [App\Http\Controllers\Admin\RunStatisticsController::class, 'userStats'])->name('user-run-stats');
+
+    // ระบบการวิ่ง (Running System) สำหรับผู้ดูแลระบบ
+    Route::prefix('run')->name('run.')->middleware(['auth'])->group(function () {
+        Route::get('/', [App\Http\Controllers\RunController::class, 'index'])->name('index');
+        Route::get('/history', [App\Http\Controllers\RunController::class, 'history'])->name('history');
+        Route::get('/shared', [App\Http\Controllers\RunController::class, 'sharedWithMe'])->name('shared');
+        Route::post('/destroy', [App\Http\Controllers\RunController::class, 'destroy'])->name('destroy');
+        Route::post('/mark-as-viewed/{id}', [App\Http\Controllers\RunController::class, 'markAsViewed'])->name('mark-as-viewed');
+        Route::post('/share', [App\Http\Controllers\RunController::class, 'share'])->name('share');
+
+        // Test connectivity route
+        Route::get('/test-start', function() {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Test route works',
+                'time' => now()->format('H:i:s')
+            ]);
+        })->name('test.start');
+
+        // API endpoints for running
+        Route::post('/start', [App\Http\Controllers\RunController::class, 'start'])->name('start');
+        Route::post('/update-position', [App\Http\Controllers\RunController::class, 'updatePosition'])->name('update-position');
+        Route::post('/toggle-pause', [App\Http\Controllers\RunController::class, 'togglePause'])->name('toggle-pause');
+        Route::post('/updateRoute', [App\Http\Controllers\RunActivityController::class, 'updateRoute'])->name('updateRoute');
+        Route::post('/finish', [App\Http\Controllers\RunController::class, 'finish'])->name('finish');
+        Route::post('/store', [App\Http\Controllers\RunController::class, 'store'])->name('store');
+    });
+
+    // Sessions routes
+    Route::get('/sessions', [App\Http\Controllers\SessionController::class, 'index'])->name('sessions.index');
+    Route::delete('/sessions/{sessionId}', [App\Http\Controllers\SessionController::class, 'destroySpecificSession'])->name('sessions.destroy');
+    Route::get('/sessions/clear-expired', [App\Http\Controllers\SessionController::class, 'clearExpiredSessions'])->name('sessions.clear-expired');
 });
 
 // Events routes
@@ -223,3 +276,11 @@ Route::prefix('events')->name('events.')->group(function () {
 // Public health articles route for the welcome page
 Route::get('/latest-health-articles', [PublicHealthArticleController::class, 'latestArticles'])
     ->name('public.latest-health-articles');
+
+// Admin Report Routes
+Route::prefix('admin/reports')->name('admin.reports.')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('/', [App\Http\Controllers\Admin\ReportController::class, 'index'])->name('index');
+    Route::get('/users', [App\Http\Controllers\Admin\ReportController::class, 'users'])->name('users');
+    Route::get('/monthly', [App\Http\Controllers\Admin\ReportController::class, 'monthly'])->name('monthly');
+    Route::get('/yearly', [App\Http\Controllers\Admin\ReportController::class, 'yearly'])->name('yearly');
+});

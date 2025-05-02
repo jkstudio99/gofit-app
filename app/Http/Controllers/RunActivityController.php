@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class RunActivityController extends Controller
 {
@@ -69,7 +70,25 @@ class RunActivityController extends Controller
         if ($unfinishedActivity) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'You have an unfinished activity. Please finish it first.'
+                'message' => 'กิจกรรมการวิ่งเริ่มต้นไปแล้ว กรุณาจบกิจกรรมปัจจุบันก่อนเริ่มกิจกรรมใหม่',
+                'activity_id' => $unfinishedActivity->activity_id
+            ], 400);
+        }
+
+        // Check for old activities that might be stuck - activities older than 24 hours without end_time
+        $stuckActivities = Activity::where('user_id', $user->user_id)
+            ->whereNull('end_time')
+            ->where('start_time', '<', Carbon::now()->subHours(24))
+            ->get();
+
+        // Auto-close these stuck activities
+        foreach ($stuckActivities as $stuckActivity) {
+            $stuckActivity->end_time = Carbon::now();
+            $stuckActivity->save();
+
+            Log::info('Auto-closed stuck activity', [
+                'user_id' => $user->user_id,
+                'activity_id' => $stuckActivity->activity_id
             ]);
         }
 
@@ -100,54 +119,123 @@ class RunActivityController extends Controller
      */
     public function finish(Request $request)
     {
-        $request->validate([
-            'activity_id' => 'required|exists:tb_activity,activity_id',
-            'route_data' => 'required|json',
-            'distance' => 'required|numeric',
-            'duration' => 'required|numeric',
-            'calories' => 'required|numeric',
-            'average_speed' => 'required|numeric',
-            'is_test' => 'boolean'
-        ]);
+        try {
+            // Validate the incoming request
+            $validator = Validator::make($request->all(), [
+                'activity_id' => 'required|exists:tb_activity,activity_id',
+                'route_data' => 'required|string',
+                'distance' => 'required|numeric',
+                'duration' => 'required|numeric',
+                'calories' => 'required|numeric',
+                'average_speed' => 'required|numeric',
+                'is_test' => 'boolean'
+            ]);
 
-        $user = Auth::user();
-        $activity = Activity::where('activity_id', $request->activity_id)
-            ->where('user_id', $user->user_id)
-            ->first();
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'ข้อมูลไม่ถูกต้อง: ' . $validator->errors()->first()
+                ], 400);
+            }
 
-        if (!$activity) {
+            // Log the incoming request for debugging
+            Log::info('Finish activity request', [
+                'user_id' => Auth::id(),
+                'activity_id' => $request->activity_id,
+                'request_data' => $request->all()
+            ]);
+
+            $user = Auth::user();
+            $activity = Activity::where('activity_id', $request->activity_id)
+                ->where('user_id', $user->user_id)
+                ->first();
+
+            if (!$activity) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'ไม่พบกิจกรรมที่ระบุ'
+                ], 404);
+            }
+
+            if (!is_null($activity->end_time)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'กิจกรรมนี้จบไปแล้ว'
+                ], 400);
+            }
+
+            // ตรวจสอบว่าเป็นการจบกิจกรรมที่ค้างอยู่หรือไม่
+            $isEmergencyFinish = ($request->distance == 0 && $request->duration == 0 && $request->calories == 0);
+
+            // Update activity details
+            $activity->end_time = Carbon::now();
+
+            // ถ้าเป็นการจบกิจกรรมที่ค้างอยู่ และไม่มีข้อมูลเพียงพอ ให้บันทึกข้อมูลน้อยที่สุด
+            if ($isEmergencyFinish) {
+                // คำนวณระยะเวลาตั้งแต่เริ่มจนถึงตอนนี้
+                $durationSeconds = $activity->start_time->diffInSeconds(Carbon::now());
+                $activity->distance = 0;
+                $activity->calories_burned = 0;
+                $activity->average_speed = 0;
+                $activity->route_gps_data = "[]";
+                $activity->notes = "กิจกรรมถูกจบโดยอัตโนมัติเนื่องจากไม่มีการบันทึกข้อมูล";
+            } else {
+                // บันทึกข้อมูลปกติ
+                $activity->distance = $request->distance;
+                $activity->calories_burned = $request->calories;
+                $activity->average_speed = $request->average_speed;
+
+                // Ensure route_data is a valid JSON string
+                try {
+                    $routeData = $request->route_data;
+                    // Check if the route_data is already a JSON string
+                    json_decode($routeData);
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        // If not a valid JSON, encode it
+                        $routeData = json_encode($routeData);
+                    }
+                    $activity->route_gps_data = $routeData;
+                } catch (\Exception $e) {
+                    // If there's an error, store empty route data
+                    Log::error('Error parsing route data: ' . $e->getMessage());
+                    $activity->route_gps_data = "[]";
+                }
+
+                $activity->is_test = $request->input('is_test', false); // ค่าเริ่มต้นเป็น false (วิ่งจริง)
+            }
+
+            $activity->save();
+
+            // Check for badges - เฉพาะการวิ่งจริงเท่านั้น และไม่ใช่การจบแบบฉุกเฉิน
+            if (!$activity->is_test && !$isEmergencyFinish) {
+                try {
+                    $this->checkForBadges($user, $activity);
+                } catch (\Exception $e) {
+                    // Just log badge checking errors, don't fail the whole request
+                    Log::error('Error checking badges: ' . $e->getMessage());
+                }
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => $isEmergencyFinish ? 'จบกิจกรรมที่ค้างอยู่เรียบร้อยแล้ว' :
+                    ($activity->is_test ? 'บันทึกการทดสอบวิ่งเรียบร้อยแล้ว' : 'กิจกรรมการวิ่งถูกบันทึกเรียบร้อยแล้ว'),
+                'activity' => $activity
+            ]);
+        } catch (\Exception $e) {
+            // Log the error for server-side debugging
+            Log::error('Error in finish method: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+
+            // Return a JSON response even when there's an error
             return response()->json([
                 'status' => 'error',
-                'message' => 'Activity not found'
-            ]);
+                'message' => 'เกิดข้อผิดพลาดภายในระบบ กรุณาลองใหม่อีกครั้ง: ' . $e->getMessage()
+            ], 500);
         }
-
-        if (!is_null($activity->end_time)) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Activity already finished'
-            ]);
-        }
-
-        // Update activity details
-        $activity->end_time = Carbon::now();
-        $activity->distance = $request->distance;
-        $activity->calories_burned = $request->calories;
-        $activity->average_speed = $request->average_speed;
-        $activity->route_gps_data = $request->route_data;
-        $activity->is_test = $request->input('is_test', false); // ค่าเริ่มต้นเป็น false (วิ่งจริง)
-        $activity->save();
-
-        // Check for badges - เฉพาะการวิ่งจริงเท่านั้น
-        if (!$activity->is_test) {
-            $this->checkForBadges($user, $activity);
-        }
-
-        return response()->json([
-            'status' => 'success',
-            'message' => $activity->is_test ? 'บันทึกการทดสอบวิ่งเรียบร้อยแล้ว' : 'กิจกรรมการวิ่งถูกบันทึกเรียบร้อยแล้ว',
-            'activity' => $activity
-        ]);
     }
 
     /**
@@ -333,5 +421,30 @@ class RunActivityController extends Controller
             ->get();
 
         return view('run.test', compact('testActivities'));
+    }
+
+    /**
+     * Check if user has any active (unfinished) activities
+     */
+    public function checkActiveActivity()
+    {
+        $user = Auth::user();
+
+        // Check if user has any unfinished activities
+        $unfinishedActivity = Activity::where('user_id', $user->user_id)
+            ->whereNull('end_time')
+            ->first();
+
+        if ($unfinishedActivity) {
+            return response()->json([
+                'has_active' => true,
+                'activity_id' => $unfinishedActivity->activity_id,
+                'start_time' => $unfinishedActivity->start_time
+            ]);
+        }
+
+        return response()->json([
+            'has_active' => false
+        ]);
     }
 }
