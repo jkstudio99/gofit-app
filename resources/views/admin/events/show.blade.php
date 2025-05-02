@@ -289,16 +289,16 @@
                                     <td>
                                         <div class="d-flex align-items-center">
                                             @if($participant->user)
-                                                @if($participant->user->profile_image)
-                                                    <img src="{{ asset('storage/' . $participant->user->profile_image) }}"
-                                                         class="participant-img me-2" alt="{{ $participant->user->username }}"
-                                                         onerror="this.onerror=null; this.src='{{ asset('images/default-profile.jpg') }}';">
-                                                @else
-                                                    <div class="participant-img me-2 bg-secondary d-flex justify-content-center align-items-center text-white">
-                                                        <i class="fas fa-user"></i>
-                                                    </div>
-                                                @endif
-                                                <span>{{ $participant->user->username }}</span>
+                                            @if($participant->user->profile_image)
+                                                <img src="{{ asset('storage/' . $participant->user->profile_image) }}"
+                                                     class="participant-img me-2" alt="{{ $participant->user->username }}"
+                                                     onerror="this.onerror=null; this.src='{{ asset('images/default-profile.jpg') }}';">
+                                            @else
+                                                <div class="participant-img me-2 bg-secondary d-flex justify-content-center align-items-center text-white">
+                                                    <i class="fas fa-user"></i>
+                                                </div>
+                                            @endif
+                                            <span>{{ $participant->user->username }}</span>
                                             @else
                                                 <div class="participant-img me-2 bg-danger d-flex justify-content-center align-items-center text-white">
                                                     <i class="fas fa-user-slash"></i>
@@ -327,10 +327,10 @@
                                     <td>
                                         <div class="d-flex">
                                             @if($participant->user)
-                                                <a href="{{ route('profile.show', $participant->user->username) }}"
-                                                   class="btn btn-sm btn-info me-1" title="ดูโปรไฟล์">
-                                                    <i class="fas fa-user"></i>
-                                                </a>
+                                            <a href="{{ route('profile.show', $participant->user->username) }}"
+                                               class="btn btn-sm btn-info me-1" title="ดูโปรไฟล์">
+                                                <i class="fas fa-user"></i>
+                                            </a>
                                             @else
                                                 <button class="btn btn-sm btn-secondary me-1" disabled title="ไม่พบผู้ใช้">
                                                     <i class="fas fa-user-slash"></i>

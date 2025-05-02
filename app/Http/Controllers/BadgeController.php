@@ -397,56 +397,8 @@ class BadgeController extends Controller
             return redirect()->back()->with('error', 'คุณได้ปลดล็อคเหรียญตรานี้ไปแล้ว');
         }
 
-        // ตรวจสอบว่าผู้ใช้มีความคืบหน้าถึงเกณฑ์หรือไม่
-        $isEligible = false;
-
-        switch ($badge->type) {
-            case 'distance':
-                $totalDistance = Activity::where('user_id', $user->user_id)
-                    ->where('activity_type', 'running')
-                    ->where('is_test', false)
-                    ->sum('distance');
-                $isEligible = $totalDistance >= $badge->criteria;
-                break;
-
-            case 'calories':
-                $totalCalories = Activity::where('user_id', $user->user_id)
-                    ->where('activity_type', 'running')
-                    ->where('is_test', false)
-                    ->sum('calories_burned');
-                $isEligible = $totalCalories >= $badge->criteria;
-                break;
-
-            // สำหรับประเภทอื่นๆ จะเพิ่มเติมตรงนี้
-            case 'streak':
-                // ตรวจสอบวันวิ่งต่อเนื่อง
-                $streakDays = $this->calculateStreak($user->user_id);
-                $isEligible = $streakDays >= $badge->criteria;
-                break;
-
-            case 'speed':
-                // ตรวจสอบความเร็วสูงสุด
-                $maxSpeed = Activity::where('user_id', $user->user_id)
-                    ->where('activity_type', 'running')
-                    ->where('is_test', false)
-                    ->max('avg_speed');
-                $isEligible = $maxSpeed >= $badge->criteria;
-                break;
-
-            case 'event':
-                // ตรวจสอบจำนวนกิจกรรมที่เข้าร่วม
-                $eventCount = DB::table('tb_event_users')
-                    ->where('user_id', $user->user_id)
-                    ->where('status', 'attended')
-                    ->count();
-                $isEligible = $eventCount >= $badge->criteria;
-                break;
-
-            default:
-                return redirect()->back()->with('error', 'ประเภทของเหรียญตราไม่ถูกต้อง');
-        }
-
-        if (!$isEligible) {
+        // ตรวจสอบว่าผู้ใช้มีคุณสมบัติที่จะปลดล็อคหรือไม่
+        if (!$badge->isEligibleToUnlock()) {
             return redirect()->back()->with('error', 'คุณยังไม่บรรลุเงื่อนไขในการปลดล็อคเหรียญตรานี้');
         }
 
@@ -462,7 +414,7 @@ class BadgeController extends Controller
             ]);
 
             // ใช้คะแนนจากฐานข้อมูลแทนการคำนวณ
-            $pointsEarned = $badge->points;
+            $pointsEarned = $badge->points ?? 100;
 
             // บันทึกประวัติการได้รับคะแนน
             DB::table('tb_point_history')->insert([
@@ -474,6 +426,11 @@ class BadgeController extends Controller
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
+
+            // อัพเดตคะแนนของผู้ใช้
+            DB::table('tb_user')
+                ->where('user_id', $user->user_id)
+                ->increment('points', $pointsEarned);
 
             DB::commit();
 
@@ -488,6 +445,11 @@ class BadgeController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+            Log::error('Badge Unlock Error', [
+                'user_id' => $user->user_id,
+                'badge_id' => $badge->badge_id,
+                'error' => $e->getMessage()
+            ]);
 
             return redirect()->back()->with('error', 'เกิดข้อผิดพลาดในการปลดล็อคเหรียญตรา: ' . $e->getMessage());
         }

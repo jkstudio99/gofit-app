@@ -113,7 +113,7 @@ class RewardController extends Controller
                 'user_id' => $user->user_id,
                 'reward_id' => $reward->reward_id,
                 'status' => 'pending',
-                'points_used' => $reward->points_required
+                'points_spent' => $reward->points_required
             ]);
 
             // Record the points used in point history
@@ -133,6 +133,12 @@ class RewardController extends Controller
                 ->decrement('quantity', 1);
 
             DB::commit();
+            // Add redeemed reward details to session for better SweetAlert
+            session()->flash('reward_redeemed', [
+                'reward_name' => $reward->name,
+                'points' => $reward->points_required,
+                'image' => $reward->image_path
+            ]);
             return redirect()->route('rewards.index')->with('success', 'คุณได้แลกรางวัล ' . $reward->name . ' เรียบร้อยแล้ว');
         } catch (\Exception $e) {
             DB::rollback();

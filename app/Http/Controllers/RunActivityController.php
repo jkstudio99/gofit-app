@@ -173,7 +173,22 @@ class RunActivityController extends Controller
             // ถ้าเป็นการจบกิจกรรมที่ค้างอยู่ และไม่มีข้อมูลเพียงพอ ให้บันทึกข้อมูลน้อยที่สุด
             if ($isEmergencyFinish) {
                 // คำนวณระยะเวลาตั้งแต่เริ่มจนถึงตอนนี้
-                $durationSeconds = $activity->start_time->diffInSeconds(Carbon::now());
+                $durationSeconds = 0;
+
+                if (!empty($activity->start_time)) {
+                    try {
+                        $startTime = $activity->start_time instanceof Carbon
+                            ? $activity->start_time
+                            : Carbon::parse($activity->start_time);
+
+                        $durationSeconds = $startTime->diffInSeconds(Carbon::now());
+                    } catch (\Exception $e) {
+                        // บันทึกข้อผิดพลาดแต่ไม่หยุดการทำงาน
+                        Log::error('Error calculating duration: ' . $e->getMessage());
+                        $durationSeconds = 0;
+                    }
+                }
+
                 $activity->distance = 0;
                 $activity->calories_burned = 0;
                 $activity->average_speed = 0;
@@ -446,5 +461,58 @@ class RunActivityController extends Controller
         return response()->json([
             'has_active' => false
         ]);
+    }
+
+    /**
+     * Toggle pause status of an activity
+     */
+    public function togglePause(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'run_id' => 'required|exists:tb_activity,activity_id',
+                'is_paused' => 'required|boolean'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'ข้อมูลไม่ถูกต้อง: ' . $validator->errors()->first()
+                ], 400);
+            }
+
+            $user = Auth::user();
+            $activity = Activity::where('activity_id', $request->run_id)
+                ->where('user_id', $user->user_id)
+                ->whereNull('end_time')
+                ->first();
+
+            if (!$activity) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'ไม่พบกิจกรรมที่ระบุ'
+                ], 404);
+            }
+
+            // Just log the pause status - we don't need to store it in DB
+            Log::info('Activity pause status toggled', [
+                'activity_id' => $activity->activity_id,
+                'user_id' => $user->user_id,
+                'is_paused' => $request->is_paused
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => $request->is_paused ? 'หยุดการวิ่งชั่วคราว' : 'กลับมาวิ่งต่อ',
+                'is_paused' => $request->is_paused
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error toggling pause status: ' . $e->getMessage());
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'เกิดข้อผิดพลาดในการเปลี่ยนสถานะการวิ่ง: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

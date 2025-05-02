@@ -8,6 +8,10 @@
     display: block !important;
     z-index: 9999 !important;
     position: absolute !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    pointer-events: auto !important;
 }
 
 /* แก้ปัญหาการซ้อนทับของ dropdown */
@@ -18,6 +22,8 @@
 /* ปรับแต่ง dropdown items */
 .dropdown-item {
     cursor: pointer;
+    position: relative;
+    z-index: 10000;
 }
 
 /* แก้ไขปัญหา dropdown ซ่อนอยู่ใต้ elements อื่น */
@@ -34,4 +40,15 @@
 /* เพิ่ม pointer ให้กับ dropdown toggle */
 .dropdown-toggle {
     cursor: pointer;
+}
+
+/* Ensure navbar is above other elements */
+.navbar {
+    position: relative;
+    z-index: 1030 !important;
+}
+
+/* Fix for leaflet map container */
+.leaflet-container {
+    z-index: 1 !important;
 }

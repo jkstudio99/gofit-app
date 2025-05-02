@@ -300,16 +300,16 @@
                                 <li class="list-group-item px-0 py-2 border-0">
                                     <div class="d-flex align-items-center">
                                         @if($participant->user)
-                                            <img src="{{ asset('storage/' . ($participant->user->profile_image ?? 'profile/default.jpg')) }}"
-                                                alt="{{ $participant->user->name }}"
-                                                class="rounded-circle me-3"
-                                                style="width: 40px; height: 40px; object-fit: cover;">
-                                            <div>
-                                                <a href="{{ route('profile.show', $participant->user->username) }}" class="text-decoration-none">
-                                                    <div class="fw-medium">{{ $participant->user->name }}</div>
-                                                </a>
-                                                <div class="small text-muted">ลงทะเบียนเมื่อ {{ $participant->created_at->diffForHumans() }}</div>
-                                            </div>
+                                        <img src="{{ asset('storage/' . ($participant->user->profile_image ?? 'profile/default.jpg')) }}"
+                                            alt="{{ $participant->user->name }}"
+                                            class="rounded-circle me-3"
+                                            style="width: 40px; height: 40px; object-fit: cover;">
+                                        <div>
+                                            <a href="{{ route('profile.show', $participant->user->username) }}" class="text-decoration-none">
+                                                <div class="fw-medium">{{ $participant->user->name }}</div>
+                                            </a>
+                                            <div class="small text-muted">ลงทะเบียนเมื่อ {{ $participant->created_at->diffForHumans() }}</div>
+                                        </div>
                                         @else
                                             <img src="{{ asset('storage/profile/default.jpg') }}"
                                                 alt="ผู้ใช้ที่ถูกลบไปแล้ว"

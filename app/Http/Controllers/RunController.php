@@ -248,7 +248,7 @@ class RunController extends Controller
         ]);
 
         try {
-            $routeData = json_decode($request->route_data, true);
+        $routeData = json_decode($request->route_data, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 return response()->json([
                     'status' => 'error',
@@ -256,50 +256,50 @@ class RunController extends Controller
                 ], 400);
             }
 
-            $userId = Auth::id() ?? 3;
-            $user = \App\Models\User::find($userId);
-            $weight = $user->weight ?? 70; // ใช้ค่าเริ่มต้น 70 กิโลกรัม ถ้าไม่มีข้อมูล
+        $userId = Auth::id() ?? 3;
+        $user = \App\Models\User::find($userId);
+        $weight = $user->weight ?? 70; // ใช้ค่าเริ่มต้น 70 กิโลกรัม ถ้าไม่มีข้อมูล
 
-            // สร้างรายการวิ่งใหม่
-            $run = new Run();
-            $run->user_id = $userId;
-            $run->distance = $request->distance;
-            $run->duration = $request->duration;
+        // สร้างรายการวิ่งใหม่
+        $run = new Run();
+        $run->user_id = $userId;
+        $run->distance = $request->distance;
+        $run->duration = $request->duration;
 
-            // คำนวณแคลอรี่ด้วยสูตรที่แม่นยำกว่า ถ้าไม่มีข้อมูลแคลอรี่จาก request
-            if ($request->has('calories_burned') && $request->calories_burned > 0) {
-                $run->calories_burned = $request->calories_burned;
-            } else {
-                $run->calories_burned = $this->calculateCalories($weight, $request->distance, $request->duration);
-            }
+        // คำนวณแคลอรี่ด้วยสูตรที่แม่นยำกว่า ถ้าไม่มีข้อมูลแคลอรี่จาก request
+        if ($request->has('calories_burned') && $request->calories_burned > 0) {
+        $run->calories_burned = $request->calories_burned;
+        } else {
+            $run->calories_burned = $this->calculateCalories($weight, $request->distance, $request->duration);
+        }
 
             // บันทึกสถานะการทดสอบ
             $run->is_test = $request->input('is_test', false);
 
-            $run->average_speed = $request->average_speed;
-            $run->route_data = $routeData;
-            $run->notes = $request->notes;
-            $run->start_time = Carbon::now()->subSeconds($request->duration);
-            $run->end_time = Carbon::now();
-            $run->is_completed = true;
-            $run->save();
+        $run->average_speed = $request->average_speed;
+        $run->route_data = $routeData;
+        $run->notes = $request->notes;
+        $run->start_time = Carbon::now()->subSeconds($request->duration);
+        $run->end_time = Carbon::now();
+        $run->is_completed = true;
+        $run->save();
 
-            // อัปเดตความคืบหน้าของเป้าหมาย
-            $this->updateGoalProgress($run);
+        // อัปเดตความคืบหน้าของเป้าหมาย
+        $this->updateGoalProgress($run);
 
-            // คำนวณความสำเร็จ
-            $achievements = $this->calculateAchievements($run);
+        // คำนวณความสำเร็จ
+        $achievements = $this->calculateAchievements($run);
 
-            // ตรวจสอบและมอบเหรียญรางวัล
-            $this->checkAndAwardBadges($userId);
+        // ตรวจสอบและมอบเหรียญรางวัล
+        $this->checkAndAwardBadges($userId);
 
             // ส่งค่ากลับในรูปแบบที่ frontend ต้องการ
-            return response()->json([
+        return response()->json([
                 'status' => 'success',
                 'message' => 'บันทึกการวิ่งเรียบร้อยแล้ว',
-                'run' => $run,
-                'achievements' => $achievements
-            ]);
+            'run' => $run,
+            'achievements' => $achievements
+        ]);
         } catch (\Exception $e) {
             Log::error('Error in RunController::store: ' . $e->getMessage());
             return response()->json([

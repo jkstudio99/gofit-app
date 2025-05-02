@@ -72,11 +72,30 @@
         .dropdown-menu {
             position: absolute;
             display: none;
-            z-index: 1000;
+            z-index: 9999 !important;
+            margin: 0;
+            padding: 0.5rem 0;
+            border: 0;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
         }
 
         .dropdown-menu.show {
-            display: block;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: none !important;
+            pointer-events: auto !important;
+        }
+
+        /* Fix navbar position */
+        .navbar {
+            position: relative;
+            z-index: 1030 !important;
+        }
+
+        /* Ensure dropdowns appear above other elements */
+        .dropdown {
+            position: relative;
         }
 
         .dropdown-toggle::after {
@@ -227,6 +246,19 @@
         .text-primary {
             color: #2DC679 !important;
         }
+
+        /* Updated footer styling */
+        .gofit-footer {
+            background-color: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            padding: 10px 0;
+            margin-top: 30px;
+        }
+
+        .footer-bottom {
+            font-size: 14px;
+            color: #6c757d;
+        }
     </style>
     @yield('styles')
 </head>
@@ -254,7 +286,7 @@
 
                             <!-- Badges and Rewards Dropdown -->
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle {{ request()->routeIs('admin.badges.*') || request()->routeIs('admin.rewards') || request()->routeIs('admin.redeems') ? 'active' : '' }}" href="#" id="rewardsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" onclick="return false;">
+                                <a class="nav-link dropdown-toggle {{ request()->routeIs('admin.badges.*') || request()->routeIs('admin.rewards') || request()->routeIs('admin.redeems') ? 'active' : '' }}" href="#" id="rewardsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="fas fa-medal me-1"></i> รางวัลและเหรียญตรา
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="rewardsDropdown">
@@ -293,7 +325,7 @@
 
                             <!-- Events Management Dropdown -->
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle {{ request()->routeIs('admin.events.*') ? 'active' : '' }}" href="#" id="eventsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" onclick="return false;">
+                                <a class="nav-link dropdown-toggle {{ request()->routeIs('admin.events.*') ? 'active' : '' }}" href="#" id="eventsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="fas fa-calendar-alt me-1"></i> จัดการกิจกรรม
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="eventsDropdown">
@@ -312,7 +344,7 @@
 
                             <!-- Health Articles Management Dropdown -->
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle {{ request()->routeIs('admin.health-articles.*') ? 'active' : '' }}" href="#" id="articlesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" onclick="return false;">
+                                <a class="nav-link dropdown-toggle {{ request()->routeIs('admin.health-articles.*') ? 'active' : '' }}" href="#" id="articlesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="fas fa-newspaper me-1"></i> บทความสุขภาพ
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="articlesDropdown">
@@ -338,7 +370,7 @@
                         <!-- Right Side Menu -->
                         <ul class="navbar-nav ms-auto">
                             <li class="nav-item dropdown">
-                                <a id="userDropdown" class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="return false;">
+                                <a id="userDropdown" class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     @if(Auth::user()->profile_image)
                                         <img src="{{ asset('profile_images/' . Auth::user()->profile_image) }}" class="rounded-circle me-2 admin-profile-img" width="32" height="32" alt="Profile" style="object-fit: cover;">
                                     @else
@@ -388,8 +420,8 @@
 
         <footer class="gofit-footer">
             <div class="container">
-                <div class="footer-bottom">
-                    <p class="mb-0">&copy; {{ date('Y') }} GoFit Admin Panel. สงวนลิขสิทธิ์ทั้งหมด</p>
+                <div class="footer-bottom text-center py-3">
+                    <p class="mb-0">&copy; 2025 DPU | 66130773 WARONGKON FUKTHONGYOO</p>
                 </div>
             </div>
         </footer>
@@ -448,42 +480,21 @@
     <!-- เพิ่ม JavaScript สำหรับ custom dropdown handling -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // สร้าง Bootstrap Dropdown objects และจัดการด้วย JS
-            var dropdownElements = document.querySelectorAll('.dropdown-toggle');
-
-            dropdownElements.forEach(function(dropdownToggle) {
-                dropdownToggle.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-
-                    var dropdownMenu = this.nextElementSibling;
-
-                    // ปิด dropdowns อื่นๆ ที่เปิดอยู่
-                    document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
-                        if (menu !== dropdownMenu && menu.classList.contains('show')) {
-                            menu.classList.remove('show');
-                        }
-                    });
-
-                    // สลับสถานะของ dropdown ปัจจุบัน
-                    dropdownMenu.classList.toggle('show');
-                });
+            // Initialize Bootstrap dropdowns properly
+            var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'))
+            var dropdownList = dropdownElementList.map(function(dropdownToggleEl) {
+                return new bootstrap.Dropdown(dropdownToggleEl)
             });
 
-            // ปิด dropdown เมื่อคลิกที่อื่น
-            document.addEventListener('click', function(event) {
-                if (!event.target.closest('.dropdown')) {
-                    document.querySelectorAll('.dropdown-menu.show').forEach(function(dropdown) {
-                        dropdown.classList.remove('show');
-                    });
-                }
-            });
+            // Fix for any z-index issues
+            const navbar = document.querySelector('.navbar');
+            if (navbar) {
+                navbar.style.zIndex = 1030;
+            }
 
-            // ให้สามารถคลิกที่ dropdown-item ได้
-            document.querySelectorAll('.dropdown-item').forEach(function(item) {
-                item.addEventListener('click', function(event) {
-                    event.stopPropagation();
-                });
+            // Add pointer cursor to all clickable elements
+            document.querySelectorAll('.nav-link, .dropdown-item').forEach(function(element) {
+                element.style.cursor = 'pointer';
             });
         });
     </script>

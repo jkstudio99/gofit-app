@@ -11,7 +11,7 @@ class Redeem extends Model
 
     protected $table = 'tb_redeem';
     protected $primaryKey = 'redeem_id';
-    protected $fillable = ['user_id', 'reward_id', 'status'];
+    protected $fillable = ['user_id', 'reward_id', 'status', 'points_spent'];
 
     public function user()
     {

@@ -29,6 +29,40 @@
             display: block !important;
             z-index: 9999 !important;
         }
+
+        /* Fix for navbar z-index */
+        .navbar {
+            position: relative;
+            z-index: 1030 !important;
+        }
+
+        /* Ensure dropdowns appear above other elements */
+        .dropdown {
+            position: relative;
+        }
+
+        /* Ensure clickable areas work properly */
+        .nav-link, .dropdown-item {
+            cursor: pointer;
+        }
+
+        /* Fix z-index for map container */
+        #map {
+            z-index: 1 !important;
+        }
+
+        /* Updated footer styling */
+        .gofit-footer {
+            background-color: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            padding: 10px 0;
+            margin-top: 30px;
+        }
+
+        .footer-bottom {
+            font-size: 14px;
+            color: #6c757d;
+        }
     </style>
     @yield('styles')
 </head>
@@ -54,11 +88,11 @@
                                         <i class="fas fa-home"></i> หน้าแรก
                                     </a>
                                 </li>
-                                {{-- <li class="nav-item">
+                                <li class="nav-item">
                                     <a class="nav-link {{ request()->routeIs('run.*') ? 'active' : '' }}" href="{{ route('run.index') }}">
-                                        <i class="fas fa-running"></i> วิ่ง
+                                        <i class="fas fa-running"></i> เริ่มวิ่ง
                                     </a>
-                                </li> --}}
+                                </li>
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle {{ request()->routeIs('badges.*') ? 'active' : '' }}" href="#" id="badgesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="fas fa-medal"></i> เหรียญตรา
@@ -145,44 +179,8 @@
 
         <footer class="gofit-footer">
             <div class="container">
-                <div class="row">
-                    <div class="col-md-4 mb-4 mb-md-0">
-                        <h5 class="footer-title">เกี่ยวกับ GoFit</h5>
-                        <p>แอปพลิเคชันที่ช่วยให้คุณมีสุขภาพดีด้วยการวิ่ง ติดตามกิจกรรม รับเหรียญตรา และแลกรางวัลมากมาย</p>
-                    </div>
-
-                    <div class="col-md-3 mb-4 mb-md-0">
-                        <h5 class="footer-title">ลิงก์ด่วน</h5>
-                        <ul class="footer-links">
-                            <li><a href="{{ route('home') }}">หน้าแรก</a></li>
-                            <li><a href="{{ route('run.index') }}">เริ่มวิ่ง</a></li>
-                            <li><a href="{{ route('badges.index') }}">เหรียญตรา</a></li>
-                            <li><a href="{{ route('rewards.index') }}">รางวัล</a></li>
-                        </ul>
-                    </div>
-
-                    <div class="col-md-3 mb-4 mb-md-0">
-                        <h5 class="footer-title">ช่วยเหลือ</h5>
-                        <ul class="footer-links">
-                            <li><a href="#">คำถามที่พบบ่อย</a></li>
-                            <li><a href="#">นโยบายความเป็นส่วนตัว</a></li>
-                            <li><a href="#">เงื่อนไขการใช้งาน</a></li>
-                            <li><a href="#">ติดต่อเรา</a></li>
-                        </ul>
-                    </div>
-
-                    <div class="col-md-2">
-                        <h5 class="footer-title">ติดตามเรา</h5>
-                        <div class="d-flex gap-3 fs-4">
-                            <a href="#" class="text-secondary"><i class="fab fa-facebook"></i></a>
-                            <a href="#" class="text-secondary"><i class="fab fa-twitter"></i></a>
-                            <a href="#" class="text-secondary"><i class="fab fa-instagram"></i></a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="footer-bottom">
-                    <p class="mb-0">&copy; {{ date('Y') }} GoFit. สงวนลิขสิทธิ์ทั้งหมด</p>
+                <div class="footer-bottom text-center py-3">
+                    <p class="mb-0">&copy; 2025 DPU | 66130773 WARONGKON FUKTHONGYOO</p>
                 </div>
             </div>
         </footer>
@@ -200,6 +198,18 @@
     <!-- สคริปต์สำหรับ SweetAlert สำหรับ Session Flash Messages -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Make sure Bootstrap dropdowns work properly
+            var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'))
+            var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+                return new bootstrap.Dropdown(dropdownToggleEl)
+            });
+
+            // Fix for map container z-index issues
+            const mapElement = document.getElementById('map');
+            if (mapElement) {
+                mapElement.style.zIndex = 1;
+            }
+
             // ถ้ามีข้อความ Success จาก session flash
             @if(session('success'))
                 Swal.fire({

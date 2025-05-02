@@ -9,6 +9,11 @@
     .badge-image {
         max-height: 200px;
         object-fit: contain;
+        transition: all 0.3s ease;
+    }
+
+    .badge-image:hover {
+        transform: scale(1.05);
     }
 
     .badge-info-item {
@@ -20,48 +25,111 @@
         border-bottom: none;
     }
 
-    .badge-stats-card {
-        transition: all 0.3s ease;
+    /* Stats Cards */
+    .badge-stat-card {
         border-radius: 10px;
-        overflow: hidden;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     }
 
-    .badge-stats-card:hover {
+    .badge-stat-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
 
-    .stats-icon {
-        font-size: 2rem;
-        width: 60px;
-        height: 60px;
+    .badge-stat-icon {
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 50%;
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        font-size: 20px;
+    }
+
+    .stats-icon {
+        font-size: 2rem;
+        width: 70px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
         margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .badge-stats-card:hover .stats-icon {
+        transform: scale(1.1);
+    }
+
+    /* Badge Type Styling */
+    .badge-type-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    /* User List */
+    .user-avatar {
+        transition: all 0.3s ease;
+    }
+
+    tr:hover .user-avatar {
+        transform: scale(1.1);
+    }
+
+    /* Badges */
+    .badge-pill {
+        padding: 0.6rem 1rem;
+        border-radius: 50rem;
+        font-weight: 500;
+    }
+
+    /* Card Design */
+    .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .card-header {
+        background-color: white;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 1rem 1.5rem;
+    }
+
+    .table thead th {
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(45, 198, 121, 0.05);
     }
 </style>
 @endsection
 
 @section('content')
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <h1 class="h3 mb-0">รายละเอียดเหรียญตรา</h1>
-                <div>
-                    <a href="{{ route('admin.badges.index') }}" class="btn btn-outline-secondary me-2">
-                        <i class="fas fa-arrow-left me-1"></i> กลับไปยังรายการ
-                    </a>
-                    <a href="{{ route('admin.badges.edit', $badge) }}" class="btn btn-warning me-2">
-                        <i class="fas fa-edit me-1"></i> แก้ไข
-                    </a>
-                    <button type="button" class="btn btn-danger" id="deleteBadgeBtn">
-                        <i class="fas fa-trash me-1"></i> ลบเหรียญตรา
-                    </button>
-                </div>
-            </div>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">รายละเอียดเหรียญตรา</h2>
+        <div>
+            <a href="{{ route('admin.badges.index') }}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-arrow-left me-1"></i> กลับไปยังรายการ
+            </a>
+            <a href="{{ route('admin.badges.edit', $badge) }}" class="btn btn-warning me-2">
+                <i class="fas fa-edit me-1"></i> แก้ไข
+            </a>
+            <button type="button" class="btn btn-danger" id="deleteBadgeBtn">
+                <i class="fas fa-trash me-1"></i> ลบเหรียญตรา
+            </button>
         </div>
     </div>
 
@@ -75,7 +143,7 @@
                             @if($badge->badge_image)
                                 <img src="{{ asset('storage/' . $badge->badge_image) }}" alt="{{ $badge->badge_name }}" class="badge-image">
                             @else
-                                <div class="bg-light d-flex justify-content-center align-items-center" style="height: 200px;">
+                                <div class="bg-light d-flex justify-content-center align-items-center" style="height: 200px; border-radius: 10px;">
                                     <i class="fas fa-medal fa-5x text-secondary"></i>
                                 </div>
                             @endif
@@ -85,38 +153,58 @@
                             <h2 class="mb-3">{{ $badge->badge_name }}</h2>
 
                             <div class="mb-3">
-                                @if($badge->type == 'distance')
-                                    <span class="badge bg-info text-dark px-3 py-2">
-                                        <i class="fas fa-route me-1"></i> ประเภท: ระยะทาง
-                                    </span>
-                                @elseif($badge->type == 'calories')
-                                    <span class="badge bg-danger px-3 py-2">
-                                        <i class="fas fa-fire-alt me-1"></i> ประเภท: แคลอรี่
-                                    </span>
-                                @elseif($badge->type == 'streak')
-                                    <span class="badge bg-warning text-dark px-3 py-2">
-                                        <i class="fas fa-calendar-check me-1"></i> ประเภท: ต่อเนื่อง
-                                    </span>
-                                @elseif($badge->type == 'speed')
-                                    <span class="badge bg-success px-3 py-2">
-                                        <i class="fas fa-tachometer-alt me-1"></i> ประเภท: ความเร็ว
-                                    </span>
-                                @elseif($badge->type == 'event')
-                                    <span class="badge bg-primary px-3 py-2">
-                                        <i class="fas fa-calendar-day me-1"></i> ประเภท: กิจกรรม
-                                    </span>
-                                @else
-                                    <span class="badge bg-secondary px-3 py-2">
-                                        <i class="fas fa-medal me-1"></i> ประเภท: {{ $badge->type }}
-                                    </span>
-                                @endif
+                                @php
+                                    $typeIcons = [
+                                        'distance' => 'fa-route',
+                                        'calories' => 'fa-fire',
+                                        'streak' => 'fa-calendar-check',
+                                        'speed' => 'fa-tachometer-alt',
+                                        'event' => 'fa-trophy'
+                                    ];
+                                    $typeColors = [
+                                        'distance' => 'primary',
+                                        'calories' => 'danger',
+                                        'streak' => 'success',
+                                        'speed' => 'info',
+                                        'event' => 'warning'
+                                    ];
+                                    $typeNames = [
+                                        'distance' => 'ระยะทาง',
+                                        'calories' => 'แคลอรี่',
+                                        'streak' => 'ต่อเนื่อง',
+                                        'speed' => 'ความเร็ว',
+                                        'event' => 'กิจกรรม'
+                                    ];
+
+                                    $color = isset($typeColors[$badge->type]) ? $typeColors[$badge->type] : 'secondary';
+                                    $icon = isset($typeIcons[$badge->type]) ? $typeIcons[$badge->type] : 'fa-medal';
+                                    $typeName = isset($typeNames[$badge->type]) ? $typeNames[$badge->type] : $badge->type;
+                                @endphp
+
+                                <span class="badge bg-{{ $color }} badge-pill">
+                                    <i class="fas {{ $icon }} me-1"></i> ประเภท: {{ $typeName }}
+                                </span>
                             </div>
 
-                            <p class="mb-3">{{ $badge->badge_description }}</p>
+                            <p class="mb-3">{{ $badge->badge_desc }}</p>
 
                             <div class="badge-info-item d-flex justify-content-between">
                                 <span class="text-muted"><i class="fas fa-trophy me-2"></i>เงื่อนไขการได้รับ:</span>
-                                <span class="fw-bold">{{ $badge->getRequirementText() }}</span>
+                                <span class="fw-bold">
+                                    @if($badge->type == 'distance')
+                                        วิ่งระยะทางสะสม {{ $badge->criteria }} กม.
+                                    @elseif($badge->type == 'calories')
+                                        เผาผลาญแคลอรี่สะสม {{ $badge->criteria }} แคลอรี่
+                                    @elseif($badge->type == 'streak')
+                                        วิ่งติดต่อกัน {{ $badge->criteria }} วัน
+                                    @elseif($badge->type == 'speed')
+                                        วิ่งด้วยความเร็วเฉลี่ย {{ $badge->criteria }} กม./ชม.
+                                    @elseif($badge->type == 'event')
+                                        เข้าร่วมกิจกรรม {{ $badge->criteria }} ครั้ง
+                                    @else
+                                        {{ $badge->criteria }}
+                                    @endif
+                                </span>
                             </div>
 
                             <div class="badge-info-item d-flex justify-content-between">
@@ -124,6 +212,13 @@
                                 <a href="{{ route('admin.badges.users', $badge) }}" class="fw-bold text-primary">
                                     {{ $badge->users()->count() }} คน <i class="fas fa-external-link-alt ms-1 small"></i>
                                 </a>
+                            </div>
+
+                            <div class="badge-info-item d-flex justify-content-between">
+                                <span class="text-muted"><i class="fas fa-coins me-2"></i>คะแนนที่ได้รับ:</span>
+                                <span class="badge bg-warning text-dark px-3 py-1">
+                                    <i class="fas fa-coins me-1"></i> {{ $badge->points ?? 100 }} คะแนน
+                                </span>
                             </div>
 
                             <div class="badge-info-item d-flex justify-content-between">
@@ -148,14 +243,14 @@
                 <div class="col">
                     <div class="card shadow-sm badge-stats-card">
                         <div class="card-body text-center">
-                            <div class="stats-icon bg-primary-subtle text-primary mx-auto">
+                            <div class="stats-icon bg-primary bg-opacity-10 text-primary mx-auto">
                                 <i class="fas fa-users"></i>
                             </div>
                             <h5 class="card-title">ผู้ได้รับเหรียญตรา</h5>
                             <h3 class="mb-0">{{ $badge->users()->count() }}</h3>
                             <div class="text-muted small mt-2">คน</div>
 
-                            <a href="{{ route('admin.badges.users', $badge) }}" class="btn btn-outline-primary mt-3">
+                            <a href="{{ route('admin.badges.users', $badge) }}" class="btn btn-outline-primary mt-3 w-100">
                                 <i class="fas fa-list me-2"></i>ดูรายชื่อทั้งหมด
                             </a>
                         </div>
@@ -166,8 +261,8 @@
                 <div class="col">
                     <div class="card shadow-sm badge-stats-card">
                         <div class="card-body text-center">
-                            <div class="stats-icon bg-success-subtle text-success mx-auto">
-                                <i class="fas fa-check-circle"></i>
+                            <div class="stats-icon bg-{{ $color }} bg-opacity-10 text-{{ $color }} mx-auto">
+                                <i class="fas {{ $icon }}"></i>
                             </div>
                             <h5 class="card-title">เงื่อนไขการได้รับ</h5>
                             <div class="mt-2">
@@ -200,12 +295,12 @@
 
     <!-- รายชื่อผู้ได้รับเหรียญล่าสุด -->
     <div class="card shadow-sm mt-4">
-        <div class="card-header bg-white py-3">
+        <div class="card-header py-3">
             <div class="d-flex justify-content-between align-items-center">
-                <h5 class="m-0">
-                    <i class="fas fa-users me-2 text-primary"></i>ผู้ได้รับเหรียญตราล่าสุด
+                <h5 class="m-0 fw-bold">
+                    <i class="fas fa-users me-2 text-{{ $color }}"></i>ผู้ได้รับเหรียญตราล่าสุด
                 </h5>
-                <a href="{{ route('admin.badges.users', $badge) }}" class="btn btn-sm btn-outline-primary">
+                <a href="{{ route('admin.badges.users', $badge) }}" class="btn btn-sm btn-outline-{{ $color }}">
                     ดูทั้งหมด <i class="fas fa-arrow-right ms-1"></i>
                 </a>
             </div>
@@ -238,9 +333,9 @@
                                     <div class="d-flex align-items-center">
                                         <div class="flex-shrink-0">
                                             @if($user->profile_image)
-                                                <img src="{{ asset('profile_images/' . $user->profile_image) }}" class="rounded-circle" width="40" height="40" alt="Profile" style="object-fit: cover;">
+                                                <img src="{{ asset('profile_images/' . $user->profile_image) }}" class="rounded-circle user-avatar" width="40" height="40" alt="Profile" style="object-fit: cover;">
                                             @else
-                                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white" style="width: 40px; height: 40px;">
+                                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white user-avatar" style="width: 40px; height: 40px;">
                                                     <i class="fas fa-user"></i>
                                                 </div>
                                             @endif
@@ -267,87 +362,6 @@
             @endif
         </div>
     </div>
-
-    <div class="card mt-4">
-        <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-info-circle me-2 text-primary"></i> ข้อมูลเหรียญตรา</h5>
-        </div>
-        <div class="card-body">
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <label class="text-muted">ชื่อเหรียญตรา</label>
-                    <div class="fw-bold">{{ $badge->badge_name }}</div>
-                </div>
-                <div class="col-md-4">
-                    <label class="text-muted">ประเภท</label>
-                    <div>
-                        @if($badge->type == 'distance')
-                            <span class="badge bg-info text-dark">
-                                <i class="fas fa-route me-1"></i> ระยะทาง
-                            </span>
-                        @elseif($badge->type == 'calories')
-                            <span class="badge bg-danger">
-                                <i class="fas fa-fire-alt me-1"></i> แคลอรี่
-                            </span>
-                        @elseif($badge->type == 'streak')
-                            <span class="badge bg-warning text-dark">
-                                <i class="fas fa-calendar-check me-1"></i> ต่อเนื่อง
-                            </span>
-                        @elseif($badge->type == 'speed')
-                            <span class="badge bg-success">
-                                <i class="fas fa-tachometer-alt me-1"></i> ความเร็ว
-                            </span>
-                        @elseif($badge->type == 'event')
-                            <span class="badge bg-primary">
-                                <i class="fas fa-calendar-day me-1"></i> กิจกรรม
-                            </span>
-                        @else
-                            <span class="badge bg-secondary">
-                                <i class="fas fa-medal me-1"></i> {{ $badge->type }}
-                            </span>
-                        @endif
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <label class="text-muted">เกณฑ์</label>
-                    <div class="fw-bold">
-                        @if($badge->type == 'distance')
-                            {{ $badge->criteria }} กิโลเมตร
-                        @elseif($badge->type == 'calories')
-                            {{ $badge->criteria }} แคลอรี่
-                        @elseif($badge->type == 'streak')
-                            {{ $badge->criteria }} วันติดต่อกัน
-                        @elseif($badge->type == 'speed')
-                            {{ $badge->criteria }} กม./ชม.
-                        @elseif($badge->type == 'event')
-                            {{ $badge->criteria }} กิจกรรม
-                        @else
-                            {{ $badge->criteria }}
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <label class="text-muted">คะแนนที่จะได้รับ</label>
-                    <div class="fw-bold">
-                        <span class="badge bg-warning text-dark p-2">
-                            <i class="fas fa-coins me-1"></i> {{ $badge->points ?? 100 }} คะแนน
-                        </span>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <label class="text-muted">จำนวนผู้ได้รับ</label>
-                    <div class="fw-bold">{{ $badge->users()->count() }} คน</div>
-                </div>
-                <div class="col-md-4">
-                    <label class="text-muted">วันที่สร้าง</label>
-                    <div>{{ $badge->created_at->format('d/m/Y H:i') }}</div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 @endsection
 
@@ -355,8 +369,14 @@
 <!-- SweetAlert2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 <script>
-    // กำหนดค่าเริ่มต้นสำหรับ SweetAlert2 ทั้งหมด
-    window.addEventListener('load', function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+
+        // กำหนดค่าเริ่มต้นสำหรับ SweetAlert2 ทั้งหมด
         Swal.mixin({
             customClass: {
                 confirmButton: 'swal-confirm-btn',
@@ -382,9 +402,7 @@
             }
         `;
         document.head.appendChild(style);
-    });
 
-    document.addEventListener('DOMContentLoaded', function() {
         // Delete button
         const deleteBtn = document.getElementById('deleteBadgeBtn');
 
@@ -443,6 +461,32 @@
                 });
             });
         }
+
+        // Add animation and hover effects
+        const badgeImage = document.querySelector('.badge-image');
+        const statsCards = document.querySelectorAll('.badge-stats-card');
+
+        if (badgeImage) {
+            badgeImage.addEventListener('mouseenter', function() {
+                this.style.transition = 'all 0.3s ease';
+            });
+        }
+
+        statsCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                const icon = this.querySelector('.stats-icon');
+                if (icon) {
+                    icon.style.transform = 'scale(1.1)';
+                }
+            });
+
+            card.addEventListener('mouseleave', function() {
+                const icon = this.querySelector('.stats-icon');
+                if (icon) {
+                    icon.style.transform = 'scale(1)';
+                }
+            });
+        });
     });
 </script>
 @endsection

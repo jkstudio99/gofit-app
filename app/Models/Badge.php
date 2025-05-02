@@ -9,6 +9,7 @@ use App\Models\UserBadge;
 use App\Models\Activity;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class Badge extends Model
 {
@@ -244,30 +245,115 @@ class Badge extends Model
         $userStats = DB::table('tb_run')
             ->where('user_id', $user->user_id)
             ->where('is_completed', true)
-            ->selectRaw('SUM(distance) as total_distance, SUM(calories_burned) as total_calories, COUNT(*) as total_runs')
+            ->selectRaw('SUM(distance) as total_distance, SUM(calories_burned) as total_calories, COUNT(*) as total_runs, MAX(average_speed) as max_speed')
             ->first();
 
         // ไม่มีกิจกรรมการวิ่ง
-        if (!$userStats || !$userStats->total_runs) {
+        if (!$userStats || $userStats->total_runs == 0) {
             return 0;
         }
 
-        // คำนวณเปอร์เซ็นต์ตามประเภทของเหรียญ
+        // คำนวณความก้าวหน้าตามประเภทเหรียญ
         switch ($this->type) {
             case 'distance':
-                $totalDistance = $userStats->total_distance;
-                $goal = (float)$this->criteria;
-                return ($goal > 0) ? min(100, round(($totalDistance / $goal) * 100)) : 0;
+                $totalDistance = floatval($userStats->total_distance ?? 0);
+                $progress = ($this->criteria > 0) ? ($totalDistance / floatval($this->criteria)) * 100 : 0;
+                break;
 
             case 'calories':
-                $totalCalories = $userStats->total_calories;
-                $goal = (float)$this->criteria;
-                return ($goal > 0) ? min(100, round(($totalCalories / $goal) * 100)) : 0;
+                $totalCalories = floatval($userStats->total_calories ?? 0);
+                $progress = ($this->criteria > 0) ? ($totalCalories / floatval($this->criteria)) * 100 : 0;
+                break;
 
             case 'streak':
                 $consecutiveDays = $this->calculateStreak($user->user_id);
-                $goal = (int)$this->criteria;
-                return ($goal > 0) ? min(100, round(($consecutiveDays / $goal) * 100)) : 0;
+                $progress = ($this->criteria > 0) ? ($consecutiveDays / floatval($this->criteria)) * 100 : 0;
+                break;
+
+            case 'speed':
+                $maxSpeed = floatval($userStats->max_speed ?? 0);
+                $progress = ($this->criteria > 0 && $maxSpeed) ? ($maxSpeed / floatval($this->criteria)) * 100 : 0;
+                break;
+
+            case 'event':
+                $eventCount = DB::table('tb_event_users')
+                    ->where('user_id', $user->user_id)
+                    ->where('status', 'attended')
+                    ->count();
+                $progress = ($this->criteria > 0) ? ($eventCount / floatval($this->criteria)) * 100 : 0;
+                break;
+
+            default:
+                $progress = 0;
+        }
+
+        // บันทึก Log เพื่อการตรวจสอบ
+        Log::info('Badge Progress Calculation', [
+            'user_id' => $user->user_id,
+            'badge_id' => $this->badge_id,
+            'badge_name' => $this->badge_name,
+            'type' => $this->type,
+            'criteria' => $this->criteria,
+            'progress' => $progress
+        ]);
+
+        // ถ้าความก้าวหน้ามากกว่าหรือเท่ากับ 99.5 แต่ยังไม่ได้ปลดล็อค
+        // ให้คืนค่า 100 เพื่อให้ปุ่มปลดล็อคแสดง
+        if ($progress >= 99.5) {
+            return 100;
+        }
+
+        // ป้องกันค่าติดลบหรือเกิน 100
+        return max(0, min(99, $progress));
+    }
+
+    /**
+     * ตรวจสอบว่าเงื่อนไขการปลดล็อคผ่านแล้วหรือไม่
+     * ตรงนี้เป็นฟังก์ชันที่ใช้เพื่อตรวจสอบว่าผู้ใช้สามารถปลดล็อคได้หรือไม่
+     */
+    public function isEligibleToUnlock()
+    {
+        $user = Auth::user();
+        if (!$user) return false;
+
+        // ถ้าปลดล็อคแล้ว ไม่ต้องตรวจสอบอีก
+        if ($this->isUnlocked()) {
+            return false;
+        }
+
+        $result = false;
+        $details = [];
+
+        // ตรวจสอบเงื่อนไขตามประเภทเหรียญโดยตรง
+        switch ($this->type) {
+            case 'distance':
+                $totalDistance = DB::table('tb_run')
+                    ->where('user_id', $user->user_id)
+                    ->where('is_completed', true)
+                    ->sum('distance');
+
+                $details['current'] = $totalDistance;
+                $details['required'] = $this->criteria;
+                $result = floatval($totalDistance) >= floatval($this->criteria);
+                break;
+
+            case 'calories':
+                $totalCalories = DB::table('tb_run')
+                    ->where('user_id', $user->user_id)
+                    ->where('is_completed', true)
+                    ->sum('calories_burned');
+
+                $details['current'] = $totalCalories;
+                $details['required'] = $this->criteria;
+                $result = floatval($totalCalories) >= floatval($this->criteria);
+                break;
+
+            case 'streak':
+                $consecutiveDays = $this->calculateStreak($user->user_id);
+                $details['current'] = $consecutiveDays;
+                $details['required'] = $this->criteria;
+                $result = $consecutiveDays >= intval($this->criteria);
+                break;
 
             case 'speed':
                 $maxSpeed = DB::table('tb_run')
@@ -275,8 +361,10 @@ class Badge extends Model
                     ->where('is_completed', true)
                     ->max('average_speed');
 
-                $goal = (float)$this->criteria;
-                return ($goal > 0 && $maxSpeed) ? min(100, round(($maxSpeed / $goal) * 100)) : 0;
+                $details['current'] = $maxSpeed;
+                $details['required'] = $this->criteria;
+                $result = $maxSpeed && floatval($maxSpeed) >= floatval($this->criteria);
+                break;
 
             case 'event':
                 $eventCount = DB::table('tb_event_users')
@@ -284,11 +372,27 @@ class Badge extends Model
                     ->where('status', 'attended')
                     ->count();
 
-                $goal = (int)$this->criteria;
-                return ($goal > 0) ? min(100, round(($eventCount / $goal) * 100)) : 0;
+                $details['current'] = $eventCount;
+                $details['required'] = $this->criteria;
+                $result = $eventCount >= intval($this->criteria);
+                break;
 
             default:
-                return 0;
+                $details['error'] = 'Unknown badge type: ' . $this->type;
+                $result = false;
         }
+
+        // Log detailed information for debugging
+        Log::info('Badge Unlock Eligibility Check', [
+            'badge_id' => $this->badge_id,
+            'badge_name' => $this->badge_name,
+            'type' => $this->type,
+            'criteria' => $this->criteria,
+            'user_id' => $user->user_id,
+            'details' => $details,
+            'is_eligible' => $result
+        ]);
+
+        return $result;
     }
 }

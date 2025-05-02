@@ -62,7 +62,7 @@ Route::middleware(['auth'])->group(function () {
 
     // รางวัล
     Route::get('/rewards', [RewardController::class, 'index'])->name('rewards.index');
-    Route::get('/rewards/{reward}/redeem', [RewardController::class, 'redeem'])->name('rewards.redeem');
+    Route::post('/rewards/{reward}/redeem', [RewardController::class, 'redeem'])->name('rewards.redeem');
     Route::get('/rewards/history', [App\Http\Controllers\RedeemController::class, 'index'])->name('rewards.history');
     Route::post('/rewards/redeem/{redeem}/cancel', [App\Http\Controllers\RedeemController::class, 'cancel'])->name('rewards.redeem.cancel');
     Route::get('/rewards/redeem/{redeem}', [App\Http\Controllers\RedeemController::class, 'show'])->name('rewards.redeem.show');
@@ -247,9 +247,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         // API endpoints for running
         Route::post('/start', [App\Http\Controllers\RunController::class, 'start'])->name('start');
         Route::post('/update-position', [App\Http\Controllers\RunController::class, 'updatePosition'])->name('update-position');
-        Route::post('/toggle-pause', [App\Http\Controllers\RunController::class, 'togglePause'])->name('toggle-pause');
+        Route::post('/toggle-pause', [App\Http\Controllers\RunActivityController::class, 'togglePause'])->name('toggle-pause');
         Route::post('/updateRoute', [App\Http\Controllers\RunActivityController::class, 'updateRoute'])->name('updateRoute');
-        Route::post('/finish', [App\Http\Controllers\RunController::class, 'finish'])->name('finish');
+        Route::post('/finish', [App\Http\Controllers\RunActivityController::class, 'finish'])->name('finish');
         Route::post('/store', [App\Http\Controllers\RunController::class, 'store'])->name('store');
     });
 

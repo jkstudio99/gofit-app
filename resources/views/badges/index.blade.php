@@ -12,41 +12,6 @@
     </div>
     <p class="text-muted">รวบรวมเหรียญตราความสำเร็จจากการวิ่งของคุณ</p>
 
-    <!-- Type Filter Tags -->
-    <div class="mb-4">
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{{ route('badges.index') }}"
-               class="badge bg-{{ request('type') ? 'light text-dark' : 'primary' }} py-2 px-3 filter-badge">
-                <i class="fas fa-medal me-1"></i> ทั้งหมด
-            </a>
-
-            <a href="{{ route('badges.index', ['type' => 'distance']) }}"
-               class="badge bg-{{ request('type') == 'distance' ? 'primary' : 'light text-dark' }} py-2 px-3 filter-badge">
-                <i class="fas fa-route me-1"></i> ระยะทาง
-            </a>
-
-            <a href="{{ route('badges.index', ['type' => 'calories']) }}"
-               class="badge bg-{{ request('type') == 'calories' ? 'primary' : 'light text-dark' }} py-2 px-3 filter-badge">
-                <i class="fas fa-fire-alt me-1"></i> แคลอรี่
-            </a>
-
-            <a href="{{ route('badges.index', ['type' => 'streak']) }}"
-               class="badge bg-{{ request('type') == 'streak' ? 'primary' : 'light text-dark' }} py-2 px-3 filter-badge">
-                <i class="fas fa-calendar-check me-1"></i> ต่อเนื่อง
-            </a>
-
-            <a href="{{ route('badges.index', ['type' => 'speed']) }}"
-               class="badge bg-{{ request('type') == 'speed' ? 'primary' : 'light text-dark' }} py-2 px-3 filter-badge">
-                <i class="fas fa-tachometer-alt me-1"></i> ความเร็ว
-            </a>
-
-            <a href="{{ route('badges.index', ['type' => 'event']) }}"
-               class="badge bg-{{ request('type') == 'event' ? 'primary' : 'light text-dark' }} py-2 px-3 filter-badge">
-                <i class="fas fa-trophy me-1"></i> กิจกรรม
-            </a>
-        </div>
-    </div>
-
     <!-- Stats Cards -->
     <div class="row mb-4">
         <div class="col-md-3 col-sm-6 mb-3">
@@ -187,41 +152,41 @@
 
                                             <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4 mb-4">
                                                 @foreach($badgesByType[$type]->sortByDesc('isUnlocked') as $badge)
-                                                    <div class="col">
+                            <div class="col">
                                                         <div class="card h-100 badge-card {{ $badge->isUnlocked() ? 'unlocked' : 'locked' }}"
-                                                             data-bs-toggle="tooltip"
-                                                             data-bs-placement="top"
-                                                             title="{{ $badge->badge_desc }}">
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                             title="{{ $badge->badge_desc }}">
 
-                                                            <!-- Badge Type Indicator -->
+                                            <!-- Badge Type Indicator -->
                                                             <span class="badge badge-type bg-{{ $typeColors[$type] }}">
                                                                 <i class="fas {{ $typeIcons[$type] }}"></i>
-                                                            </span>
+                                            </span>
 
-                                                            <div class="badge-img-container">
-                                                                <img src="{{ asset('storage/' . $badge->badge_image) }}"
+                                            <div class="badge-img-container">
+                                    <img src="{{ asset('storage/' . $badge->badge_image) }}"
                                                                      class="badge-img {{ $badge->isUnlocked() ? '' : 'opacity-50 grayscale' }}"
-                                                                     alt="{{ $badge->badge_name }}">
-                                                            </div>
+                                        alt="{{ $badge->badge_name }}">
+                                            </div>
 
-                                                            <div class="card-body">
-                                                                <h6 class="card-title">{{ $badge->badge_name }}</h6>
-                                                                <p class="card-text badge-requirement small text-muted">
-                                                                    {{ $badge->getRequirementText() }}
-                                                                </p>
+                                            <div class="card-body">
+                                                <h6 class="card-title">{{ $badge->badge_name }}</h6>
+                                                <p class="card-text badge-requirement small text-muted">
+                                                    {{ $badge->getRequirementText() }}
+                                                </p>
 
-                                                                <!-- แสดงคะแนนที่จะได้รับ -->
+                                                <!-- แสดงคะแนนที่จะได้รับ -->
                                                                 <div class="badge-points small fw-bold">
                                                                     <span class="d-inline-block bg-warning bg-opacity-10 text-warning rounded-pill px-2 py-1 mt-1">
                                                                         <i class="fas fa-coins me-1"></i> {{ $badge->points ?? 100 }} คะแนน
                                                                     </span>
-                                                                </div>
+                                                </div>
 
                                                                 @if(!$badge->isUnlocked())
-                                                                    <div class="progress mt-2" style="height: 6px;">
-                                                                        @php
+                                                <div class="progress mt-2" style="height: 6px;">
+                                                    @php
                                                                             // Reset progress percentage for clean calculation
-                                                                            $progressPercentage = 0;
+                                                            $progressPercentage = 0;
 
                                                                             // Try to use the dedicated progress calculation method first
                                                                             if (method_exists($badge, 'calculateProgressPercentage')) {
@@ -234,42 +199,42 @@
                                                                             // Last resort: Try to extract from progress text if available
                                                                             else if (method_exists($badge, 'progress')) {
                                                                                 $progressText = $badge->progress();
-                                                                                if (strpos($progressText, '%') !== false) {
+                                                            if (strpos($progressText, '%') !== false) {
                                                                                     preg_match('/(\d+)%/', $progressText, $matches);
                                                                                     if (isset($matches[1]) && is_numeric($matches[1])) {
                                                                                         $progressPercentage = $matches[1];
                                                                                     }
-                                                                                }
-                                                                            }
+                                                            }
+                                                        }
 
                                                                             // Ensure valid percentage range
                                                                             $progressPercentage = max(0, min(100, intval($progressPercentage)));
-                                                                        @endphp
+                                                    @endphp
                                                                         <div class="progress-bar bg-{{ $typeColors[$type] }}"
-                                                                             role="progressbar"
-                                                                             style="width: {{ $progressPercentage }}%"
-                                                                             aria-valuenow="{{ $progressPercentage }}"
-                                                                             aria-valuemin="0"
-                                                                             aria-valuemax="100"></div>
-                                                                    </div>
-                                                                    <div class="d-flex justify-content-between mt-2">
+                                                        role="progressbar"
+                                                        style="width: {{ $progressPercentage }}%"
+                                                        aria-valuenow="{{ $progressPercentage }}"
+                                                        aria-valuemin="0"
+                                                        aria-valuemax="100"></div>
+                                                </div>
+                                                <div class="d-flex justify-content-between mt-2">
                                                                         <span class="small text-{{ $typeColors[$type] }} fw-bold">{{ $progressPercentage }}%</span>
-                                                                    </div>
+                                                </div>
 
-                                                                    @if($progressPercentage >= 100)
-                                                                        <form id="unlock-form-{{ $badge->badge_id }}" action="{{ route('badges.unlock', $badge->badge_id) }}" method="POST" class="mt-2">
-                                                                            @csrf
-                                                                            <button type="button"
+                                                @if($badge->isEligibleToUnlock())
+                                                    <form id="unlock-form-{{ $type }}-{{ $badge->badge_id }}" action="{{ route('badges.unlock', $badge->badge_id) }}" method="POST" class="mt-2">
+                                                        @csrf
+                                                        <button type="button"
                                                                                     onclick="confirmUnlock({{ $badge->badge_id }}, '{{ $badge->badge_name }}', '{{ asset('storage/' . $badge->badge_image) }}', {{ $badge->points ?? 100 }})"
-                                                                                    class="btn btn-success btn-sm w-100">
-                                                                                <i class="fas fa-unlock-alt me-1"></i> ปลดล็อค
-                                                                            </button>
-                                                                        </form>
-                                                                    @endif
+                                                                class="btn btn-success btn-sm w-100">
+                                                            <i class="fas fa-unlock-alt me-1"></i> ปลดล็อค
+                                                        </button>
+                                                    </form>
+                                                @endif
 
-                                                                    <div class="badge-overlay">
-                                                                        <i class="fas fa-lock"></i>
-                                                                    </div>
+                                                <div class="badge-overlay">
+                                                    <i class="fas fa-lock"></i>
+                                                </div>
                                                                 @else
                                                                     <div class="unlocked-info mt-2 text-center">
                                                                         <span class="badge bg-success w-100 py-2">
@@ -277,10 +242,10 @@
                                                                         </span>
                                                                     </div>
                                                                 @endif
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
                                             </div>
                                         </div>
                                     @endif
@@ -318,8 +283,8 @@
                                                         {{ $badgesByType[$type]->where('isUnlocked', true)->count() }}/{{ $badgesByType[$type]->count() }}
                                                     </span>
                                                 </div>
-                                            </div>
-                                        </div>
+                                    </div>
+                                </div>
 
                                         <!-- แยกแสดงเหรียญที่ปลดล็อคแล้วกับยังไม่ปลดล็อค -->
                                         @php
@@ -339,45 +304,45 @@
                                                 </div>
                                                 <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
                                                     @foreach($unlockedBadges as $badge)
-                                                        <div class="col">
-                                                            <div class="card h-100 badge-card unlocked"
-                                                                 data-bs-toggle="tooltip"
-                                                                 data-bs-placement="top"
-                                                                 title="{{ $badge->badge_desc }}">
+                                    <div class="col">
+                                        <div class="card h-100 badge-card unlocked"
+                                             data-bs-toggle="tooltip"
+                                             data-bs-placement="top"
+                                             title="{{ $badge->badge_desc }}">
 
-                                                                <!-- Badge Type Indicator -->
+                                            <!-- Badge Type Indicator -->
                                                                 <span class="badge badge-type bg-{{ $typeColors[$type] }}">
                                                                     <i class="fas {{ $typeIcons[$type] }}"></i>
-                                                                </span>
+                                            </span>
 
-                                                                <div class="badge-img-container">
-                                                                    <img src="{{ asset('storage/' . $badge->badge_image) }}"
-                                                                         class="badge-img"
-                                                                         alt="{{ $badge->badge_name }}">
-                                                                </div>
+                                            <div class="badge-img-container">
+                                                <img src="{{ asset('storage/' . $badge->badge_image) }}"
+                                                     class="badge-img"
+                                                     alt="{{ $badge->badge_name }}">
+                                            </div>
 
-                                                                <div class="card-body">
-                                                                    <h6 class="card-title">{{ $badge->badge_name }}</h6>
-                                                                    <p class="card-text badge-requirement small text-muted">
-                                                                        {{ $badge->getRequirementText() }}
-                                                                    </p>
+                                            <div class="card-body">
+                                                <h6 class="card-title">{{ $badge->badge_name }}</h6>
+                                                <p class="card-text badge-requirement small text-muted">
+                                                    {{ $badge->getRequirementText() }}
+                                                </p>
 
-                                                                    <!-- แสดงคะแนนที่ได้รับ -->
+                                                <!-- แสดงคะแนนที่ได้รับ -->
                                                                     <div class="badge-points small fw-bold">
                                                                         <span class="d-inline-block bg-warning bg-opacity-10 text-warning rounded-pill px-2 py-1 mt-1">
                                                                             <i class="fas fa-coins me-1"></i> {{ $badge->points ?? 100 }} คะแนน
                                                                         </span>
-                                                                    </div>
+                                                </div>
 
-                                                                    <div class="unlocked-info mt-2 text-center">
-                                                                        <span class="badge bg-success w-100 py-2">
-                                                                            <i class="fas fa-check-circle me-1"></i> ปลดล็อคแล้ว
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    @endforeach
+                                                <div class="unlocked-info mt-2 text-center">
+                                                    <span class="badge bg-success w-100 py-2">
+                                                        <i class="fas fa-check-circle me-1"></i> ปลดล็อคแล้ว
+                                                    </span>
+                                                </div>
+                                            </div>
+                                </div>
+                            </div>
+                        @endforeach
                                                 </div>
                                             </div>
                                         @endif
@@ -457,7 +422,7 @@
                                                                         <span class="small text-{{ $typeColors[$type] }} fw-bold">{{ $progressPercentage }}%</span>
                                                                     </div>
 
-                                                                    @if($progressPercentage >= 100)
+                                                                    @if($badge->isEligibleToUnlock())
                                                                         <form id="unlock-form-{{ $type }}-{{ $badge->badge_id }}" action="{{ route('badges.unlock', $badge->badge_id) }}" method="POST" class="mt-2">
                                                                             @csrf
                                                                             <button type="button"
@@ -478,8 +443,8 @@
                                                 </div>
                                             </div>
                                         @endif
-                                    </div>
-                                @endif
+                    </div>
+                        @endif
                             @endforeach
                         </div>
                     @endif
@@ -737,6 +702,38 @@
         font-weight: 500;
         padding: 10px 15px;
     }
+
+    /* Badge History Button */
+    .btn-outline-primary:hover {
+        color: white !important;
+    }
+
+    /* Filter Buttons */
+    .badge.filter-badge:hover,
+    .btn-outline-secondary:hover,
+    .badge.bg-light:hover,
+    .badge.bg-light.text-dark:hover {
+        color: white !important;
+        text-decoration: none !important;
+    }
+
+    /* Remove underlines everywhere */
+    a,
+    button,
+    .btn,
+    .badge,
+    a:hover,
+    button:hover,
+    .btn:hover,
+    .badge:hover {
+        text-decoration: none !important;
+    }
+
+    /* Filter badge specific styling */
+    .filter-badge {
+        text-decoration: none !important;
+        border: none !important;
+}
 </style>
 @endsection
 
@@ -808,6 +805,16 @@
             cancelButtonText: 'ยกเลิก'
         }).then((result) => {
             if (result.isConfirmed) {
+                // แสดง loading
+                Swal.fire({
+                    title: 'กำลังดำเนินการ...',
+                    html: 'กรุณารอสักครู่',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
                 // Find the correct form to submit - check both formats of form IDs
                 const form = document.getElementById(`unlock-form-${badgeId}`) ||
                              document.querySelector(`form[id^="unlock-form-"][id$="-${badgeId}"]`);
@@ -816,9 +823,58 @@
                     form.submit();
                 } else {
                     console.error('Form not found for badge ID: ' + badgeId);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่พบฟอร์มสำหรับปลดล็อคเหรียญตรานี้'
+                    });
                 }
             }
         });
     }
+
+    // Handle error message if there is one
+    document.addEventListener('DOMContentLoaded', function() {
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด',
+                text: "{{ session('error') }}",
+                confirmButtonColor: '#28a745',
+                confirmButtonText: 'ตกลง',
+                footer: session('error') == 'คุณยังไม่บรรลุเงื่อนไขในการปลดล็อคเหรียญตรานี้' ?
+                    'คุณต้องทำกิจกรรมให้ครบตามเงื่อนไขก่อน จึงจะสามารถปลดล็อคได้' : ''
+            });
+        @endif
+
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'สำเร็จ!',
+                text: "{{ session('success') }}",
+                confirmButtonColor: '#28a745'
+            });
+        @endif
+
+        @if(session('badge_unlocked'))
+            Swal.fire({
+                title: 'ยินดีด้วย!',
+                html: `
+                    <div class="text-center mb-4">
+                        <img src="{{ asset('storage/' . session('badge_unlocked.image')) }}"
+                             alt="{{ session('badge_unlocked.badge_name') }}"
+                             style="max-height: 120px; max-width: 120px; margin-bottom: 15px;">
+                        <h5 class="mb-2">ปลดล็อคเหรียญ "{{ session('badge_unlocked.badge_name') }}"</h5>
+                        <div class="text-success mt-3">
+                            <i class="fas fa-coins text-warning me-1"></i> <strong>+{{ session('badge_unlocked.points') }} คะแนน</strong>
+                        </div>
+                    </div>
+                `,
+                icon: false,
+                confirmButtonColor: '#28a745',
+                confirmButtonText: 'ยอดเยี่ยม!'
+            });
+        @endif
+    });
 </script>
 @endsection

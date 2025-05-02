@@ -2,20 +2,185 @@
 
 @section('title', 'ประวัติการได้รับเหรียญตรา')
 
+@section('styles')
+<style>
+    .badge-image {
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+        max-width: 60px;
+    }
+
+    .badge-image:hover {
+        transform: scale(1.2);
+    }
+
+    /* Badge Cards */
+    .badge-card {
+        transition: all 0.3s ease;
+        border-radius: 10px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        border: none;
+    }
+
+    .badge-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    /* Stats Cards */
+    .badge-stat-card {
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    .badge-stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .badge-stat-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        font-size: 20px;
+    }
+
+    /* Card and Table Design */
+    .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .card-header {
+        background-color: white;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 1rem 1.5rem;
+    }
+
+    .table thead th {
+        font-weight: 600;
+        color: #495057;
+        background-color: #f8f9fa;
+        border-top: none;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(45, 198, 121, 0.05);
+    }
+
+    /* Filter section */
+    .filter-section .form-control, .filter-section .form-select {
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+    }
+
+    .filter-section .form-control:focus, .filter-section .form-select:focus {
+        border-color: #2DC679;
+        box-shadow: 0 0 0 0.2rem rgba(45, 198, 121, 0.25);
+    }
+
+    /* Button styling */
+    .btn-action {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.3s;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+</style>
+@endsection
+
 @section('content')
-<div class="container-fluid px-4">
-    <h1 class="mt-4">ประวัติการได้รับเหรียญตรา</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="{{ route('admin.badges.index') }}">จัดการเหรียญตรา</a></li>
-        <li class="breadcrumb-item active">ประวัติการได้รับเหรียญตรา</li>
-    </ol>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">ประวัติการได้รับเหรียญตรา</h2>
+        <div>
+            <a href="{{ route('admin.badges.index') }}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-arrow-left me-1"></i> กลับไปยังรายการ
+            </a>
+            <a href="{{ route('admin.badges.statistics') }}" class="btn btn-info">
+                <i class="fas fa-chart-bar me-1"></i> ดูสถิติ
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 shadow-sm border-0 badge-stat-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="badge-stat-icon bg-primary bg-opacity-10 me-3">
+                        <i class="fas fa-medal text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">จำนวนเหรียญทั้งหมด</h6>
+                        <h4 class="mb-0">{{ $totalBadges ?? $badgeHistory->total() }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 shadow-sm border-0 badge-stat-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="badge-stat-icon bg-success bg-opacity-10 me-3">
+                        <i class="fas fa-users text-success"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">ผู้ได้รับเหรียญ</h6>
+                        <h4 class="mb-0">{{ $uniqueUsers ?? 0 }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 shadow-sm border-0 badge-stat-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="badge-stat-icon bg-warning bg-opacity-10 me-3">
+                        <i class="fas fa-calendar-alt text-warning"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">ได้รับเดือนนี้</h6>
+                        <h4 class="mb-0">{{ $monthlyBadges ?? 0 }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 shadow-sm border-0 badge-stat-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="badge-stat-icon bg-danger bg-opacity-10 me-3">
+                        <i class="fas fa-coins text-danger"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">คะแนนที่ได้รับรวม</h6>
+                        <h4 class="mb-0">{{ $totalPoints ?? 0 }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="row mb-4">
         <div class="col-md-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i> ตัวกรอง</h5>
+            <div class="card shadow-sm filter-section">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2 text-primary"></i> ตัวกรอง</h5>
                 </div>
                 <div class="card-body">
                     <form action="{{ route('admin.badges.history') }}" method="GET" class="row g-3">
@@ -66,8 +231,18 @@
                         </div>
 
                         <div class="col-md-1 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary w-100">กรอง</button>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search me-1"></i> กรอง
+                            </button>
                         </div>
+
+                        @if(request()->anyFilled(['user_id', 'badge_type', 'date_start', 'date_end']))
+                        <div class="col-12 mt-2">
+                            <a href="{{ route('admin.badges.history') }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-undo me-1"></i> ล้างตัวกรอง
+                            </a>
+                        </div>
+                        @endif
                     </form>
                 </div>
             </div>
@@ -76,67 +251,111 @@
 
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <div>
-                <i class="fas fa-medal me-1"></i>
+            <h5 class="mb-0 fw-bold">
+                <i class="fas fa-medal me-2 text-primary"></i>
                 ประวัติการได้รับเหรียญตรา
-            </div>
-            <div>
-                <a href="{{ route('admin.badges.statistics') }}" class="btn btn-sm btn-info">
-                    <i class="fas fa-chart-bar me-1"></i> ดูสถิติ
-                </a>
-            </div>
+            </h5>
+            @if($badgeHistory->total() > 0)
+            <span class="badge bg-primary rounded-pill px-3 py-2">
+                {{ $badgeHistory->total() }} รายการ
+            </span>
+            @endif
         </div>
-        <div class="card-body">
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                    <thead class="table-dark">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
                         <tr>
-                            <th width="5%">ลำดับ</th>
+                            <th width="5%" class="text-center">ลำดับ</th>
                             <th width="15%">ผู้ใช้</th>
-                            <th width="10%">เหรียญตรา</th>
+                            <th width="10%" class="text-center">เหรียญตรา</th>
                             <th width="25%">รายละเอียด</th>
                             <th width="15%">ประเภท</th>
-                            <th width="10%">คะแนนที่ได้</th>
+                            <th width="10%" class="text-center">คะแนนที่ได้</th>
                             <th width="10%">วันที่ได้รับ</th>
-                            <th width="10%">จัดการ</th>
+                            <th width="10%" class="text-center">จัดการ</th>
                         </tr>
                     </thead>
                     <tbody>
                         @if($badgeHistory->isEmpty())
                             <tr>
-                                <td colspan="8" class="text-center py-4">ไม่พบข้อมูลประวัติการได้รับเหรียญตรา</td>
+                                <td colspan="8" class="text-center py-5">
+                                    <div class="text-muted mb-3">
+                                        <i class="fas fa-medal fa-4x"></i>
+                                    </div>
+                                    <h5>ไม่พบข้อมูลประวัติการได้รับเหรียญตรา</h5>
+                                    <p class="text-muted">ยังไม่มีผู้ใช้ได้รับเหรียญตราหรือไม่พบข้อมูลตามเงื่อนไขที่กรอง</p>
+                                </td>
                             </tr>
                         @else
                             @foreach($badgeHistory as $index => $item)
                                 <tr>
                                     <td class="text-center">{{ $badgeHistory->firstItem() + $index }}</td>
                                     <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0 me-2">
+                                                @if(isset($item->profile_image))
+                                                    <img src="{{ asset('profile_images/' . $item->profile_image) }}" class="rounded-circle" width="40" height="40" alt="Profile" style="object-fit: cover;">
+                                                @else
+                                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white" style="width: 40px; height: 40px;">
+                                                        <i class="fas fa-user"></i>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            <div>
                                         <a href="{{ route('admin.users.show', $item->user_id) }}" class="fw-bold text-primary">
                                             {{ $item->username }}
                                         </a>
-                                        <div class="small text-muted">{{ $item->firstname }} {{ $item->lastname }}</div>
+                                                <div class="small text-muted">{{ $item->firstname ?? '' }} {{ $item->lastname ?? '' }}</div>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td class="text-center">
+                                        <a href="{{ route('admin.badges.show', $item->badge_id) }}" class="d-inline-block">
                                         <img src="{{ asset('storage/' . $item->badge_image) }}" alt="{{ $item->badge_name }}" class="badge-image" width="60">
+                                        </a>
                                     </td>
                                     <td>
                                         <div class="fw-bold">{{ $item->badge_name }}</div>
-                                        <div class="small text-muted">{{ $item->badge_desc }}</div>
+                                        <div class="small text-muted">{{ Str::limit($item->badge_desc, 60) }}</div>
                                     </td>
                                     <td>
+                                        @php
+                                            $typeIcons = [
+                                                'distance' => 'fa-route',
+                                                'calories' => 'fa-fire',
+                                                'streak' => 'fa-calendar-check',
+                                                'speed' => 'fa-tachometer-alt',
+                                                'event' => 'fa-trophy'
+                                            ];
+                                            $typeColors = [
+                                                'distance' => 'primary',
+                                                'calories' => 'danger',
+                                                'streak' => 'success',
+                                                'speed' => 'info',
+                                                'event' => 'warning'
+                                            ];
+
+                                            $color = isset($typeColors[$item->type]) ? $typeColors[$item->type] : 'secondary';
+                                            $icon = isset($typeIcons[$item->type]) ? $typeIcons[$item->type] : 'fa-medal';
+                                        @endphp
+
+                                        <span class="badge bg-{{ $color }} d-inline-block px-2 py-1 rounded-pill">
+                                            <i class="fas {{ $icon }} me-1"></i>
                                         @if($item->type == 'distance')
-                                            <span class="badge bg-primary">ระยะทาง {{ $item->criteria }} กม.</span>
+                                                ระยะทาง {{ $item->criteria }} กม.
                                         @elseif($item->type == 'calories')
-                                            <span class="badge bg-danger">แคลอรี่ {{ $item->criteria }} kcal</span>
+                                                แคลอรี่ {{ $item->criteria }} kcal
                                         @elseif($item->type == 'streak')
-                                            <span class="badge bg-success">วิ่งต่อเนื่อง {{ $item->criteria }} วัน</span>
+                                                วิ่งต่อเนื่อง {{ $item->criteria }} วัน
                                         @elseif($item->type == 'speed')
-                                            <span class="badge bg-info">ความเร็ว {{ $item->criteria }} กม./ชม.</span>
+                                                ความเร็ว {{ $item->criteria }} กม./ชม.
                                         @elseif($item->type == 'event')
-                                            <span class="badge bg-warning text-dark">กิจกรรม {{ $item->criteria }} ครั้ง</span>
+                                                กิจกรรม {{ $item->criteria }} ครั้ง
                                         @else
-                                            <span class="badge bg-secondary">{{ $item->type }}</span>
+                                                {{ $item->type }} {{ $item->criteria }}
                                         @endif
+                                        </span>
                                     </td>
                                     <td class="text-center">
                                         @php
@@ -144,9 +363,9 @@
                                             $points = isset($pointsHistory[$key]) ? $pointsHistory[$key][0]->points : '--';
                                         @endphp
                                         @if(is_numeric($points))
-                                            <span class="badge bg-success fs-6">+{{ $points }}</span>
+                                            <span class="badge bg-success fs-6 px-3 py-2">+{{ $points }}</span>
                                         @else
-                                            <span class="badge bg-secondary fs-6">{{ $points }}</span>
+                                            <span class="badge bg-secondary fs-6 px-3 py-2">{{ $points }}</span>
                                         @endif
                                     </td>
                                     <td>
@@ -154,10 +373,10 @@
                                         <div class="small text-muted">{{ \Carbon\Carbon::parse($item->earned_at)->format('H:i:s') }}</div>
                                     </td>
                                     <td class="text-center">
-                                        <a href="{{ route('admin.badges.show', $item->badge_id) }}" class="btn btn-sm btn-info mb-1" title="ดูรายละเอียดเหรียญตรา">
+                                        <a href="{{ route('admin.badges.show', $item->badge_id) }}" class="btn btn-sm btn-info btn-action mb-1" title="ดูรายละเอียดเหรียญตรา">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ route('admin.users.show', $item->user_id) }}" class="btn btn-sm btn-primary mb-1" title="ดูข้อมูลผู้ใช้">
+                                        <a href="{{ route('admin.users.show', $item->user_id) }}" class="btn btn-sm btn-primary btn-action mb-1" title="ดูข้อมูลผู้ใช้">
                                             <i class="fas fa-user"></i>
                                         </a>
                                     </td>
@@ -168,7 +387,7 @@
                 </table>
             </div>
 
-            <div class="d-flex justify-content-center mt-4">
+            <div class="d-flex justify-content-center mt-4 mb-4">
                 {{ $badgeHistory->appends(request()->query())->links() }}
             </div>
         </div>
@@ -185,20 +404,17 @@
             allowClear: true
         });
 
-        // ช่วยให้การเคลียร์ฟอร์มเป็นเรื่องง่าย
-        $('#clearFilter').click(function(e) {
-            e.preventDefault();
-            window.location.href = "{{ route('admin.badges.history') }}";
+        // เพิ่ม Select2 สำหรับตัวกรองประเภทเหรียญ
+        $('#badge_type').select2({
+            placeholder: "-- เลือกประเภท --",
+            allowClear: true
+        });
+
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
         });
     });
 </script>
-@endsection
-
-@section('styles')
-<style>
-    .badge-image {
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-</style>
 @endsection
