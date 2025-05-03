@@ -249,8 +249,7 @@
 
         /* Updated footer styling */
         .gofit-footer {
-            background-color: #f8f9fa;
-            border-top: 1px solid #e9ecef;
+            background-color: #fff;
             padding: 10px 0;
             margin-top: 30px;
         }
@@ -421,7 +420,7 @@
         <footer class="gofit-footer">
             <div class="container">
                 <div class="footer-bottom text-center py-3">
-                    <p class="mb-0">&copy; 2025 DPU | 66130773 WARONGKON FUKTHONGYOO</p>
+                    <p class="mb-0 footer-text">&copy; 2025 DPU | 66130773 WARONGKON FUKTHONGYOO</p>
                 </div>
             </div>
         </footer>

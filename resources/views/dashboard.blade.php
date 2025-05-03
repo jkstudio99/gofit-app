@@ -2,425 +2,384 @@
 
 @section('title', 'Dashboard')
 
-@section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <h2 class="section-title mb-4">แดชบอร์ดการวิ่งของคุณ</h2>
-
-            <!-- ปุ่มวิ่งที่เด่นชัด -->
-            <div class="run-button-container mb-5">
-                <div class="run-button-pulse"></div>
-                <a href="{{ route('run.index') }}" class="run-button">
-                    <div class="run-icon">
-                        <i class="fas fa-running"></i>
-                    </div>
-                    <div class="run-text">เริ่มวิ่ง</div>
-                </a>
-            </div>
-
-            <!-- Stats Summary Cards -->
-            <div class="row mb-4">
-                <div class="col-md-4 mb-4">
-                    <div class="stat-card">
-                        <div class="stat-icon text-primary">
-                            <i class="fas fa-road"></i>
-                        </div>
-                        <div class="stat-value">{{ number_format($totalDistance, 1) }}</div>
-                        <div class="stat-label">กิโลเมตร</div>
-                    </div>
-                </div>
-
-                <div class="col-md-4 mb-4">
-                    <div class="stat-card">
-                        <div class="stat-icon text-danger">
-                            <i class="fas fa-fire"></i>
-                        </div>
-                        <div class="stat-value">{{ number_format($totalCalories, 0) }}</div>
-                        <div class="stat-label">แคลอรี่</div>
-                    </div>
-                </div>
-
-                <div class="col-md-4 mb-4">
-                    <div class="stat-card">
-                        <div class="stat-icon text-success">
-                            <i class="fas fa-running"></i>
-                        </div>
-                        <div class="stat-value">{{ $totalActivities }}</div>
-                        <div class="stat-label">กิจกรรมทั้งหมด</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <!-- Weekly Progress -->
-                <div class="col-md-8 mb-4">
-                    <div class="card gofit-card h-100">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">ความคืบหน้ารายสัปดาห์</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row mb-4">
-                                <div class="col-md-12">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <span>เป้าหมายรายสัปดาห์ ({{ $weeklyGoal }} กม.)</span>
-                                        <span>{{ number_format($weeklyDistance, 1) }} กม.</span>
-                                    </div>
-                                    <div class="gofit-progress">
-                                        <div class="progress-bar" style="width: {{ $weeklyGoalProgress }}%"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="weekly-stats">
-                                        <div class="d-flex justify-content-between mb-2">
-                                            <span>ระยะทางสัปดาห์นี้:</span>
-                                            <span class="fw-bold">{{ number_format($weeklyDistance, 1) }} กม.</span>
-                                        </div>
-                                        <div class="d-flex justify-content-between">
-                                            <span>แคลอรี่สัปดาห์นี้:</span>
-                                            <span class="fw-bold">{{ number_format($weeklyCalories, 0) }} kcal</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div id="weeklyChart" style="height: 150px;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Badges -->
-                <div class="col-md-4 mb-4">
-                    <div class="card gofit-card h-100">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">เหรียญตราล่าสุด</h5>
-                            <a href="{{ route('badges.index') }}" class="btn btn-sm btn-outline-primary rounded-pill">ดูทั้งหมด</a>
-                        </div>
-                        <div class="card-body">
-                            @if($badges->count() > 0)
-                                <div class="row">
-                                    @foreach($badges->take(4) as $badge)
-                                        <div class="col-6 text-center mb-3">
-                                            <div class="badge-card">
-                                                <div class="badge-icon">
-                                                    <i class="fa {{ $badge->badge_icon ?? 'fa-medal' }}"></i>
-                                                </div>
-                                                <div class="badge-name">{{ $badge->badge_name }}</div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @else
-                                <div class="text-center my-4">
-                                    <div class="mb-3">
-                                        <i class="fas fa-medal fa-3x text-muted"></i>
-                                    </div>
-                                    <p class="text-muted">คุณยังไม่ได้รับเหรียญตราใดๆ เริ่มวิ่งเพื่อรับเหรียญตราแรกของคุณ!</p>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Rewards Section -->
-            <div class="row my-4">
-                <div class="col-md-12">
-                    <div class="card gofit-card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">รางวัลของฉัน</h5>
-                            <div>
-                                <a href="{{ route('rewards.history') }}" class="btn btn-sm btn-outline-secondary rounded-pill me-2">
-                                    <i class="fas fa-history me-1"></i> ประวัติการแลก
-                                </a>
-                                <a href="{{ route('rewards.index') }}" class="btn btn-sm btn-outline-primary rounded-pill">
-                                    <i class="fas fa-gift me-1"></i> ดูทั้งหมด
-                                </a>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="mb-0">คะแนนสะสมของคุณ</h6>
-                                    <div class="d-flex align-items-center mt-2">
-                                        <i class="fas fa-coins text-warning me-2 fa-2x"></i>
-                                        <span class="fs-4 fw-bold">{{ Auth::user()->points ?? 0 }}</span>
-                                    </div>
-                                </div>
-                                <a href="{{ route('rewards.index') }}" class="btn btn-primary">
-                                    <i class="fas fa-exchange-alt me-1"></i> แลกรางวัล
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recent Activities -->
-            <div class="row">
-                <div class="col-md-12 mb-4">
-                    <div class="card gofit-card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">ประวัติการวิ่งทั้งหมด</h5>
-                            <a href="{{ route('run.history') }}" class="btn btn-sm btn-outline-primary rounded-pill">ดูทั้งหมด</a>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="gofit-table">
-                                    <thead>
-                                        <tr>
-                                            <th>วันที่</th>
-                                            <th>ระยะทาง</th>
-                                            <th>ระยะเวลา</th>
-                                            <th>ความเร็วเฉลี่ย</th>
-                                            <th>แคลอรี่</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($recentActivities as $activity)
-                                            <tr>
-                                                <td>{{ $activity->start_time instanceof \Carbon\Carbon
-                                                    ? \Carbon\Carbon::parse($activity->start_time)->locale('th')->translatedFormat('d M Y, H:i')
-                                                    : \Carbon\Carbon::parse($activity->start_time)->locale('th')->translatedFormat('d M Y, H:i') }}</td>
-                                                <td>{{ number_format($activity->distance, 2) }} กม.</td>
-                                                <td>
-                                                    @if($activity->end_time)
-                                                        {{ $activity->end_time instanceof \Carbon\Carbon && $activity->start_time instanceof \Carbon\Carbon
-                                                            ? gmdate('H:i:s', $activity->end_time->diffInSeconds($activity->start_time))
-                                                            : gmdate('H:i:s', \Carbon\Carbon::parse($activity->end_time)->diffInSeconds(\Carbon\Carbon::parse($activity->start_time)))
-                                                        }}
-                                                    @else
-                                                        <span class="badge bg-warning">กำลังดำเนินการ</span>
-                                                    @endif
-                                                </td>
-                                                <td>{{ number_format($activity->average_speed, 1) }} กม./ชม.</td>
-                                                <td>{{ number_format($activity->calories_burned) }} kcal</td>
-                                                <td>
-                                                    <a href="#" class="btn btn-sm btn-outline-primary show-run-map" data-id="{{ $activity->activity_id }}" data-route="{{ is_string($activity->route_gps_data) ? $activity->route_gps_data : json_encode($activity->route_gps_data) }}" data-distance="{{ $activity->distance }}" data-time="{{ $activity->end_time ? gmdate('H:i:s', strtotime($activity->end_time) - strtotime($activity->start_time)) : '00:00:00' }}" data-calories="{{ $activity->calories_burned }}">
-                                                        <i class="fas fa-map-marked-alt"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="6" class="text-center py-4">ยังไม่มีกิจกรรมที่บันทึก</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal สรุปกิจกรรม -->
-<div class="modal fade" id="activitySummaryModal" tabindex="-1" aria-labelledby="activitySummaryModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="activitySummaryModalLabel">สรุปการวิ่ง</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row text-center">
-                    <div class="col-md-4 mb-3">
-                        <div class="run-stat p-3 rounded bg-light">
-                            <div class="fs-6 text-muted mb-1">ระยะทางทั้งหมด</div>
-                            <div class="fs-3 fw-bold text-primary" id="summaryDistance">0.00 กม.</div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="run-stat p-3 rounded bg-light">
-                            <div class="fs-6 text-muted mb-1">เวลาทั้งหมด</div>
-                            <div class="fs-3 fw-bold text-primary" id="summaryTime">00:00:00</div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="run-stat p-3 rounded bg-light">
-                            <div class="fs-6 text-muted mb-1">แคลอรี่ที่เผาผลาญ</div>
-                            <div class="fs-3 fw-bold text-primary" id="summaryCalories">0 kcal</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-4">
-                    <h6>เส้นทางการวิ่ง</h6>
-                    <div id="summaryMap" style="height: 300px; width: 100%; border-radius: var(--radius-md);" class="mb-4"></div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-            </div>
-        </div>
-    </div>
-</div>
-@endsection
-
 @section('styles')
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin="" />
 <style>
-    .run-stat {
-        border-radius: var(--radius-md);
-        box-shadow: var(--shadow-sm);
-        transition: all var(--transition-normal);
+    /* Modern Dashboard Styling */
+    .dashboard-container {
+        padding: 1rem 0;
     }
 
-    .run-stat:hover {
+    /* Container padding fix */
+    .container.dashboard-container {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .welcome-header {
+        background: linear-gradient(135deg, #3498db, #2ecc71);
+        color: white;
+        border-radius: 16px;
+        padding: 2.5rem;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .welcome-header::after {
+        content: '';
+        position: absolute;
+        bottom: -50px;
+        right: -50px;
+        width: 200px;
+        height: 200px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    .welcome-header h2 {
+        font-weight: 700;
+        margin-bottom: 1rem;
+        font-size: 2.2rem;
+    }
+
+    .welcome-text {
+        max-width: 70%;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Desktop stats cards */
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+        text-align: center;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .stat-card:hover {
         transform: translateY(-5px);
-        box-shadow: var(--shadow-md);
+        box-shadow: 0 12px 22px rgba(0,0,0,0.08);
     }
 
-    #summaryMap {
-        height: 300px;
+    /* Card styles */
+    .gofit-card {
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .gofit-card:hover {
+        box-shadow: 0 12px 22px rgba(0,0,0,0.08);
+    }
+
+    .gofit-card .card-header {
+        background-color: white;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 1.25rem 1.5rem;
+    }
+
+    .gofit-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .gofit-progress {
+        height: 0.8rem;
+        background-color: #f1f1f1;
+        border-radius: 1rem;
+        margin-bottom: 1rem;
+        overflow: hidden;
+    }
+
+    .gofit-progress .progress-bar {
+        background: linear-gradient(90deg, #3498db, #2ecc71);
+        height: 100%;
+        border-radius: 1rem;
+    }
+
+    .weekly-stats {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+
+    .badge-card {
+        text-align: center;
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .badge-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+    }
+
+    .badge-icon {
+        font-size: 2rem;
+        color: #ffc107;
+        margin-bottom: 0.5rem;
+    }
+
+    .badge-name {
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .gofit-table {
         width: 100%;
-        border-radius: var(--radius-md);
-        z-index: 1;
+    }
+
+    .gofit-table th {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        font-weight: 600;
+    }
+
+    .gofit-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+    .gofit-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Mobile optimizations */
+    @media (max-width: 767.98px) {
+        .welcome-header {
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .welcome-header h2 {
+            font-size: 1.8rem;
+        }
+
+        .welcome-text {
+            max-width: 100%;
+        }
+
+        .desktop-stats {
+            display: none;
+        }
+    }
+
+    /* Hide mobile stats on desktop */
+    @media (min-width: 768px) {
+        .mobile-stats {
+            display: none;
+        }
+    }
+
+    /* Fix for stats row margins to match other elements */
+    .mobile-stats .stats-row {
+        margin-left: 15px !important;
+        margin-right: 15px !important;
+        width: calc(100% - 30px) !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    /* Ensure columns are equal width */
+    .mobile-stats .stat-col {
+        flex: 1 1 0 !important;
+    }
+
+    /* Mobile-stats container fix */
+    .mobile-stats {
+        padding: 0 !important;
+        margin: 0 !important;
     }
 </style>
 @endsection
 
+@section('content')
+<div class="container dashboard-container">
+    <!-- Welcome Header -->
+    <div class="welcome-header">
+        <h2>สวัสดี, สมศักดิ์</h2>
+        <p class="welcome-text">ยินดีต้อนรับกลับมาที่ GoFit! เริ่มต้นการวิ่งวันนี้เพื่อสุขภาพที่ดีขึ้น</p>
+        <a href="{{ route('run.index') }}" class="btn btn-light btn-lg px-4 rounded-pill">
+            <i class="fas fa-running me-2"></i> เริ่มวิ่งเลย
+        </a>
+    </div>
+
+    <!-- Mobile Stats (3-column) -->
+    <div class="mobile-stats d-md-none">
+        @include('components.stats-summary')
+    </div>
+
+    <!-- Desktop Stats Summary Cards -->
+    <div class="desktop-stats d-none d-md-flex mx-3" style="gap: 15px; margin-bottom: 20px;">
+        <div style="flex: 1;">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-road" style="color: #2ecc71;"></i>
+                </div>
+                <div class="stat-value">16.7</div>
+                <div class="stat-label">กิโลเมตรสะสม</div>
+            </div>
+        </div>
+
+        <div style="flex: 1;">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-fire" style="color: #ff5e57;"></i>
+                </div>
+                <div class="stat-value">1,040</div>
+                <div class="stat-label">แคลอรี่ที่เผาผลาญ</div>
+            </div>
+        </div>
+
+        <div style="flex: 1;">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-running" style="color: #2ecc71;"></i>
+                </div>
+                <div class="stat-value">7</div>
+                <div class="stat-label">กิจกรรมทั้งหมด</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weekly Progress -->
+    <div class="weekly-progress-section">
+        <div class="section-header">
+            <h5><i class="fas fa-chart-line"></i> ความคืบหน้ารายสัปดาห์</h5>
+        </div>
+
+        <div class="goal-info">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="goal-label">เป้าหมายรายสัปดาห์</div>
+                <div class="goal-target">
+                    <span class="current-value">7.8</span>
+                    <span class="target-value">/ 20 กม.</span>
+                </div>
+            </div>
+
+            <div class="progress-bar-container">
+                <div class="progress-bar-custom">
+                    <div class="progress-fill" style="width: 39%"></div>
+                </div>
+                <div class="progress-percentage">39% ของเป้าหมาย</div>
+            </div>
+        </div>
+
+        <div class="weekly-details">
+            <div class="weekly-detail-item">
+                <div class="weekly-detail-icon distance">
+                    <i class="fas fa-road"></i>
+                </div>
+                <div class="weekly-detail-label">ระยะทางสัปดาห์นี้:</div>
+                <div class="weekly-detail-value">7.8 กม.</div>
+            </div>
+
+            <div class="weekly-detail-item">
+                <div class="weekly-detail-icon calories">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <div class="weekly-detail-label">แคลอรี่สัปดาห์นี้:</div>
+                <div class="weekly-detail-value">490 kcal</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities (Mobile Friendly) -->
+    <div class="recent-activities-section">
+        <div class="section-header d-flex justify-content-between align-items-center">
+            <h5><i class="fas fa-history"></i> ประวัติการวิ่งล่าสุด</h5>
+            <a href="{{ route('run.history') }}" class="view-all-link">ดูทั้งหมด <i class="fas fa-chevron-right"></i></a>
+        </div>
+
+        <div class="activities-list">
+            <div class="activity-item">
+                <div class="activity-date">03 พ.ค. 2025</div>
+                <div class="activity-details">
+                    <div class="activity-stat">
+                        <div class="activity-icon distance"><i class="fas fa-road"></i></div>
+                        <div class="activity-value">2.5 กม.</div>
+                    </div>
+                    <div class="activity-stat">
+                        <div class="activity-icon time"><i class="fas fa-clock"></i></div>
+                        <div class="activity-value">30:25</div>
+                    </div>
+                    <div class="activity-stat">
+                        <div class="activity-icon calories"><i class="fas fa-fire"></i></div>
+                        <div class="activity-value">180 kcal</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // ตัวอย่างกราฟ
-        var options = {
-            series: [{
-                name: 'ระยะทาง (กม.)',
-                data: [2.5, 3.2, 0, 4.1, 1.8, 5.2, {{ $weeklyDistance }}]
-            }],
-            chart: {
-                type: 'bar',
-                height: 150,
-                toolbar: {
-                    show: false
-                }
-            },
-            colors: ['#2DC679'],
-            plotOptions: {
-                bar: {
-                    borderRadius: 4,
-                    columnWidth: '60%',
-                }
-            },
-            dataLabels: {
-                enabled: false
-            },
-            xaxis: {
-                categories: ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา'],
-                labels: {
-                    style: {
-                        fontSize: '10px'
+        // Weekly Chart
+        if (document.getElementById('weeklyChart')) {
+            var options = {
+                series: [{
+                    name: 'ระยะทาง (กม.)',
+                    data: @json($weeklyDistanceChart)
+                }],
+                chart: {
+                    type: 'area',
+                    height: 150,
+                    sparkline: {
+                        enabled: true
+                    },
+                    toolbar: {
+                        show: false
+                    }
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 2
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.7,
+                        opacityTo: 0.3,
+                        stops: [0, 90, 100]
+                    }
+                },
+                colors: ['#3498db'],
+                tooltip: {
+                    fixed: {
+                        enabled: false
+                    },
+                    x: {
+                        show: true,
+                        formatter: function(value) {
+                            const days = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+                            return days[value];
+                        }
+                    },
+                    y: {
+                        formatter: function(value) {
+                            return value.toFixed(1) + ' กม.';
+                        }
+                    },
+                    marker: {
+                        show: false
                     }
                 }
-            },
-            yaxis: {
-                labels: {
-                    formatter: function (value) {
-                        return (parseFloat(value) || 0).toFixed(1);
-                    }
-                }
-            }
-        };
+            };
 
-        var chart = new ApexCharts(document.querySelector("#weeklyChart"), options);
-        chart.render();
-
-        // เพิ่มฟังก์ชันสำหรับแสดงแผนที่จากประวัติการวิ่ง
-        let summaryMap;
-
-        // ดักจับการคลิกปุ่มแสดงแผนที่
-        document.querySelectorAll('.show-run-map').forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-
-                // ดึงข้อมูลจาก data attributes
-                const routeData = this.getAttribute('data-route');
-                const distance = this.getAttribute('data-distance');
-                const time = this.getAttribute('data-time');
-                const calories = this.getAttribute('data-calories');
-
-                try {
-                    // แปลงข้อมูลเส้นทางจาก JSON string เป็น array
-                    const routeCoords = JSON.parse(routeData || '[]');
-
-                    // แสดงข้อมูลสรุป
-                    document.getElementById('summaryDistance').innerText = distance + " กม.";
-                    document.getElementById('summaryTime').innerText = time;
-                    document.getElementById('summaryCalories').innerText = calories + " kcal";
-
-                    // สร้างแผนที่ด้วย Leaflet
-                    initSummaryMap(routeCoords);
-
-                    // แสดง modal
-                    const summaryModal = new bootstrap.Modal(document.getElementById('activitySummaryModal'));
-                    summaryModal.show();
-
-                } catch (e) {
-                    console.error("เกิดข้อผิดพลาดในการแสดงข้อมูลเส้นทาง:", e);
-                    alert("ไม่สามารถแสดงข้อมูลเส้นทางได้");
-                }
-            });
-        });
-
-        function initSummaryMap(routeCoords) {
-            // ลบแผนที่เก่าถ้ามี
-            if (summaryMap) {
-                summaryMap.remove();
-            }
-
-            // สร้างแผนที่ใหม่ด้วย Leaflet
-            summaryMap = L.map('summaryMap').setView([13.7563, 100.5018], 13); // กรุงเทพฯ (ค่าเริ่มต้น)
-
-            // เพิ่ม OpenStreetMap tile layer
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(summaryMap);
-
-            // สร้างเส้นทางหากมีข้อมูล
-            if (routeCoords && routeCoords.length > 0) {
-                // แปลงรูปแบบข้อมูลสำหรับ Leaflet (Leaflet ใช้ [lat, lng] ในขณะที่ Google Maps ใช้ {lat, lng})
-                const latLngs = routeCoords.map(coord => [coord.lat, coord.lng]);
-
-                // สร้างเส้นทาง
-                const polyline = L.polyline(latLngs, {
-                    color: '#4CAF50',
-                    weight: 4,
-                    opacity: 1
-                }).addTo(summaryMap);
-
-                // เพิ่มมาร์คเกอร์จุดเริ่มต้นและจุดสิ้นสุด
-                if (latLngs.length > 0) {
-                    L.marker(latLngs[0]).addTo(summaryMap)
-                        .bindPopup('<strong>จุดเริ่มต้น</strong>').openPopup();
-
-                    L.marker(latLngs[latLngs.length - 1]).addTo(summaryMap)
-                        .bindPopup('<strong>จุดสิ้นสุด</strong>');
-                }
-
-                // ปรับขอบเขตแผนที่ให้เห็นเส้นทางทั้งหมด
-                summaryMap.fitBounds(polyline.getBounds());
-            }
-
-            // Resize map เมื่อ modal แสดงเสร็จสมบูรณ์
-            document.getElementById('activitySummaryModal').addEventListener('shown.bs.modal', function() {
-                summaryMap.invalidateSize();
-            });
+            var chart = new ApexCharts(document.getElementById('weeklyChart'), options);
+            chart.render();
         }
     });
 </script>

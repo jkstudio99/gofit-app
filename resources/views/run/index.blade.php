@@ -1434,23 +1434,23 @@
 
         // ส่งข้อมูลไปบันทึก
         try {
-            fetch('{{ url("/run/finish") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
+        fetch('{{ url("/run/finish") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
                     activity_id: runId,
-                    route_data: routeDataJSON,
-                    distance: currentDistance,
-                    duration: elapsedSeconds,
-                    calories: totalCalories,
-                    average_speed: currentSpeed,
+                route_data: routeDataJSON,
+                distance: currentDistance,
+                duration: elapsedSeconds,
+                calories: totalCalories,
+                average_speed: currentSpeed,
                     is_test: useSimulation
-                })
             })
-            .then(response => {
+        })
+        .then(response => {
                 // ตรวจสอบประเภทของ content-type ที่ได้รับกลับมา
                 const contentType = response.headers.get('content-type');
 
@@ -1471,7 +1471,7 @@
                                 message: 'ไม่สามารถอ่านข้อมูลจากเซิร์ฟเวอร์ได้: ' + text.substring(0, 100),
                                 httpStatus: response.status
                             };
-                        }
+            }
                     } else {
                         // สำหรับ response ที่ไม่ใช่ JSON หรือมีรหัสสถานะผิดพลาด
                         return {
@@ -1482,54 +1482,54 @@
                         };
                     }
                 });
-            })
-            .then(data => {
-                // ปิด loading
-                Swal.close();
+        })
+        .then(data => {
+            // ปิด loading
+            Swal.close();
 
                 console.log('Server response for finish:', data);
 
-                if (data.status === 'success') {
-                    // แสดงสรุปการวิ่ง
-                    showRunSummary(data.activity, data.achievements || []);
+            if (data.status === 'success') {
+                // แสดงสรุปการวิ่ง
+                showRunSummary(data.activity, data.achievements || []);
 
-                    // รีเซ็ตตัวแปรที่เกี่ยวข้อง
-                    isRunning = false;
-                    isPaused = false;
-                    runId = null;
+                // รีเซ็ตตัวแปรที่เกี่ยวข้อง
+                isRunning = false;
+                isPaused = false;
+                runId = null;
 
-                    // รีเซ็ต UI
-                    document.getElementById('startRunBtn').style.display = 'block';
-                    document.querySelector('.running-controls').style.display = 'none';
-                } else {
+                // รีเซ็ต UI
+                document.getElementById('startRunBtn').style.display = 'block';
+                document.querySelector('.running-controls').style.display = 'none';
+            } else {
                     // แสดงข้อผิดพลาด
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'เกิดข้อผิดพลาด',
-                        text: data.message || 'ไม่สามารถบันทึกการวิ่งได้',
-                        confirmButtonColor: '#3085d6'
-                    });
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: data.message || 'ไม่สามารถบันทึกการวิ่งได้',
+                    confirmButtonColor: '#3085d6'
+                });
 
                     // รีเซ็ตสถานะของปุ่ม
                     document.getElementById('startRunBtn').style.display = 'block';
                     document.querySelector('.running-controls').style.display = 'none';
                     isRunning = false;
                     isPaused = false;
-                }
-            })
-            .catch(error => {
-                // ปิด loading
-                Swal.close();
+            }
+        })
+        .catch(error => {
+            // ปิด loading
+            Swal.close();
 
-                console.error('Error stopping run:', error);
+            console.error('Error stopping run:', error);
 
                 // แสดงข้อผิดพลาด
-                Swal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
-                    text: 'เกิดข้อผิดพลาดในการจบการวิ่ง โปรดลองอีกครั้ง: ' + error.message,
-                    confirmButtonColor: '#3085d6'
-                });
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด',
+                text: 'เกิดข้อผิดพลาดในการจบการวิ่ง โปรดลองอีกครั้ง: ' + error.message,
+                confirmButtonColor: '#3085d6'
+            });
 
                 // รีเซ็ตสถานะของปุ่ม
                 document.getElementById('startRunBtn').style.display = 'block';
@@ -1578,90 +1578,90 @@
         // แสดงเส้นทาง
         setTimeout(() => {
             try {
-                // ทำลายแผนที่เดิมถ้ามี (เพื่อป้องกันปัญหา ID ซ้ำ)
-                if (window.summaryMapInstance) {
-                    window.summaryMapInstance.remove();
-                }
+            // ทำลายแผนที่เดิมถ้ามี (เพื่อป้องกันปัญหา ID ซ้ำ)
+            if (window.summaryMapInstance) {
+                window.summaryMapInstance.remove();
+            }
 
-                const summaryMapElement = document.getElementById('summaryMap');
-                if (!summaryMapElement) {
-                    console.error('Summary map element not found');
-                    return;
-                }
+            const summaryMapElement = document.getElementById('summaryMap');
+            if (!summaryMapElement) {
+                console.error('Summary map element not found');
+                return;
+            }
 
                 // สร้างแผนที่ใหม่
-                const summaryMap = L.map('summaryMap').setView([defaultPosition.lat, defaultPosition.lng], 13);
-                window.summaryMapInstance = summaryMap;
+            const summaryMap = L.map('summaryMap').setView([defaultPosition.lat, defaultPosition.lng], 13);
+            window.summaryMapInstance = summaryMap;
 
                 // เพิ่ม tile layer
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                    maxZoom: 19
-                }).addTo(summaryMap);
-
-                // เตรียมข้อมูลเส้นทาง
-                let points = [];
-
-                // ใช้ข้อมูลจาก routePoints ที่บันทึกระหว่างการวิ่ง
-                if (routePoints && routePoints.length > 0) {
-                    points = routePoints;
-                }
-                // หรือใช้ข้อมูลจาก run.route_data ถ้ามี
-                else if (run.route_data && Array.isArray(run.route_data) && run.route_data.length > 0) {
-                    points = run.route_data.map(point => [point.lat, point.lng]);
-                }
-
-                if (points && points.length > 0) {
-                    const polyline = L.polyline(points, {
-                        color: 'blue',
-                        weight: 5,
-                        opacity: 0.7
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
                     }).addTo(summaryMap);
 
-                    // ให้แผนที่แสดงทั้งเส้นทาง
-                    summaryMap.fitBounds(polyline.getBounds(), {
-                        padding: [50, 50],
-                        maxZoom: 16
-                    });
+            // เตรียมข้อมูลเส้นทาง
+            let points = [];
 
-                    // เพิ่มมาร์กเกอร์จุดเริ่มต้นและจุดสิ้นสุด
-                    const startPoint = points[0];
-                    const endPoint = points[points.length - 1];
+            // ใช้ข้อมูลจาก routePoints ที่บันทึกระหว่างการวิ่ง
+            if (routePoints && routePoints.length > 0) {
+                points = routePoints;
+            }
+            // หรือใช้ข้อมูลจาก run.route_data ถ้ามี
+            else if (run.route_data && Array.isArray(run.route_data) && run.route_data.length > 0) {
+                points = run.route_data.map(point => [point.lat, point.lng]);
+            }
 
-                    L.marker(startPoint, {
-                        icon: L.divIcon({
-                            className: 'location-pin',
-                            html: '<i class="fas fa-play-circle text-success" style="font-size: 24px;"></i>',
-                            iconSize: [24, 24],
-                            iconAnchor: [12, 12]
-                        })
-                    }).addTo(summaryMap);
+            if (points && points.length > 0) {
+                        const polyline = L.polyline(points, {
+                            color: 'blue',
+                            weight: 5,
+                            opacity: 0.7
+                        }).addTo(summaryMap);
 
-                    L.marker(endPoint, {
-                        icon: L.divIcon({
-                            className: 'location-pin',
-                            html: '<i class="fas fa-flag-checkered text-danger" style="font-size: 24px;"></i>',
-                            iconSize: [24, 24],
-                            iconAnchor: [12, 12]
-                        })
-                    }).addTo(summaryMap);
-                } else {
-                    // ถ้าไม่มีข้อมูลเส้นทาง แสดงตำแหน่งเริ่มต้น
-                    L.marker([defaultPosition.lat, defaultPosition.lng], {
-                        icon: L.divIcon({
-                            className: 'location-pin',
-                            html: '<i class="fas fa-running text-primary" style="font-size: 24px;"></i>',
-                            iconSize: [24, 24],
-                            iconAnchor: [12, 12]
-                        })
-                    }).addTo(summaryMap);
-                }
+                // ให้แผนที่แสดงทั้งเส้นทาง
+                summaryMap.fitBounds(polyline.getBounds(), {
+                    padding: [50, 50],
+                    maxZoom: 16
+                });
 
-                // ทำให้แผนที่ refresh เพื่อแสดงผลอย่างถูกต้อง
-                setTimeout(() => {
-                    if (summaryMap) {
-                        summaryMap.invalidateSize();
+                        // เพิ่มมาร์กเกอร์จุดเริ่มต้นและจุดสิ้นสุด
+                const startPoint = points[0];
+                const endPoint = points[points.length - 1];
+
+                L.marker(startPoint, {
+                            icon: L.divIcon({
+                                className: 'location-pin',
+                                html: '<i class="fas fa-play-circle text-success" style="font-size: 24px;"></i>',
+                                iconSize: [24, 24],
+                                iconAnchor: [12, 12]
+                            })
+                        }).addTo(summaryMap);
+
+                L.marker(endPoint, {
+                            icon: L.divIcon({
+                                className: 'location-pin',
+                                html: '<i class="fas fa-flag-checkered text-danger" style="font-size: 24px;"></i>',
+                                iconSize: [24, 24],
+                                iconAnchor: [12, 12]
+                            })
+                        }).addTo(summaryMap);
+            } else {
+                // ถ้าไม่มีข้อมูลเส้นทาง แสดงตำแหน่งเริ่มต้น
+                L.marker([defaultPosition.lat, defaultPosition.lng], {
+                    icon: L.divIcon({
+                        className: 'location-pin',
+                        html: '<i class="fas fa-running text-primary" style="font-size: 24px;"></i>',
+                                iconSize: [24, 24],
+                                iconAnchor: [12, 12]
+                            })
+                        }).addTo(summaryMap);
                     }
+
+            // ทำให้แผนที่ refresh เพื่อแสดงผลอย่างถูกต้อง
+            setTimeout(() => {
+                if (summaryMap) {
+                    summaryMap.invalidateSize();
+                }
                 }, 200);
             } catch (error) {
                 console.error('Error creating summary map:', error);
@@ -1742,23 +1742,23 @@
             Swal.close();
 
             if (data.status === 'success' || data.success === true) {
-                // เมื่อบันทึกเสร็จแล้ว แสดงข้อความสำเร็จ
-                Swal.fire({
-                    icon: 'success',
-                    title: 'บันทึกสำเร็จ!',
-                    text: 'บันทึกข้อมูลการวิ่งเรียบร้อยแล้ว',
-                    timer: 2000,
-                    showConfirmButton: false
-                }).then(() => {
-                    // ปิด modal
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('activitySummaryModal'));
+            // เมื่อบันทึกเสร็จแล้ว แสดงข้อความสำเร็จ
+        Swal.fire({
+                icon: 'success',
+                title: 'บันทึกสำเร็จ!',
+                text: 'บันทึกข้อมูลการวิ่งเรียบร้อยแล้ว',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                // ปิด modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('activitySummaryModal'));
                     if (modal) {
-                        modal.hide();
+                modal.hide();
                     }
 
-                    // รีเฟรชหน้าเพื่ออัปเดตประวัติการวิ่ง
-                    window.location.reload();
-                });
+                // รีเฟรชหน้าเพื่ออัปเดตประวัติการวิ่ง
+                window.location.reload();
+            });
             } else {
                 // แสดงข้อผิดพลาด
                 Swal.fire({

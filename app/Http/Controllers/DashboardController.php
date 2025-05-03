@@ -86,6 +86,21 @@ class DashboardController extends Controller
             $weeklyGoalProgress = 100;
         }
 
+        // Generate weekly distance data for chart
+        $weeklyDistanceChart = [];
+        $daysOfWeek = [0, 1, 2, 3, 4, 5, 6]; // 0 = Sunday, 6 = Saturday
+
+        foreach ($daysOfWeek as $day) {
+            $dayOfWeek = Carbon::now()->startOfWeek()->addDays($day);
+            $dayActivities = $weeklyActivities->filter(function ($activity) use ($dayOfWeek) {
+                $activityDate = Carbon::parse($activity->start_time)->startOfDay();
+                return $activityDate->isSameDay($dayOfWeek);
+            });
+
+            // Use numeric indexed array for ApexCharts
+            $weeklyDistanceChart[] = round($dayActivities->sum('distance'), 1);
+        }
+
         // แสดงผลโดยใช้ AdminLTE template
         return view('dashboard', compact(
             'totalActivities',
@@ -96,7 +111,8 @@ class DashboardController extends Controller
             'weeklyDistance',
             'weeklyCalories',
             'weeklyGoal',
-            'weeklyGoalProgress'
+            'weeklyGoalProgress',
+            'weeklyDistanceChart'
         ));
     }
 
