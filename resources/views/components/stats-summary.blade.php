@@ -1,5 +1,5 @@
 <!-- Stats Summary Cards in 3-column layout for Mobile -->
-<div class="stats-row">
+<div class="stats-row mb-4">
     <div class="stat-col">
         <div class="stat-icon">
             <i class="fas fa-road" style="color: #2ecc71;"></i>
@@ -24,3 +24,4 @@
         <div class="stat-label">กิจกรรมทั้งหมด</div>
     </div>
 </div>
+ 

@@ -3,44 +3,48 @@
 @section('title', 'แก้ไขข้อมูลส่วนตัว')
 
 @section('content')
-<div class="container">
+<div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-12">
+        <div class="col-md-8">
             <!-- ส่วนหัวโปรไฟล์ -->
-            <div class="card gofit-card mb-4">
+            <div class="card border-0 shadow-sm rounded-3 mb-4">
                 <div class="card-body text-center py-4">
                     <div class="profile-image-container mb-3">
                         @if($user->profile_image)
-                            <img src="{{ asset('profile_images/' . $user->profile_image) }}" alt="รูปโปรไฟล์" class="profile-image rounded-circle">
+                            <img src="{{ asset('profile_images/' . $user->profile_image) }}" alt="รูปโปรไฟล์" class="profile-image rounded-circle border shadow-sm">
                         @else
-                            <div class="profile-placeholder rounded-circle">
+                            <div class="profile-placeholder rounded-circle border shadow-sm">
                                 <i class="fas fa-user"></i>
                             </div>
                         @endif
+                        <button class="btn btn-sm btn-primary rounded-circle position-absolute"
+                                id="changeProfileBtn"
+                                style="bottom: 0; right: 0; width: 32px; height: 32px; padding: 0;">
+                            <i class="fas fa-camera"></i>
+                        </button>
                     </div>
-                    <h4 class="mb-1">{{ $user->firstname }} {{ $user->lastname }}</h4>
+                    <h5 class="fw-bold mb-1">{{ $user->firstname }} {{ $user->lastname }}</h5>
+                    <p class="text-muted small mb-0">
+                        <i class="fas fa-at me-1"></i> {{ $user->username }}
+                        @if($user->user_type_id == 2)
+                        <span class="badge bg-primary ms-2">ผู้ดูแลระบบ</span>
+                        @endif
+                    </p>
 
-                    <form action="{{ route('profile.update-image') }}" method="POST" enctype="multipart/form-data" id="profileImageForm">
+                    <form action="{{ route('profile.update-image') }}" method="POST" enctype="multipart/form-data" id="profileImageForm" style="display: none;">
                         @csrf
-                        <div class="d-flex justify-content-center">
-                            <div class="upload-btn-wrapper">
-                                <button class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-camera me-1"></i> เปลี่ยนรูปโปรไฟล์
-                                </button>
-                                <input type="file" name="profile_image" id="profileImageInput" accept="image/*">
-                            </div>
-                        </div>
+                        <input type="file" name="profile_image" id="profileImageInput" accept="image/*">
                     </form>
                 </div>
             </div>
 
             <div class="row">
-                <!-- คอลัมน์ซ้าย: ข้อมูลส่วนตัว -->
+                <!-- ข้อมูลส่วนตัว -->
                 <div class="col-md-6">
-                    <div class="card gofit-card mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">
-                                <i class="fas fa-user-edit me-2"></i>
+                    <div class="card border-0 shadow-sm rounded-3 mb-4">
+                        <div class="card-header bg-white border-0">
+                            <h5 class="mb-0 fw-bold">
+                                <i class="fas fa-user-edit me-2 text-primary"></i>
                                 ข้อมูลส่วนตัว
                             </h5>
                         </div>
@@ -48,12 +52,6 @@
                             <form method="POST" action="{{ route('profile.update') }}">
                                 @csrf
                                 @method('PUT')
-
-                                <div class="mb-3">
-                                    <label for="username" class="form-label">ชื่อผู้ใช้</label>
-                                    <input id="username" type="text" class="form-control" value="{{ $user->username }}" disabled readonly>
-                                    <small class="text-muted">ชื่อผู้ใช้ไม่สามารถเปลี่ยนแปลงได้</small>
-                                </div>
 
                                 <div class="mb-3">
                                     <label for="firstname" class="form-label">ชื่อ</label>
@@ -103,63 +101,14 @@
                             </form>
                         </div>
                     </div>
-
-                    <!-- ข้อมูลเพิ่มเติม -->
-                    <div class="card gofit-card">
-                        <div class="card-header">
-                            <h5 class="mb-0">
-                                <i class="fas fa-heartbeat me-2"></i>
-                                ข้อมูลสุขภาพ
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <form method="POST" action="{{ route('profile.update-health') }}">
-                                @csrf
-                                @method('PUT')
-
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <label for="weight" class="form-label">น้ำหนัก (กก.)</label>
-                                        <input type="number" class="form-control" id="weight" name="weight" step="0.1" value="{{ $user->weight ?? '' }}">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="height" class="form-label">ส่วนสูง (ซม.)</label>
-                                        <input type="number" class="form-control" id="height" name="height" step="0.1" value="{{ $user->height ?? '' }}">
-                                    </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <label for="birthdate" class="form-label">วันเกิด</label>
-                                        <input type="date" class="form-control" id="birthdate" name="birthdate" value="{{ $user->birthdate ?? '' }}">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="gender" class="form-label">เพศ</label>
-                                        <select class="form-select" id="gender" name="gender">
-                                            <option value="">-- เลือกเพศ --</option>
-                                            <option value="male" {{ $user->gender == 'male' ? 'selected' : '' }}>ชาย</option>
-                                            <option value="female" {{ $user->gender == 'female' ? 'selected' : '' }}>หญิง</option>
-                                            <option value="other" {{ $user->gender == 'other' ? 'selected' : '' }}>อื่นๆ</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-save me-1"></i> บันทึกข้อมูลสุขภาพ
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
                 </div>
 
-                <!-- คอลัมน์ขวา: เปลี่ยนรหัสผ่าน -->
+                <!-- เปลี่ยนรหัสผ่าน -->
                 <div class="col-md-6">
-                    <div class="card gofit-card mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">
-                                <i class="fas fa-lock me-2"></i>
+                    <div class="card border-0 shadow-sm rounded-3 mb-4" id="password">
+                        <div class="card-header bg-white border-0">
+                            <h5 class="mb-0 fw-bold">
+                                <i class="fas fa-lock me-2 text-primary"></i>
                                 เปลี่ยนรหัสผ่าน
                             </h5>
                         </div>
@@ -203,11 +152,11 @@
                         </div>
                     </div>
 
-                    <!-- ส่วนลบบัญชี (แสดงเฉพาะสำหรับผู้ใช้ทั่วไป) -->
+                    <!-- เฉพาะผู้ใช้ทั่วไป -->
                     @if($user->user_type_id == 1)
-                    <div class="card gofit-card mt-4">
-                        <div class="card-header bg-danger text-white">
-                            <h5 class="mb-0">
+                    <div class="card border-0 shadow-sm rounded-3">
+                        <div class="card-header bg-danger text-white border-0">
+                            <h5 class="mb-0 fw-bold">
                                 <i class="fas fa-exclamation-triangle me-2"></i>
                                 การจัดการบัญชี
                             </h5>
@@ -215,7 +164,7 @@
                         <div class="card-body">
                             <h6 class="card-subtitle mb-3">ลบบัญชีของคุณ</h6>
                             <p class="text-muted mb-3">
-                                เมื่อคุณลบบัญชีของคุณ ข้อมูลทั้งหมดของคุณจะถูกลบออกจากระบบอย่างถาวร ซึ่งรวมถึงประวัติการวิ่ง เป้าหมาย และข้อมูลส่วนตัวทั้งหมด
+                                เมื่อคุณลบบัญชีของคุณ ข้อมูลทั้งหมดของคุณจะถูกลบออกจากระบบอย่างถาวร
                             </p>
                             <div class="d-grid">
                                 <a href="{{ route('profile.delete.confirm') }}" class="btn btn-outline-danger">
@@ -236,57 +185,138 @@
 <style>
     .profile-image-container {
         position: relative;
-        width: 150px;
-        height: 150px;
+        width: 120px;
+        height: 120px;
         margin: 0 auto;
     }
 
     .profile-image {
-        width: 150px;
-        height: 150px;
+        width: 120px;
+        height: 120px;
         object-fit: cover;
-        border: 3px solid var(--primary);
     }
 
     .profile-placeholder {
-        width: 150px;
-        height: 150px;
-        background-color: #e9ecef;
+        width: 120px;
+        height: 120px;
+        background-color: #f8f9fa;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 64px;
+        font-size: 3rem;
         color: #adb5bd;
-        border: 3px solid var(--primary);
     }
 
-    .upload-btn-wrapper {
-        position: relative;
-        overflow: hidden;
-        display: inline-block;
+    .card {
+        border-radius: 0.75rem;
     }
 
-    .upload-btn-wrapper input[type=file] {
-        position: absolute;
-        left: 0;
-        top: 0;
-        opacity: 0;
-        width: 100%;
-        height: 100%;
-        cursor: pointer;
+    .badge.bg-primary {
+        background-color: #2196F3 !important;
+    }
+
+    .border {
+        border-color: rgba(0,0,0,0.08) !important;
+    }
+
+    .card-header {
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+        padding: 1rem 1.25rem;
     }
 </style>
 @endsection
 
 @section('scripts')
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // อัปโหลดรูปโปรไฟล์อัตโนมัติเมื่อเลือกไฟล์
-        document.getElementById('profileImageInput').addEventListener('change', function() {
+        // เปลี่ยนการแสดงปุ่มอัปโหลดรูป
+        const changeProfileBtn = document.getElementById('changeProfileBtn');
+        const profileImageInput = document.getElementById('profileImageInput');
+        const profileImageForm = document.getElementById('profileImageForm');
+
+        // เมื่อคลิกที่ปุ่มจะเปิดหน้าต่างให้เลือกไฟล์
+        changeProfileBtn.addEventListener('click', function() {
+            profileImageInput.click();
+        });
+
+        // เมื่อมีการเลือกไฟล์รูปภาพใหม่
+        profileImageInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
-                document.getElementById('profileImageForm').submit();
+                const file = this.files[0];
+
+                // ตรวจสอบว่าเป็นไฟล์รูปภาพหรือไม่
+                if (!file.type.match('image.*')) {
+                    Swal.fire({
+                        title: 'ข้อผิดพลาด!',
+                        text: 'กรุณาเลือกไฟล์รูปภาพเท่านั้น',
+                        icon: 'error',
+                        confirmButtonText: 'ตกลง'
+                    });
+                    return;
+                }
+
+                // ตรวจสอบขนาดไฟล์ (ไม่เกิน 2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    Swal.fire({
+                        title: 'ข้อผิดพลาด!',
+                        text: 'ขนาดไฟล์ต้องไม่เกิน 2MB',
+                        icon: 'error',
+                        confirmButtonText: 'ตกลง'
+                    });
+                    return;
+                }
+
+                // แสดง SweetAlert ยืนยันการอัปโหลด
+                Swal.fire({
+                    title: 'อัปโหลดรูปโปรไฟล์',
+                    text: 'คุณต้องการอัปโหลดรูปโปรไฟล์นี้หรือไม่?',
+                    imageUrl: URL.createObjectURL(file),
+                    imageWidth: 200,
+                    imageHeight: 200,
+                    imageAlt: 'รูปโปรไฟล์ใหม่',
+                    showCancelButton: true,
+                    confirmButtonText: 'อัปโหลด',
+                    cancelButtonText: 'ยกเลิก',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // แสดง loading
+                        Swal.fire({
+                            title: 'กำลังอัปโหลด...',
+                            text: 'โปรดรอสักครู่',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        // ส่งฟอร์ม
+                        profileImageForm.submit();
+                    }
+                });
             }
         });
+
+        // แสดง SweetAlert เมื่อมีข้อผิดพลาดหรือสำเร็จ
+        @if(session('success'))
+            Swal.fire({
+                title: 'สำเร็จ!',
+                text: "{{ session('success') }}",
+                icon: 'success',
+                confirmButtonText: 'ตกลง'
+            });
+        @endif
+
+        @if(session('error'))
+            Swal.fire({
+                title: 'ข้อผิดพลาด!',
+                text: "{{ session('error') }}",
+                icon: 'error',
+                confirmButtonText: 'ตกลง'
+            });
+        @endif
     });
 </script>
 @endsection

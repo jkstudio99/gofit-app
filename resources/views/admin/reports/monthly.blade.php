@@ -342,7 +342,17 @@
                     }
                 },
                 defaultStyle: {
-                    font: 'THSarabunNew'
+                    fontSize: 12
+                },
+                customize: function(doc) {
+                    doc.styles.tableHeader = {
+                        fontSize: 14,
+                        bold: true,
+                        alignment: 'center'
+                    };
+
+                    // กำหนดขอบกระดาษ
+                    doc.pageMargins = [20, 20, 20, 20];
                 }
             };
 

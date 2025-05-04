@@ -5,20 +5,113 @@
 @section('styles')
 <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
 <style>
     .custom-file-label::after {
         content: "เลือกไฟล์";
     }
     .image-preview {
+        max-width: 100%;
         max-height: 200px;
-        width: 100%;
-        object-fit: cover;
-        margin-top: 10px;
-        border-radius: 5px;
+        border-radius: 0.5rem;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
     }
     label.required:after {
         content: " *";
         color: red;
+    }
+
+    /* Action button styling */
+    .event-action-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 5px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        padding: 0;
+    }
+
+    .event-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .event-action-btn i {
+        color: white;
+        font-size: 15px;
+    }
+
+    /* SweetAlert2 Custom Styles */
+    .swal2-styled.swal2-confirm {
+        background-color: #2DC679 !important;
+        border-radius: 0.5rem !important;
+        font-weight: 500 !important;
+        padding: 0.75rem 1.5rem !important;
+        box-shadow: 0 5px 10px rgba(45, 198, 121, 0.25) !important;
+    }
+
+    .swal2-styled.swal2-confirm:hover {
+        background-color: #24A664 !important;
+    }
+
+    .swal2-styled.swal2-cancel {
+        background-color: #FFFFFF !important;
+        color: #4A4A4A !important;
+        border: 1px solid #E9E9E9 !important;
+        border-radius: 0.5rem !important;
+        font-weight: 500 !important;
+        padding: 0.75rem 1.5rem !important;
+    }
+
+    .swal2-styled.swal2-cancel:hover {
+        background-color: #F8F8F8 !important;
+    }
+
+    .swal2-popup {
+        border-radius: 0.75rem !important;
+        padding: 1.5rem !important;
+        font-family: 'Noto Sans Thai', -apple-system, sans-serif !important;
+    }
+
+    .swal2-title {
+        color: #121212 !important;
+        font-weight: 700 !important;
+    }
+
+    .swal2-html-container {
+        color: #4A4A4A !important;
+    }
+
+    .swal2-icon.swal2-question {
+        border-color: #2DC679 !important;
+        color: #2DC679 !important;
+    }
+
+    .swal2-icon.swal2-warning {
+        border-color: #FFB800 !important;
+        color: #FFB800 !important;
+    }
+
+    .swal2-icon.swal2-error {
+        border-color: #FF4646 !important;
+        color: #FF4646 !important;
+    }
+
+    .swal2-icon.swal2-success {
+        border-color: #2DC679 !important;
+        color: #2DC679 !important;
+    }
+
+    .swal2-icon.swal2-success [class^=swal2-success-line] {
+        background-color: #2DC679 !important;
+    }
+
+    .swal2-icon.swal2-success .swal2-success-ring {
+        border-color: rgba(45, 198, 121, 0.3) !important;
     }
 </style>
 @endsection
@@ -33,7 +126,7 @@
                     <a href="{{ route('admin.events.index') }}" class="btn btn-outline-secondary me-2">
                         <i class="fas fa-arrow-left me-1"></i> กลับไปยังรายการ
                     </a>
-                    <a href="{{ route('admin.events.show', $event) }}" class="btn btn-info">
+                    <a href="{{ route('admin.events.show', $event) }}" class="btn btn-info text-white">
                         <i class="fas fa-eye me-1"></i> ดูรายละเอียด
                     </a>
                 </div>
@@ -127,21 +220,20 @@
                                             <label for="event_image" class="form-label">รูปภาพกิจกรรม</label>
 
                                             @if($event->event_image)
-                                                <div class="mb-2">
-                                                    <img src="{{ asset(str_replace('storage/', '', 'storage/' . $event->event_image)) }}"
+                                                <div class="mb-2" id="currentEventImage">
+                                                    <img src="{{ asset('storage/' . $event->event_image) }}"
                                                          alt="{{ $event->event_name }}" class="image-preview">
                                                 </div>
+                                            @else
+                                                <div class="mb-2 d-none" id="currentEventImage"></div>
                                             @endif
 
                                             <input class="form-control @error('event_image') is-invalid @enderror" type="file"
-                                                  id="event_image" name="event_image" accept="image/*" onchange="previewImage(this)">
+                                                  id="event_image" name="event_image" accept="image/*" onchange="handleImageSelect(this)">
                                             <small class="form-text text-muted">อัปโหลดรูปใหม่เพื่อเปลี่ยน (ขนาดไม่เกิน 2MB)</small>
                                             @error('event_image')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
-                                            <div class="mt-2">
-                                                <img id="imagePreview" class="image-preview d-none" alt="ตัวอย่างรูปภาพ">
-                                            </div>
                                         </div>
 
                                         <!-- ระยะทาง -->
@@ -221,6 +313,7 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 
 <script>
     // ตัวเลือกวันที่และเวลา
@@ -247,25 +340,91 @@
             ],
             placeholder: 'รายละเอียดกิจกรรม...'
         });
+
+        // แสดงข้อความแจ้งเตือนหากมี session
+        @if(session('success'))
+        Swal.fire({
+            title: 'สำเร็จ!',
+            text: "{{ session('success') }}",
+            icon: 'success',
+            confirmButtonText: 'ตกลง'
+        });
+        @endif
+
+        @if(session('error'))
+        Swal.fire({
+            title: 'เกิดข้อผิดพลาด!',
+            text: "{{ session('error') }}",
+            icon: 'error',
+            confirmButtonText: 'ตกลง'
+        });
+        @endif
     });
 
-    // แสดงตัวอย่างรูปภาพ
-    function previewImage(input) {
-        const preview = document.getElementById('imagePreview');
+    // จัดการอัปโหลดรูปภาพด้วย SweetAlert2
+    function handleImageSelect(input) {
+        const file = input.files[0];
+        if (!file) return;
 
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-                preview.classList.remove('d-none');
-            }
-
-            reader.readAsDataURL(input.files[0]);
-        } else {
-            preview.src = '';
-            preview.classList.add('d-none');
+        // ตรวจสอบประเภทไฟล์
+        const validImageTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
+        if (!validImageTypes.includes(file.type)) {
+            Swal.fire({
+                title: 'ไม่สามารถอัพโหลดได้',
+                text: 'กรุณาเลือกไฟล์รูปภาพเท่านั้น (JPEG, PNG, GIF, WEBP)',
+                icon: 'error',
+                confirmButtonText: 'ตกลง'
+            });
+            input.value = ''; // ล้างค่า input
+            return;
         }
+
+        // ตรวจสอบขนาดไฟล์ (ไม่เกิน 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            Swal.fire({
+                title: 'ไม่สามารถอัพโหลดได้',
+                text: 'ขนาดไฟล์ต้องไม่เกิน 2MB',
+                icon: 'error',
+                confirmButtonText: 'ตกลง'
+            });
+            input.value = ''; // ล้างค่า input
+            return;
+        }
+
+        // แสดงตัวอย่างรูปภาพและยืนยันการอัพโหลด
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imgSrc = e.target.result;
+
+            // เตรียมอัปเดตรูปภาพที่แสดงในหน้า
+            const currentEventImage = document.getElementById('currentEventImage');
+
+            Swal.fire({
+                title: 'ยืนยันการเปลี่ยนรูปภาพกิจกรรม',
+                html: `
+                    <div class="text-center mb-3">
+                        <img src="${imgSrc}" style="max-width: 100%; max-height: 300px; border-radius: 8px;" class="img-fluid mb-2">
+                    </div>
+                    <p>คุณต้องการใช้รูปนี้เป็นรูปภาพกิจกรรมใหม่หรือไม่?</p>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'ใช่, ใช้รูปนี้',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // ถ้าผู้ใช้ยืนยัน ให้อัปเดตรูปภาพที่แสดง
+                    if (currentEventImage) {
+                        currentEventImage.innerHTML = `<img src="${imgSrc}" class="image-preview" alt="รูปภาพกิจกรรม">`;
+                        currentEventImage.classList.remove('d-none');
+                    }
+                } else {
+                    // ถ้าผู้ใช้ยกเลิก ให้ล้างค่าอินพุตไฟล์
+                    input.value = '';
+                }
+            });
+        };
+        reader.readAsDataURL(file);
     }
 </script>
 @endsection

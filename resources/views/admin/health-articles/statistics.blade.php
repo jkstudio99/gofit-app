@@ -210,7 +210,7 @@
                         <i class="fas fa-newspaper"></i>
                     </div>
                     <div class="stat-info">
-                        <div class="stat-value">{{ number_format($totalArticles) }}</div>
+                        <div class="stat-value">{{ number_format($totalArticles ?? 0) }}</div>
                         <div class="stat-label">บทความทั้งหมด</div>
                     </div>
                 </div>
@@ -223,7 +223,7 @@
                         <i class="fas fa-eye"></i>
                     </div>
                     <div class="stat-info">
-                        <div class="stat-value">{{ number_format($totalViews) }}</div>
+                        <div class="stat-value">{{ number_format($totalViews ?? 0) }}</div>
                         <div class="stat-label">ยอดเข้าชมทั้งหมด</div>
                     </div>
                 </div>
@@ -236,7 +236,7 @@
                         <i class="fas fa-heart"></i>
                     </div>
                     <div class="stat-info">
-                        <div class="stat-value">{{ number_format($totalLikes) }}</div>
+                        <div class="stat-value">{{ number_format($totalLikes ?? 0) }}</div>
                         <div class="stat-label">ยอดถูกใจทั้งหมด</div>
                     </div>
                 </div>
@@ -249,7 +249,7 @@
                         <i class="fas fa-comment"></i>
                     </div>
                     <div class="stat-info">
-                        <div class="stat-value">{{ number_format($totalComments) }}</div>
+                        <div class="stat-value">{{ number_format($totalComments ?? 0) }}</div>
                         <div class="stat-label">ความคิดเห็นทั้งหมด</div>
                     </div>
                 </div>
@@ -285,12 +285,19 @@
                         <canvas id="categoryChart"></canvas>
                     </div>
                     <div class="mt-3">
-                        @foreach($categoryDistribution as $index => $category)
+                        @php
+                            // Define category colors if not defined
+                            $categoryColors = $categoryColors ?? [
+                                '#2DC679', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6',
+                                '#EC4899', '#10B981', '#6366F1', '#F97316', '#14B8A6'
+                            ];
+                        @endphp
+                        @foreach($categoryStats as $index => $category)
                         <div class="category-distribution-item">
                             <div class="category-color" style="background-color: {{ $categoryColors[$index % count($categoryColors)] }}"></div>
-                            <div class="category-name">{{ $category['name'] }}</div>
-                            <div class="category-value">{{ $category['count'] }}</div>
-                            <div class="category-percent">{{ number_format($category['percentage'], 1) }}%</div>
+                            <div class="category-name">{{ $category->category_name }}</div>
+                            <div class="category-value">{{ $category->articles_count }}</div>
+                            <div class="category-percent">{{ number_format(($category->articles_count / ($totalArticles ?: 1)) * 100, 1) }}%</div>
                         </div>
                         @endforeach
                     </div>
@@ -492,11 +499,11 @@
         new Chart(viewsChartCtx, {
             type: 'line',
             data: {
-                labels: {!! json_encode($viewsChart['labels']) !!},
+                labels: {!! json_encode($viewsChart['labels'] ?? []) !!},
                 datasets: [
                     {
                         label: 'ยอดเข้าชม',
-                        data: {!! json_encode($viewsChart['views']) !!},
+                        data: {!! json_encode($viewsChart['views'] ?? []) !!},
                         borderColor: '#2DC679',
                         backgroundColor: 'rgba(45, 198, 121, 0.1)',
                         borderWidth: 2,
@@ -544,10 +551,10 @@
         new Chart(categoryChartCtx, {
             type: 'doughnut',
             data: {
-                labels: {!! json_encode(array_column($categoryDistribution, 'name')) !!},
+                labels: {!! json_encode($categoryStats->pluck('category_name')->toArray()) !!},
                 datasets: [{
-                    data: {!! json_encode(array_column($categoryDistribution, 'count')) !!},
-                    backgroundColor: {!! json_encode($categoryColors) !!},
+                    data: {!! json_encode($categoryStats->pluck('articles_count')->toArray()) !!},
+                    backgroundColor: {!! json_encode($categoryColors ?? ['#2DC679', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#10B981', '#6366F1', '#F97316', '#14B8A6']) !!},
                     borderWidth: 1,
                     borderColor: '#ffffff'
                 }]

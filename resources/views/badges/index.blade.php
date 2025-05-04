@@ -507,234 +507,235 @@
 @endsection
 
 @section('styles')
-<style>
-    /* Badge Cards */
-    .badge-card {
-        transition: all 0.3s ease;
-        border-radius: 10px;
-        overflow: hidden;
-        position: relative;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-        border: none;
-    }
+    <link href="{{ asset('css/badges-mobile.css') }}" rel="stylesheet">
+    <style>
+        /* Badge Cards */
+        .badge-card {
+            transition: all 0.3s ease;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border: none;
+        }
 
-    .badge-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
+        .badge-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
 
-    .badge-card.unlocked:hover {
-        box-shadow: 0 10px 20px rgba(40,167,69,0.2);
-    }
+        .badge-card.unlocked:hover {
+            box-shadow: 0 10px 20px rgba(40,167,69,0.2);
+        }
 
-    .badge-img-container {
-        height: 120px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: transparent;
-        padding: 15px;
-    }
+        .badge-img-container {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
+            padding: 15px;
+        }
 
-    .badge-img {
-        max-height: 90px;
-        max-width: 90px;
-        object-fit: contain;
-        transition: all 0.3s ease;
-    }
+        .badge-img {
+            max-height: 90px;
+            max-width: 90px;
+            object-fit: contain;
+            transition: all 0.3s ease;
+        }
 
-    .badge-card:hover .badge-img {
-        transform: scale(1.1);
-    }
+        .badge-card:hover .badge-img {
+            transform: scale(1.1);
+        }
 
-    .grayscale {
-        filter: grayscale(100%);
-    }
+        .grayscale {
+            filter: grayscale(100%);
+        }
 
-    .badge-type {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        font-size: 0.7rem;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+        .badge-type {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.7rem;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-    .badge-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        color: rgba(255,255,255,0.5);
-        pointer-events: none;
-    }
+        .badge-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: rgba(255,255,255,0.5);
+            pointer-events: none;
+        }
 
-    /* Filter Badges */
-    .filter-badge {
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
+        /* Filter Badges */
+        .filter-badge {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
 
-    .filter-badge:hover, .filter-badge.active {
-        background-color: #2DC679 !important;
-        color: white;
-    }
+        .filter-badge:hover, .filter-badge.active {
+            background-color: #2DC679 !important;
+            color: white;
+        }
 
-    /* Stats Cards */
-    .badge-stat-card {
-        border-radius: 10px;
-        transition: all 0.3s ease;
-    }
+        /* Stats Cards */
+        .badge-stat-card {
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
 
-    .badge-stat-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
-    }
+        .badge-stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+        }
 
-    .badge-stat-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 48px;
-        height: 48px;
-        border-radius: 10px;
-        font-size: 20px;
-    }
+        .badge-stat-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            font-size: 20px;
+        }
 
-    /* Progress bars */
-    .progress {
-        background-color: rgba(0,0,0,0.05);
-        height: 8px !important;
-        border-radius: 4px;
-        overflow: hidden;
-    }
+        /* Progress bars */
+        .progress {
+            background-color: rgba(0,0,0,0.05);
+            height: 8px !important;
+            border-radius: 4px;
+            overflow: hidden;
+        }
 
-    .progress-bar {
-        border-radius: 4px;
-        animation: progress-bar-stripes 1s linear infinite, progress-animation 1.5s ease-out;
-        background-image: linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent);
-        background-size: 1rem 1rem;
-    }
+        .progress-bar {
+            border-radius: 4px;
+            animation: progress-bar-stripes 1s linear infinite, progress-animation 1.5s ease-out;
+            background-image: linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent);
+            background-size: 1rem 1rem;
+        }
 
-    /* Progress animation */
-    @keyframes progress-animation {
-        0% { width: 0%; }
-    }
+        /* Progress animation */
+        @keyframes progress-animation {
+            0% { width: 0%; }
+        }
 
-    @keyframes progress-bar-stripes {
-        0% { background-position: 1rem 0 }
-        100% { background-position: 0 0 }
-    }
+        @keyframes progress-bar-stripes {
+            0% { background-position: 1rem 0 }
+            100% { background-position: 0 0 }
+        }
 
-    /* Badge Category Styling */
-    .badge-category-section {
-        border-radius: 10px;
-        overflow: hidden;
-    }
+        /* Badge Category Styling */
+        .badge-category-section {
+            border-radius: 10px;
+            overflow: hidden;
+        }
 
-    .badge-type-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-    }
+        .badge-type-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
 
-    .badge-type-header {
-        padding: 15px;
-        border-radius: 10px;
-        background-color: #f8f9fa;
-    }
+        .badge-type-header {
+            padding: 15px;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+        }
 
-    /* Tab Styling */
-    .nav-tabs {
-        border-bottom: 1px solid #e9ecef;
-    }
+        /* Tab Styling */
+        .nav-tabs {
+            border-bottom: 1px solid #e9ecef;
+        }
 
-    .nav-tabs .nav-item {
-        margin-bottom: -1px;
-    }
+        .nav-tabs .nav-item {
+            margin-bottom: -1px;
+        }
 
-    .nav-tabs .nav-link {
-        border: none;
-        border-radius: 0;
-        color: #495057;
-        font-weight: 500;
-        padding: 12px 20px;
-        transition: all 0.2s ease;
-        position: relative;
-    }
+        .nav-tabs .nav-link {
+            border: none;
+            border-radius: 0;
+            color: #495057;
+            font-weight: 500;
+            padding: 12px 20px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
 
-    .nav-tabs .nav-link:hover {
-        background-color: rgba(45, 198, 121, 0.05);
-        border-color: transparent;
-    }
+        .nav-tabs .nav-link:hover {
+            background-color: rgba(45, 198, 121, 0.05);
+            border-color: transparent;
+        }
 
-    .nav-tabs .nav-link.active {
-        color: #2DC679;
-        background-color: white;
-        border-color: transparent;
-    }
+        .nav-tabs .nav-link.active {
+            color: #2DC679;
+            background-color: white;
+            border-color: transparent;
+        }
 
-    .nav-tabs .nav-link.active::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background-color: #2DC679;
-    }
+        .nav-tabs .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: #2DC679;
+        }
 
-    .card-header-custom {
-        font-weight: 500;
-        padding: 10px 15px;
-    }
+        .card-header-custom {
+            font-weight: 500;
+            padding: 10px 15px;
+        }
 
-    /* Badge History Button */
-    .btn-outline-primary:hover {
-        color: white !important;
-    }
+        /* Badge History Button */
+        .btn-outline-primary:hover {
+            color: white !important;
+        }
 
-    /* Filter Buttons */
-    .badge.filter-badge:hover,
-    .btn-outline-secondary:hover,
-    .badge.bg-light:hover,
-    .badge.bg-light.text-dark:hover {
-        color: white !important;
-        text-decoration: none !important;
-    }
+        /* Filter Buttons */
+        .badge.filter-badge:hover,
+        .btn-outline-secondary:hover,
+        .badge.bg-light:hover,
+        .badge.bg-light.text-dark:hover {
+            color: white !important;
+            text-decoration: none !important;
+        }
 
-    /* Remove underlines everywhere */
-    a,
-    button,
-    .btn,
-    .badge,
-    a:hover,
-    button:hover,
-    .btn:hover,
-    .badge:hover {
-        text-decoration: none !important;
-    }
+        /* Remove underlines everywhere */
+        a,
+        button,
+        .btn,
+        .badge,
+        a:hover,
+        button:hover,
+        .btn:hover,
+        .badge:hover {
+            text-decoration: none !important;
+        }
 
-    /* Filter badge specific styling */
-    .filter-badge {
-        text-decoration: none !important;
-        border: none !important;
-}
-</style>
+        /* Filter badge specific styling */
+        .filter-badge {
+            text-decoration: none !important;
+            border: none !important;
+        }
+    </style>
 @endsection
 
 @section('scripts')

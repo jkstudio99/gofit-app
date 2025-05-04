@@ -54,6 +54,9 @@ class RunStatisticsController extends Controller
         // Get last week stats
         $lastWeekStats = $this->getLastWeekStats();
 
+        // Get all users for export form
+        $users = User::select('user_id', 'username')->orderBy('username')->get();
+
         return view('admin.run.stats', compact(
             'totalRuns',
             'totalDistance',
@@ -61,7 +64,8 @@ class RunStatisticsController extends Controller
             'formattedTotalDuration',
             'topRunners',
             'latestRuns',
-            'lastWeekStats'
+            'lastWeekStats',
+            'users'
         ));
     }
 
@@ -377,7 +381,7 @@ class RunStatisticsController extends Controller
             'format' => 'required|in:csv,excel,json',
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date',
-            'user_id' => 'nullable|exists:tb_users,user_id'
+            'user_id' => 'nullable|exists:tb_user,user_id'
         ]);
 
         // กำหนดช่วงเวลา
@@ -407,7 +411,7 @@ class RunStatisticsController extends Controller
                 'username' => $run->user->username ?? 'Unknown',
                 'distance' => $run->distance,
                 'duration' => $run->duration,
-                'duration_formatted' => $this->formatDuration($run->duration),
+                'duration_formatted' => $this->formatDurationTime($run->duration),
                 'average_speed' => $run->average_speed,
                 'calories_burned' => $run->calories_burned,
                 'start_time' => $run->start_time ? $run->start_time->format('Y-m-d H:i:s') : null,
@@ -417,6 +421,9 @@ class RunStatisticsController extends Controller
 
             $exportData[] = $exportRow;
         }
+
+        // Get all users for export form
+        $users = User::select('user_id', 'username')->orderBy('username')->get();
 
         // ส่งออกตามรูปแบบที่กำหนด
         $format = $request->input('format');
@@ -436,7 +443,7 @@ class RunStatisticsController extends Controller
     /**
      * แปลงระยะเวลาเป็นรูปแบบ HH:MM:SS
      */
-    private function formatDuration($seconds)
+    private function formatDurationTime($seconds)
     {
         $hours = floor($seconds / 3600);
         $minutes = floor(($seconds % 3600) / 60);
@@ -528,6 +535,50 @@ class RunStatisticsController extends Controller
         // ในตัวอย่างนี้จะสร้างเป็น CSV แทน
 
         return $this->exportCsv($data);
+    }
+
+    /**
+     * แสดงสถานที่ออกกำลังกาย
+     */
+    public function locations()
+    {
+        // ดึงข้อมูลสถานที่ออกกำลังกายที่ได้รับความนิยม
+        $popularLocations = DB::table('tb_run')
+            ->select(DB::raw('COUNT(*) as run_count'))
+            ->where('is_completed', true)
+            ->whereNotNull('route_data')
+            ->count();
+
+        // สร้างข้อมูลการวิ่งตามจังหวัด/เขต (ตัวอย่างเท่านั้น - ควรดึงจากฐานข้อมูลจริง)
+        $runsByArea = [
+            ['name' => 'กรุงเทพมหานคร', 'count' => rand(50, 200)],
+            ['name' => 'นนทบุรี', 'count' => rand(20, 100)],
+            ['name' => 'ปทุมธานี', 'count' => rand(10, 80)],
+            ['name' => 'เชียงใหม่', 'count' => rand(30, 120)],
+            ['name' => 'ภูเก็ต', 'count' => rand(40, 150)],
+        ];
+
+        // ข้อมูลผู้ใช้ที่มีการวิ่งมากที่สุดในพื้นที่ต่างๆ
+        $topRunnersInAreas = User::select(
+                'tb_user.user_id',
+                'tb_user.username',
+                'tb_user.firstname',
+                'tb_user.lastname',
+                DB::raw('COUNT(tb_run.run_id) as run_count'),
+                DB::raw('SUM(tb_run.distance) as total_distance')
+            )
+            ->join('tb_run', 'tb_user.user_id', '=', 'tb_run.user_id')
+            ->where('tb_run.is_completed', true)
+            ->groupBy('tb_user.user_id', 'tb_user.username', 'tb_user.firstname', 'tb_user.lastname')
+            ->orderBy('total_distance', 'desc')
+            ->take(10)
+            ->get();
+
+        return view('admin.run.locations', compact(
+            'popularLocations',
+            'runsByArea',
+            'topRunnersInAreas'
+        ));
     }
 }
 

@@ -14,7 +14,7 @@
     }
     .status-filter .nav-link.active {
         color: #fff;
-        background-color: #007bff;
+        background-color: #2DC679;
     }
 
     /* ปรับแต่งตัวกรองขั้นสูง */
@@ -48,9 +48,75 @@
 
     .ui-state-active,
     .ui-widget-content .ui-state-active {
-        background-color: #007bff !important;
-        border-color: #007bff !important;
+        background-color: #2DC679 !important;
+        border-color: #2DC679 !important;
         color: white !important;
+    }
+
+    /* Event cards styling */
+    .event-stat-card {
+        border: none;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .event-stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+    }
+
+    .event-stat-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        font-size: 20px;
+    }
+
+    /* Event image styling */
+    .event-image {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .event-image:hover {
+        transform: scale(1.2);
+    }
+
+    /* Action buttons styling */
+    .event-action-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 5px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        padding: 0;
+    }
+
+    .event-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .event-action-btn i {
+        color: white;
+        font-size: 15px;
+    }
+
+    /* Badge styles */
+    .badge {
+        padding: 0.5rem 0.75rem;
+        font-weight: 500;
     }
 
     /* SweetAlert2 Custom Styles */
@@ -120,16 +186,73 @@
 @endsection
 
 @section('content')
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">จัดการกิจกรรม</h1>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="mb-0">จัดการกิจกรรม</h2>
         <a href="{{ route('admin.events.create') }}" class="btn btn-primary">
             <i class="fas fa-plus me-2"></i>เพิ่มกิจกรรมใหม่
         </a>
     </div>
+    <p class="text-muted">จัดการกิจกรรมการวิ่งและการแข่งขันสำหรับผู้ใช้งานในระบบ</p>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 shadow-sm border-0 event-stat-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="event-stat-icon bg-primary bg-opacity-10 me-3">
+                        <i class="fas fa-calendar-alt text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">กิจกรรมทั้งหมด</h6>
+                        <h4 class="mb-0">{{ $totalEvents ?? $events->total() }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 shadow-sm border-0 event-stat-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="event-stat-icon bg-success bg-opacity-10 me-3">
+                        <i class="fas fa-users text-success"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">กำลังดำเนินการ</h6>
+                        <h4 class="mb-0">{{ $activeEvents ?? 0 }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 shadow-sm border-0 event-stat-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="event-stat-icon bg-warning bg-opacity-10 me-3">
+                        <i class="fas fa-running text-warning"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">รอดำเนินการ</h6>
+                        <h4 class="mb-0">{{ $upcomingEvents ?? 0 }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 shadow-sm border-0 event-stat-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="event-stat-icon bg-info bg-opacity-10 me-3">
+                        <i class="fas fa-user-check text-info"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">ผู้เข้าร่วมรวม</h6>
+                        <h4 class="mb-0">{{ $totalParticipants ?? 0 }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- ตัวกรองสถานะ -->
-    <div class="card mb-4">
+    <div class="card mb-4 shadow-sm border-0">
         <div class="card-body">
             <div class="row">
                 <div class="col-md-4 mb-3 mb-md-0">
@@ -213,7 +336,7 @@
     </div>
 
     <!-- ตารางกิจกรรม -->
-    <div class="card">
+    <div class="card shadow-sm border-0">
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
@@ -235,19 +358,16 @@
                         <tr>
                             <td>{{ $events->firstItem() + $index }}</td>
                             <td>
-                                @if($event->image_url)
-                                    <img src="{{ asset('storage/' . $event->image_url) }}" alt="{{ $event->title }}"
-                                         class="img-fluid rounded" style="max-height: 60px;">
-                                @else
-                                    <img src="{{ asset('storage/events/default-event.png') }}" alt="Default event image"
-                                         class="img-fluid rounded" style="max-height: 60px;">
-                                @endif
+                                <img src="{{ asset('storage/' . ($event->event_image ?? 'events/default-event.png')) }}"
+                                     alt="{{ $event->event_name }}"
+                                     class="event-image"
+                                     onerror="this.src='{{ asset('storage/events/default-event.png') }}';">
                             </td>
                             <td>
                                 <div class="fw-bold">{{ Str::limit($event->event_name, 40) }}</div>
                                 <div class="small text-muted">
                                     @if($event->distance)
-                                        <span class="badge bg-info text-dark me-1">{{ $event->distance }} กม.</span>
+                                        <span class="badge bg-info text-white me-1">{{ $event->distance }} กม.</span>
                                     @endif
                                     ผู้สร้าง: {{ $event->creator->name ?? 'N/A' }}
                                 </div>
@@ -278,7 +398,7 @@
                                 @elseif($event->start_datetime <= now() && $event->end_datetime >= now())
                                     <span class="badge bg-success">กำลังดำเนินการ</span>
                                 @else
-                                    <span class="badge bg-info text-dark">รอดำเนินการ</span>
+                                    <span class="badge bg-info text-white">รอดำเนินการ</span>
                                 @endif
                             </td>
                             <td>
@@ -290,21 +410,19 @@
                                     <span class="badge bg-danger">ยกเลิก</span>
                                 @endif
                             </td>
-                            <td>
-                                <div class="d-flex">
-                                    <a href="{{ route('admin.events.show', $event) }}" class="btn btn-sm btn-info me-1" title="ดูรายละเอียด">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{{ route('admin.events.edit', $event) }}" class="btn btn-sm btn-warning me-1" title="แก้ไข">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-sm btn-danger delete-event"
-                                           title="ลบ" data-event-id="{{ $event->event_id }}"
-                                           data-event-name="{{ $event->event_name }}"
-                                           data-participants="{{ $event->activeParticipants()->count() }}">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
+                            <td class="text-end">
+                                <a href="{{ route('admin.events.show', $event) }}" class="btn event-action-btn btn-info" title="ดูรายละเอียด">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ route('admin.events.edit', $event) }}" class="btn event-action-btn btn-warning" title="แก้ไข">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn event-action-btn btn-danger delete-event"
+                                    data-event-id="{{ $event->event_id }}"
+                                    data-event-name="{{ $event->event_name }}"
+                                    title="ลบ">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </td>
                         </tr>
                         @empty
@@ -447,22 +565,25 @@
                         // สร้าง form สำหรับ submit แบบ POST พร้อม method DELETE
                         const form = document.createElement('form');
                         form.method = 'POST';
-                        form.action = `/admin/events/${eventId}`;
+                        form.action = `{{ url('/admin/events') }}/${eventId}`;
+                        form.style.display = 'none';
 
+                        // เพิ่ม CSRF token
                         const csrfToken = document.createElement('input');
                         csrfToken.type = 'hidden';
                         csrfToken.name = '_token';
                         csrfToken.value = '{{ csrf_token() }}';
-
-                        const methodField = document.createElement('input');
-                        methodField.type = 'hidden';
-                        methodField.name = '_method';
-                        methodField.value = 'DELETE';
-
                         form.appendChild(csrfToken);
-                        form.appendChild(methodField);
-                        document.body.appendChild(form);
 
+                        // เพิ่ม method DELETE
+                        const methodInput = document.createElement('input');
+                        methodInput.type = 'hidden';
+                        methodInput.name = '_method';
+                        methodInput.value = 'DELETE';
+                        form.appendChild(methodInput);
+
+                        // แนบ form เข้ากับเอกสารและส่ง
+                        document.body.appendChild(form);
                         form.submit();
                     }
                 });

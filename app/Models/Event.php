@@ -212,11 +212,11 @@ class Event extends Model
      */
     public function getImageUrlAttribute()
     {
-        if ($this->attributes['image_url'] ?? null) {
-            return Storage::url($this->attributes['image_url']);
+        if (!empty($this->attributes['image_url'])) {
+            return $this->attributes['image_url'];
         }
 
-        return asset('images/default-event.jpg');
+        return 'events/default-event.png';
     }
 
     /**

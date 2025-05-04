@@ -14,7 +14,7 @@ class ArticleTag extends Model
      *
      * @var string
      */
-    protected $table = 'tb_health_article_tags';
+    protected $table = 'tb_health_article_tag';
 
     /**
      * The primary key associated with the table.

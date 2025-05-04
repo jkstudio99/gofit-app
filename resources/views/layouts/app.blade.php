@@ -17,12 +17,16 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
+    <!-- SweetAlert Custom CSS -->
+    <link rel="stylesheet" href="{{ asset('css/sweetalert-custom.css') }}">
+
     <!-- Scripts & Styles -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('css/dropdown-fix.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/mobile-first.css') }}" rel="stylesheet">
     <style>
         /* Mobile-first styles */
         body {
@@ -44,39 +48,44 @@
             --text-light: #6c757d;
             --background-light: #f8f9fa;
             --white: #ffffff;
-            --spacing-sm: 0.25rem;
         }
 
-        /* Compact navbar for mobile */
+        /* Compact navbar for mobile - reduced height to match red line */
         .navbar {
             position: relative;
             z-index: 1030 !important;
-            padding: 0.35rem 1rem;
+            padding: 0.2rem 1rem;
             background: var(--white) !important;
             border-bottom: none !important;
             box-shadow: none !important;
-            min-height: auto;
+            height: 50px;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            height: 50px;
+            padding: 0;
+            margin-right: 0.5rem;
         }
 
         .navbar-brand img {
-            height: 28px;
+            height: 24px;
         }
 
-        /* Hamburger button styling */
+        /* Hamburger button styling - smaller for mobile */
         .navbar-toggler {
-            padding: 0.35rem;
+            padding: 0.25rem;
             border: none;
             outline: none !important;
             box-shadow: none !important;
         }
 
-        .navbar-toggler:focus {
-            box-shadow: none;
-        }
-
         .navbar-toggler-icon {
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
         }
 
         /* Mobile optimized dropdown menu */
@@ -140,10 +149,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: var(--text-light);
             text-decoration: none;
-            padding: 0.25rem;
+            padding: 0.2rem;
         }
 
         .mobile-nav-item.active {
@@ -151,18 +160,15 @@
         }
 
         .mobile-nav-icon {
-            font-size: 1.2rem;
-            margin-bottom: 0.2rem;
+            font-size: 1.1rem;
+            margin-bottom: 0.1rem;
         }
 
         /* Adjusted for 3-column stats on mobile */
         .stats-row {
             display: flex;
             justify-content: space-between;
-            margin-left: 15px;
-            margin-right: 15px;
-            margin-top: 1rem;
-            margin-bottom: 1rem;
+            margin: 1rem 15px 1rem 15px;
             background-color: transparent;
             border-radius: 0;
             padding: 0;
@@ -172,7 +178,7 @@
         }
 
         .stat-col {
-            flex: 1 1 0;
+            flex: 0 0 32%;
             text-align: center;
             padding: 15px 10px !important;
             border: none;
@@ -226,16 +232,87 @@
             padding-bottom: 0;
         }
 
-        /* Hide top navbar links on mobile, show in sidebar */
-        @media (max-width: 767.98px) {
-            /* ปรับขนาดโลโก้ให้ใหญ่ขึ้นบนมือถือ */
-            .navbar-brand img {
-                height: 40px !important;
+        /* Desktop navbar on md screens and up */
+        @media (min-width: 768px) {
+            /* Increased navbar padding for desktop */
+            .navbar {
+                padding: 0.6rem 1.5rem !important;
+                min-height: 70px !important;
+                height: 70px !important;
             }
 
-            /* ปรับขนาดฟอนต์ให้ใหญ่ขึ้นบนมือถือ */
-            body {
-                font-size: 1rem !important;
+            .navbar-brand {
+                height: 70px !important;
+            }
+
+            .navbar-brand img {
+                height: 36px !important;
+            }
+
+            /* Better padding for nav links - improved clickability */
+            .desktop-nav .nav-link {
+                padding: 0.8rem 1.2rem !important;
+                margin: 0 0.2rem;
+                border-radius: 8px;
+                transition: all 0.2s ease;
+            }
+
+            .desktop-nav .nav-link:hover {
+                background-color: rgba(46, 204, 113, 0.1);
+            }
+
+            .desktop-nav .nav-link.active {
+                background-color: rgba(46, 204, 113, 0.15);
+                color: #2ecc71;
+                font-weight: 500;
+            }
+
+            .navbar-expand-md .navbar-collapse {
+                display: flex !important;
+                flex-basis: auto;
+            }
+
+            .navbar-expand-md .navbar-nav {
+                flex-direction: row;
+            }
+
+            /* Ensures desktop navbar links are displayed properly */
+            .desktop-nav {
+                display: flex !important;
+            }
+
+            /* Adjust dropdown positioning */
+            .navbar-expand-md .navbar-nav .dropdown-menu {
+                position: absolute;
+            }
+        }
+
+        /* Hide top navbar links on mobile, show in sidebar */
+        @media (max-width: 767.98px) {
+            /* Header optimizations for mobile - much smaller height */
+            .navbar {
+                padding: 0 0.8rem;
+                min-height: 40px;
+                height: 40px;
+            }
+
+            /* Smaller logo for mobile */
+            .navbar-brand {
+                height: 40px;
+            }
+
+            .navbar-brand img {
+                height: 24px !important;
+            }
+
+            /* Smaller hamburger button */
+            .navbar-toggler {
+                padding: 0.15rem !important;
+            }
+
+            .navbar-toggler-icon {
+                width: 18px;
+                height: 18px;
             }
 
             /* ลด margin ส่วนล่าง */
@@ -341,11 +418,6 @@
                 padding-right: 0;
             }
 
-            /* Header optimizations for mobile */
-            .navbar {
-                padding: 0.25rem 0.8rem;
-            }
-
             /* Adjust vertical alignment for navbar content */
             .navbar-brand, .navbar-toggler {
                 display: flex;
@@ -379,6 +451,20 @@
 
             .gofit-footer {
                 margin-bottom: 0;
+            }
+
+            /* Ensure desktop navbar is always visible */
+            .navbar-collapse {
+                display: flex !important;
+            }
+
+            /* Style for user dropdown on desktop */
+            #userDropdown {
+                font-weight: 500;
+            }
+
+            #userDropdown img, #userDropdown i {
+                margin-right: 5px;
             }
         }
 
@@ -435,6 +521,20 @@
             border: none;
             font-weight: 500;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Improved button styling */
+        .welcome-header .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        @media (min-width: 768px) {
+            .welcome-header .btn {
+                padding: 0.8rem 2rem !important;
+                font-size: 1.2rem !important;
+                margin-top: 0.5rem;
+            }
         }
 
         /* Weekly Progress Section */
@@ -756,7 +856,7 @@
 
         /* Compact header for mobile */
         .gofit-header {
-            padding: 0.2rem 0;
+            margin-bottom: 0;
         }
 
         /* Remove horizontal divider lines */
@@ -850,18 +950,70 @@
         /* Set consistent vertical spacing between all sections */
         .section, .card, .welcome-header, .stats-row,
         .weekly-progress-section, .recent-activities-section, .run-history-section {
-            margin-top: 1.2rem;
-            margin-bottom: 1.2rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
         }
 
-        /* Stats row with slightly more breathing room */
+        /* Stats row items with consistent spacing */
+        .stat-col {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+
+        /* Adjust padding in card sections */
+        .card-body, .section-content {
+            padding: 20px;
+        }
+
+        /* Remove margin bottom from last elements */
+        *:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Mobile-specific adjustments */
+        @media (max-width: 767.98px) {
+            /* Remove all border styling from mobile elements */
+            .navbar, .card, .section, .welcome-header,
+            .weekly-progress-section, .recent-activities-section,
+            .run-history-section, .stat-col {
+                border: none !important;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.03) !important;
+            }
+
+            /* Ensure no horizontal lines between sections */
+            .mobile-nav {
+                border-top: none !important;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.05) !important;
+            }
+        }
+
+        /* Increase padding in component sections */
+        .weekly-progress-section,
+        .recent-activities-section,
+        .run-history-section {
+            padding: 20px;
+        }
+
+        /* Increase padding in activity items */
+        .activity-item {
+            padding: 18px !important;
+        }
+
+        /* Increase spacing between stats */
+        .stats-row {
+            gap: 15px;
+        }
+
+        /* Remove duplicate stats-row definition */
+        /* Increase spacing between stats */
+        .stat-col {
+            padding: 15px 10px !important;
+        }
+
+        /* Stats row with consistent spacing */
         .stats-row {
             display: flex;
             justify-content: space-between;
-            margin-left: 15px;
-            margin-right: 15px;
-            margin-top: 1.2rem;
-            margin-bottom: 1.2rem;
+            margin: 1rem 15px 1rem 15px;
             background-color: transparent;
             border-radius: 0;
             padding: 0;
@@ -870,91 +1022,7 @@
             width: calc(100% - 30px); /* Ensure full width minus margins */
         }
 
-        /* Stat columns with more vertical space */
-        .stat-col {
-            flex: 1 1 0;
-            text-align: center;
-            padding: 18px 10px !important;
-            border: none;
-            background-color: #fff;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-        }
-
-        /* Adjust main content spacing */
-        main {
-            padding-top: 0.25rem;
-        }
-    </style>
-
-    <!-- Custom fixes for margins and alignment -->
-    <style>
-        /* Ensure all content has consistent left and right margins */
-        .welcome-header,
-        .weekly-progress-section,
-        .recent-activities-section,
-        .run-history-section,
-        .section,
-        .card-container {
-            margin-left: 15px !important;
-            margin-right: 15px !important;
-            width: calc(100% - 30px) !important;
-        }
-
-        /* Specific fix just for stats-row to match other elements */
-        .mobile-stats .stats-row,
-        .stats-row.mb-4,
-        div.stats-row {
-            margin-left: 15px !important;
-            margin-right: 15px !important;
-            width: calc(100% - 30px) !important;
-            display: flex;
-            justify-content: space-between;
-            margin-top: 1rem !important;
-            margin-bottom: 1rem !important;
-            box-shadow: none;
-            gap: 15px;
-        }
-    </style>
-
-    <!-- Additional styles for spacing and layout -->
-    <style>
-        /* Navbar spacing with even top/bottom padding */
-        .navbar {
-            padding: 0.4rem 1rem;
-            display: flex;
-            align-items: center;
-        }
-
-        @media (max-width: 767.98px) {
-            .navbar {
-                padding: 0.3rem 0.8rem;
-            }
-        }
-
-        /* Fix logo vertical alignment */
-        .navbar-brand {
-            display: flex;
-            align-items: center;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-
-        /* Center logo vertically */
-        .navbar-brand img {
-            display: block;
-            margin: auto 0;
-        }
-
-        /* Container vertical alignment */
-        .navbar > .container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        /* Fix spacing between sections */
+        /* Ensure all content sections have consistent margins */
         .welcome-header,
         .stats-row,
         .weekly-progress-section,
@@ -962,39 +1030,191 @@
         .run-history-section,
         .section,
         .card-container {
-            margin-top: 1.2rem;
-            margin-bottom: 1.2rem;
+            margin-left: 15px !important;
+            margin-right: 15px !important;
+        }
+
+        @media (max-width: 767.98px) {
+            /* Ensure consistent horizontal alignment */
+            .container, .container-fluid {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+
+            /* Ensure all content has same horizontal spacing */
+            .welcome-header,
+            .stats-row,
+            .weekly-progress-section,
+            .recent-activities-section,
+            .run-history-section,
+            .section,
+            .card-container {
+                margin-left: 15px !important;
+                margin-right: 15px !important;
+                width: calc(100% - 30px) !important;
+            }
+        }
+
+        /* Custom fixes for stats row margins */
+        .stats-row {
             margin-left: 15px !important;
             margin-right: 15px !important;
             width: calc(100% - 30px) !important;
         }
 
-        /* Stat columns with better spacing */
-        .stat-col {
-            padding: 18px 10px !important;
+        /* Custom fixes for header height with better UX/UI */
+        .gofit-header {
+            margin: 0 !important;
+            padding: 0 !important;
+            height: auto !important;
+            min-height: auto !important;
+            box-shadow: none !important;
+            border: none !important;
+            background: none !important;
         }
 
-        /* Component section padding */
+        /* Force navbar height but allow for bigger logo */
+        .navbar {
+            height: 60px !important;
+            min-height: 60px !important;
+            max-height: 60px !important;
+            overflow: visible !important;
+
+        }
+
+        /* Force container height */
+        .gofit-header .container {
+            height: 60px !important;
+            min-height: 60px !important;
+            max-height: 60px !important;
+
+            display: flex !important;
+            align-items: center !important;
+
+        }
+
+        /* Remove any bottom margin/padding */
+        .navbar, .gofit-header, .gofit-header .container {
+            margin-bottom: 0 !important;
+        }
+
+        /* Force navbar-brand height with better logo size */
+        .navbar-brand {
+            height: 60px !important;
+            display: flex !important;
+            align-items: center !important;
+            padding: 0 !important;
+            margin-left: 5px !important;
+        }
+
+        /* Optimize logo size for good visibility */
+        .navbar-brand img {
+            height: 32px !important;
+        }
+
+        /* Improve hamburger button styling */
+        .navbar-toggler {
+            padding: 8px !important;
+            margin-top: 0 !important;
+            margin-right: 5px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        .navbar-toggler-icon {
+            width: 24px !important;
+            height: 24px !important;
+        }
+
+        /* Ensure hamburger is only visible on mobile */
+        @media (min-width: 768px) {
+            .navbar-toggler {
+                display: none !important;
+            }
+
+            /* Always show navbar on desktop */
+            .navbar-collapse {
+                display: flex !important;
+                flex-basis: auto !important;
+                transform: none !important;
+                position: static !important;
+                width: auto !important;
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+
+            /* Increase clickable area for navbar dropdown buttons */
+            .navbar .dropdown-toggle {
+                padding: 0.8rem 1.2rem !important;
+            }
+
+            /* Improved dropdown styling */
+            .navbar .dropdown-menu {
+                border-radius: 12px !important;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+                padding: 0.8rem 0 !important;
+                margin-top: 0.5rem !important;
+                min-width: 220px !important;
+            }
+
+            .navbar .dropdown-item {
+                padding: 0.7rem 1.5rem !important;
+                transition: all 0.2s ease !important;
+            }
+
+            .navbar .dropdown-item:hover {
+                background-color: rgba(46, 204, 113, 0.1) !important;
+                transform: translateX(5px) !important;
+            }
+        }
+
+        /* Main navbar flex container */
+        .navbar > .container {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+        }
+
+        /* Make sure content starts immediately after navbar */
+        main {
+            padding-top: 0.5rem !important;
+            margin-top: 0 !important;
+        }
+
+        /* Add some room after navbar */
+        .gofit-header + * {
+            margin-top: 0.5rem !important;
+        }
+    </style>
+
+    <!-- Custom fixes for margins and alignment -->
+    <style>
+        /* Adjust stats-row with fixed width and margins */
+        .stats-row {
+            margin-left: 15px !important;
+            margin-right: 15px !important;
+            width: calc(100% - 30px) !important;
+            gap: 15px;
+            background-color: transparent !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+        }
+
+        /* Consistent card styling */
+        .welcome-header,
         .weekly-progress-section,
         .recent-activities-section,
         .run-history-section {
-            padding: 20px;
+            margin-left: 15px !important;
+            margin-right: 15px !important;
+            width: calc(100% - 30px) !important;
         }
 
-        /* Activity item padding */
-        .activity-item {
-            padding: 18px !important;
-        }
-
-        /* Header spacing */
-        .gofit-header {
-            padding: 0.2rem 0;
-            margin-bottom: 0.3rem;
-        }
-
-        /* Content area spacing */
-        main {
-            padding-top: 0.3rem;
+        /* Better stat column spacing */
+        .stat-col {
+            flex: 1 1 auto;
+            max-width: 33.333%;
         }
     </style>
 
@@ -1009,7 +1229,9 @@
                     <a class="navbar-brand" href="{{ url('/dashboard') }}">
                         <img src="{{ asset('images/gofit-logo-text-black.svg') }}" alt="Logo" height="40">
                     </a>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
+
+                    <!-- Mobile only hamburger menu - hidden on desktop -->
+                    <button class="navbar-toggler d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                         <span class="navbar-toggler-icon"></span>
                     </button>
 
@@ -1132,23 +1354,35 @@
                                     </a>
                                 </li>
                             @else
-                                <li class="nav-item dropdown d-none d-md-block">
-                                    <a id="userDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <li class="nav-item dropdown">
+                                    <a id="userDropdown" class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="padding: 0.6rem 1rem; border-radius: 10px; transition: all 0.2s ease;">
                                         @if(Auth::user()->profile_image)
-                                            <img src="{{ asset('storage/' . Auth::user()->profile_image) }}" alt="Profile" class="rounded-circle me-1" style="width: 25px; height: 25px; object-fit: cover;">
+                                            <img src="{{ asset('storage/' . Auth::user()->profile_image) }}" alt="Profile" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
                                         @else
-                                            <i class="fas fa-user-circle me-1"></i>
+                                            <i class="fas fa-user-circle me-2" style="font-size: 1.4rem;"></i>
                                         @endif
-                                        {{ Auth::user()->firstname }}
+                                        <span style="font-weight: 500;">{{ Auth::user()->firstname }}</span>
                                     </a>
 
-                                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                        <a class="dropdown-item" href="{{ route('profile.edit') }}">
-                                            <i class="fas fa-user-edit me-1"></i> ข้อมูลส่วนตัว
+                                    <div class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown" style="border-radius: 12px; border: none; padding: 0.5rem 0; min-width: 220px;">
+                                        <div class="d-flex align-items-center px-3 py-2 border-bottom mb-2">
+                                            @if(Auth::user()->profile_image)
+                                                <img src="{{ asset('storage/' . Auth::user()->profile_image) }}" alt="Profile" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            @else
+                                                <i class="fas fa-user-circle fa-2x me-2 text-muted"></i>
+                                            @endif
+                                            <div>
+                                                <div class="fw-bold">{{ Auth::user()->firstname }} {{ Auth::user()->lastname }}</div>
+                                                <div class="small text-muted">{{ Auth::user()->email }}</div>
+                                            </div>
+                                        </div>
+
+                                        <a class="dropdown-item" href="{{ route('profile.edit') }}" style="padding: 0.7rem 1.5rem;">
+                                            <i class="fas fa-user-edit me-2"></i> ข้อมูลส่วนตัว
                                         </a>
 
-                                        <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                            <i class="fas fa-sign-out-alt me-1"></i> ออกจากระบบ
+                                        <a class="dropdown-item text-danger" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="padding: 0.7rem 1.5rem;">
+                                            <i class="fas fa-sign-out-alt me-2"></i> ออกจากระบบ
                                         </a>
 
                                         <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
@@ -1214,6 +1448,9 @@
 
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- SweetAlert Custom CSS -->
+    <link rel="stylesheet" href="{{ asset('css/sweetalert-custom.css') }}"
 
     <!-- สคริปต์สำหรับ SweetAlert สำหรับ Session Flash Messages -->
     <script>
@@ -1312,7 +1549,7 @@
                     text: "{{ session('success') }}",
                     icon: 'success',
                     confirmButtonText: 'ตกลง',
-                    confirmButtonColor: '#28a745'
+                    confirmButtonColor: '#2DC679'
                 });
             @endif
 
@@ -1323,7 +1560,7 @@
                     text: "{{ session('error') }}",
                     icon: 'error',
                     confirmButtonText: 'ตกลง',
-                    confirmButtonColor: '#dc3545'
+                    confirmButtonColor: '#2DC679'
                 });
             @endif
 
@@ -1345,7 +1582,7 @@
                     `,
                     icon: false,
                     confirmButtonText: 'ตกลง',
-                    confirmButtonColor: '#28a745'
+                    confirmButtonColor: '#2DC679'
                 });
             @endif
 

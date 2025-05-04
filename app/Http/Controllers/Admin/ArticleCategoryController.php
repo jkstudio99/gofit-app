@@ -38,7 +38,7 @@ class ArticleCategoryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'category_name' => 'required|string|max:100|unique:article_categories',
+            'category_name' => 'required|string|max:100|unique:tb_health_article_categories',
             'category_desc' => 'nullable|string|max:255',
         ]);
 
@@ -70,7 +70,7 @@ class ArticleCategoryController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'category_name' => 'required|string|max:100|unique:article_categories,category_name,' . $id . ',category_id',
+            'category_name' => 'required|string|max:100|unique:tb_health_article_categories,category_name,' . $id . ',category_id',
             'category_desc' => 'nullable|string|max:255',
         ]);
 

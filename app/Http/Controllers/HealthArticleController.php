@@ -40,10 +40,34 @@ class HealthArticleController extends Controller
         // Get all categories for the filter
         $categories = ArticleCategory::all();
 
+        // Create default categories if none exist
+        if ($categories->isEmpty()) {
+            $this->createDefaultCategories();
+            $categories = ArticleCategory::all();
+        }
+
         // Get the articles with pagination
         $articles = $query->orderBy('published_at', 'desc')->paginate(9);
 
         return view('health-articles.index', compact('articles', 'categories'));
+    }
+
+    /**
+     * Create default categories if none exist.
+     */
+    private function createDefaultCategories()
+    {
+        $defaultCategories = [
+            ['category_name' => 'สุขภาพทั่วไป', 'category_desc' => 'บทความเกี่ยวกับสุขภาพทั่วไป'],
+            ['category_name' => 'โภชนาการ', 'category_desc' => 'บทความเกี่ยวกับอาหารและโภชนาการ'],
+            ['category_name' => 'การออกกำลังกาย', 'category_desc' => 'บทความเกี่ยวกับการออกกำลังกายและการเล่นกีฬา'],
+            ['category_name' => 'สุขภาพจิต', 'category_desc' => 'บทความเกี่ยวกับสุขภาพจิตและการพัฒนาจิตใจ'],
+            ['category_name' => 'การนอนหลับ', 'category_desc' => 'บทความเกี่ยวกับการนอนหลับและการพักผ่อน']
+        ];
+
+        foreach ($defaultCategories as $category) {
+            ArticleCategory::create($category);
+        }
     }
 
     /**

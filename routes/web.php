@@ -223,7 +223,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Run statistics routes
     Route::get('/run/stats', [App\Http\Controllers\Admin\RunStatisticsController::class, 'index'])->name('run.stats');
+    Route::get('/run/statistics', [App\Http\Controllers\Admin\RunStatisticsController::class, 'locations'])->name('run.statistics');
     Route::get('/run/calendar', [App\Http\Controllers\Admin\RunStatisticsController::class, 'calendar'])->name('run.calendar');
+    Route::get('/run/heatmap', [App\Http\Controllers\Admin\RunStatisticsController::class, 'heatmap'])->name('run.heatmap');
+    Route::get('/run/heatmap/data', [App\Http\Controllers\Admin\RunStatisticsController::class, 'heatmapData'])->name('run.heatmap.data');
+    Route::get('/run/export', [App\Http\Controllers\Admin\RunStatisticsController::class, 'exportData'])->name('run.export');
     Route::get('/run/user-stats/{userId}', [App\Http\Controllers\Admin\RunStatisticsController::class, 'userStats'])->name('user-run-stats');
 
     // ระบบการวิ่ง (Running System) สำหรับผู้ดูแลระบบ
@@ -283,4 +287,16 @@ Route::prefix('admin/reports')->name('admin.reports.')->middleware(['auth', 'adm
     Route::get('/users', [App\Http\Controllers\Admin\ReportController::class, 'users'])->name('users');
     Route::get('/monthly', [App\Http\Controllers\Admin\ReportController::class, 'monthly'])->name('monthly');
     Route::get('/yearly', [App\Http\Controllers\Admin\ReportController::class, 'yearly'])->name('yearly');
+});
+
+// Admin Health Article Routes
+Route::group(['prefix' => 'admin/health-articles', 'as' => 'admin.health-articles.', 'middleware' => ['auth', 'admin']], function() {
+    Route::get('/', [App\Http\Controllers\Admin\HealthArticleController::class, 'index'])->name('index');
+    Route::get('/create', [App\Http\Controllers\Admin\HealthArticleController::class, 'create'])->name('create');
+    Route::post('/', [App\Http\Controllers\Admin\HealthArticleController::class, 'store'])->name('store');
+    Route::get('/{id}', [App\Http\Controllers\Admin\HealthArticleController::class, 'show'])->name('show');
+    Route::get('/{id}/edit', [App\Http\Controllers\Admin\HealthArticleController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [App\Http\Controllers\Admin\HealthArticleController::class, 'update'])->name('update');
+    Route::delete('/{id}', [App\Http\Controllers\Admin\HealthArticleController::class, 'destroy'])->name('destroy');
+    Route::post('/upload-image', [App\Http\Controllers\Admin\HealthArticleController::class, 'uploadImage'])->name('upload-image');
 });

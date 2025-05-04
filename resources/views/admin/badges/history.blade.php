@@ -103,6 +103,95 @@
     .btn-action:hover {
         transform: translateY(-2px);
     }
+
+    .badge-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0,0,0,0.05);
+        margin-right: 0.5rem;
+    }
+
+    .history-card {
+        border-radius: 10px;
+        margin-bottom: 15px;
+        transition: all 0.2s ease;
+    }
+
+    .history-card:hover {
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        transform: translateY(-2px);
+    }
+
+    .badge-pill {
+        border-radius: 20px;
+        font-size: 0.8rem;
+        padding: 3px 15px;
+    }
+
+    .user-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+    }
+
+    .dot-separator::after {
+        content: "•";
+        margin: 0 8px;
+        color: #adb5bd;
+    }
+
+    /* Design system styles */
+    .btn-primary, .bg-primary {
+        background-color: #2DC679 !important;
+        border-color: #2DC679 !important;
+    }
+
+    .btn-primary:hover {
+        background-color: #24A664 !important;
+        border-color: #24A664 !important;
+    }
+
+    .badge.bg-info {
+        background-color: #3B82F6 !important;
+        color: white !important;
+    }
+
+    .btn-info, .badge-info, .btn-info.badge-action-btn {
+        background-color: #3B82F6 !important;
+        border-color: #3B82F6 !important;
+        color: white !important;
+    }
+
+    .btn-danger i, .btn-danger.badge-action-btn i {
+        color: white !important;
+    }
+
+    /* User links - remove underline */
+    .user-link {
+        color: #495057;
+        text-decoration: none !important;
+    }
+
+    .user-link:hover {
+        color: #2DC679;
+    }
+
+    /* Filter collapse */
+    #filterCollapse {
+        transition: all 0.3s ease;
+    }
+
+    /* Medal count display style */
+    .medal-count {
+        background-color: #f8f9fa;
+        border-radius: 50px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+    }
 </style>
 @endsection
 
@@ -114,7 +203,7 @@
             <a href="{{ route('admin.badges.index') }}" class="btn btn-outline-secondary me-2">
                 <i class="fas fa-arrow-left me-1"></i> กลับไปยังรายการ
             </a>
-            <a href="{{ route('admin.badges.statistics') }}" class="btn btn-info">
+            <a href="{{ route('admin.badges.statistics') }}" class="btn btn-info" style="color: white;">
                 <i class="fas fa-chart-bar me-1"></i> ดูสถิติ
             </a>
         </div>
@@ -125,12 +214,12 @@
         <div class="col-md-3 col-sm-6 mb-3">
             <div class="card h-100 shadow-sm border-0 badge-stat-card">
                 <div class="card-body d-flex align-items-center">
-                    <div class="badge-stat-icon bg-primary bg-opacity-10 me-3">
-                        <i class="fas fa-medal text-primary"></i>
+                    <div class="badge-stat-icon bg-primary bg-opacity-25 me-3">
+                        <i class="fas fa-medal text-white"></i>
                     </div>
                     <div>
                         <h6 class="text-muted mb-1">จำนวนเหรียญทั้งหมด</h6>
-                        <h4 class="mb-0">{{ $totalBadges ?? $badgeHistory->total() }}</h4>
+                        <h4 class="mb-0">{{ $totalBadges ?? 0 }}</h4>
                     </div>
                 </div>
             </div>
@@ -179,71 +268,79 @@
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="card shadow-sm filter-section">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-filter me-2 text-primary"></i> ตัวกรอง</h5>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link p-0 text-decoration-none text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
+                            <i class="fas fa-filter me-2 text-primary"></i> ตัวกรอง <i class="fas fa-chevron-down ms-2 small"></i>
+                        </button>
+                    </h5>
+                    <div class="medal-count">
+                        <i class="fas fa-medal text-primary me-1"></i> ทั้งหมด: {{ $badgeHistory->total() ?? 0 }} รายการ
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form action="{{ route('admin.badges.history') }}" method="GET" class="row g-3">
-                        <div class="col-md-3">
-                            <label for="user_id" class="form-label">ผู้ใช้</label>
-                            <select name="user_id" id="user_id" class="form-select">
-                                <option value="">-- ทั้งหมด --</option>
-                                @foreach($users as $user)
-                                    <option value="{{ $user->user_id }}" @if(request('user_id') == $user->user_id) selected @endif>
-                                        {{ $user->username }} ({{ $user->firstname }} {{ $user->lastname }})
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                <div class="collapse show" id="filterCollapse">
+                    <div class="card-body pt-3">
+                        <form action="{{ route('admin.badges.history') }}" method="GET" class="row g-3">
+                            <div class="col-md-3">
+                                <label for="user_id" class="form-label">ผู้ใช้</label>
+                                <select name="user_id" id="user_id" class="form-select">
+                                    <option value="">-- ทั้งหมด --</option>
+                                    @foreach($users as $user)
+                                        <option value="{{ $user->user_id }}" @if(request('user_id') == $user->user_id) selected @endif>
+                                            {{ $user->username }} ({{ $user->firstname }} {{ $user->lastname }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-                        <div class="col-md-2">
-                            <label for="badge_type" class="form-label">ประเภทเหรียญ</label>
-                            <select name="badge_type" id="badge_type" class="form-select">
-                                <option value="">-- ทั้งหมด --</option>
-                                @foreach($badgeTypes as $type)
-                                    <option value="{{ $type->type }}" @if(request('badge_type') == $type->type) selected @endif>
-                                        @if($type->type == 'distance')
-                                            ระยะทาง
-                                        @elseif($type->type == 'calories')
-                                            แคลอรี่
-                                        @elseif($type->type == 'streak')
-                                            วิ่งต่อเนื่อง
-                                        @elseif($type->type == 'speed')
-                                            ความเร็ว
-                                        @elseif($type->type == 'event')
-                                            กิจกรรม
-                                        @else
-                                            {{ $type->type }}
-                                        @endif
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                            <div class="col-md-3">
+                                <label for="badge_type" class="form-label">ประเภทเหรียญ</label>
+                                <select name="badge_type" id="badge_type" class="form-select">
+                                    <option value="">-- ทั้งหมด --</option>
+                                    @foreach($badgeTypes as $type)
+                                        <option value="{{ $type->type }}" @if(request('badge_type') == $type->type) selected @endif>
+                                            @if($type->type == 'distance')
+                                                ระยะทาง
+                                            @elseif($type->type == 'calories')
+                                                แคลอรี่
+                                            @elseif($type->type == 'streak')
+                                                วิ่งต่อเนื่อง
+                                            @elseif($type->type == 'speed')
+                                                ความเร็ว
+                                            @elseif($type->type == 'event')
+                                                กิจกรรม
+                                            @else
+                                                {{ $type->type }}
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-                        <div class="col-md-3">
-                            <label for="date_start" class="form-label">วันที่เริ่มต้น</label>
-                            <input type="date" name="date_start" id="date_start" class="form-control" value="{{ request('date_start') }}">
-                        </div>
+                            <div class="col-md-2">
+                                <label for="date_start" class="form-label">วันที่เริ่มต้น</label>
+                                <input type="date" name="date_start" id="date_start" class="form-control" value="{{ request('date_start') }}">
+                            </div>
 
-                        <div class="col-md-3">
-                            <label for="date_end" class="form-label">วันที่สิ้นสุด</label>
-                            <input type="date" name="date_end" id="date_end" class="form-control" value="{{ request('date_end') }}">
-                        </div>
+                            <div class="col-md-2">
+                                <label for="date_end" class="form-label">วันที่สิ้นสุด</label>
+                                <input type="date" name="date_end" id="date_end" class="form-control" value="{{ request('date_end') }}">
+                            </div>
 
-                        <div class="col-md-1 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="fas fa-search me-1"></i> กรอง
-                            </button>
-                        </div>
-
-                        @if(request()->anyFilled(['user_id', 'badge_type', 'date_start', 'date_end']))
-                        <div class="col-12 mt-2">
-                            <a href="{{ route('admin.badges.history') }}" class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-undo me-1"></i> ล้างตัวกรอง
-                            </a>
-                        </div>
-                        @endif
-                    </form>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <div class="d-flex gap-2 w-100">
+                                    <button type="submit" class="btn btn-primary flex-grow-1">
+                                        <i class="fas fa-search me-1"></i> กรอง
+                                    </button>
+                                    @if(request()->anyFilled(['user_id', 'badge_type', 'date_start', 'date_end']))
+                                    <a href="{{ route('admin.badges.history') }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-undo"></i>
+                                    </a>
+                                    @endif
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -255,11 +352,6 @@
                 <i class="fas fa-medal me-2 text-primary"></i>
                 ประวัติการได้รับเหรียญตรา
             </h5>
-            @if($badgeHistory->total() > 0)
-            <span class="badge bg-primary rounded-pill px-3 py-2">
-                {{ $badgeHistory->total() }} รายการ
-            </span>
-            @endif
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -303,9 +395,7 @@
                                                 @endif
                                             </div>
                                             <div>
-                                        <a href="{{ route('admin.users.show', $item->user_id) }}" class="fw-bold text-primary">
-                                            {{ $item->username }}
-                                        </a>
+                                                <span class="fw-bold user-link">{{ $item->username }}</span>
                                                 <div class="small text-muted">{{ $item->firstname ?? '' }} {{ $item->lastname ?? '' }}</div>
                                             </div>
                                         </div>
@@ -329,7 +419,7 @@
                                                 'event' => 'fa-trophy'
                                             ];
                                             $typeColors = [
-                                                'distance' => 'primary',
+                                                'distance' => 'success',
                                                 'calories' => 'danger',
                                                 'streak' => 'success',
                                                 'speed' => 'info',

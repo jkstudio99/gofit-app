@@ -113,6 +113,71 @@
     .table-hover tbody tr:hover {
         background-color: rgba(45, 198, 121, 0.05);
     }
+
+    .badge-img {
+        max-height: 150px;
+        object-fit: contain;
+    }
+
+    .detail-card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .badge-banner {
+        min-height: 160px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+
+    .badge-action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 5px;
+    }
+
+    .progress-container {
+        width: 100%;
+    }
+
+    /* Make delete button icons white */
+    .btn-danger i, .btn-danger.badge-action-btn i {
+        color: white !important;
+    }
+
+    /* Use primary color from design system */
+    .btn-primary, .bg-primary {
+        background-color: #2DC679 !important;
+        border-color: #2DC679 !important;
+    }
+
+    .btn-primary:hover {
+        background-color: #24A664 !important;
+        border-color: #24A664 !important;
+    }
+
+    /* Badge info styling */
+    .badge.bg-info {
+        background-color: #3B82F6 !important;
+        color: white !important;
+    }
+
+    .btn-info.badge-action-btn, .btn-info {
+        background-color: #3B82F6 !important;
+        border-color: #3B82F6 !important;
+        color: white !important;
+    }
+
+    .btn-info.badge-action-btn:hover, .btn-info:hover {
+        background-color: #2563EB !important;
+        border-color: #2563EB !important;
+    }
 </style>
 @endsection
 
@@ -127,7 +192,7 @@
             <a href="{{ route('admin.badges.edit', $badge) }}" class="btn btn-warning me-2">
                 <i class="fas fa-edit me-1"></i> แก้ไข
             </a>
-            <button type="button" class="btn btn-danger" id="deleteBadgeBtn">
+            <button type="button" class="btn btn-danger text-white" id="deleteBadgeBtn">
                 <i class="fas fa-trash me-1"></i> ลบเหรียญตรา
             </button>
         </div>
@@ -162,7 +227,7 @@
                                         'event' => 'fa-trophy'
                                     ];
                                     $typeColors = [
-                                        'distance' => 'primary',
+                                        'distance' => 'success',
                                         'calories' => 'danger',
                                         'streak' => 'success',
                                         'speed' => 'info',
@@ -243,7 +308,7 @@
                 <div class="col">
                     <div class="card shadow-sm badge-stats-card">
                         <div class="card-body text-center">
-                            <div class="stats-icon bg-primary bg-opacity-10 text-primary mx-auto">
+                            <div class="stats-icon bg-primary text-white bg-opacity-10 mx-auto">
                                 <i class="fas fa-users"></i>
                             </div>
                             <h5 class="card-title">ผู้ได้รับเหรียญตรา</h5>
@@ -487,6 +552,30 @@
                 }
             });
         });
+
+        // Display SweetAlert for session message if exists
+        @if(session('success'))
+            Swal.fire({
+                title: 'สำเร็จ!',
+                text: "{{ session('success') }}",
+                icon: 'success',
+                confirmButtonColor: '#2DC679',
+                confirmButtonText: 'ตกลง'
+            });
+        @endif
+
+        @if(session('error'))
+            Swal.fire({
+                title: 'ผิดพลาด!',
+                text: "{{ session('error') }}",
+                icon: 'error',
+                confirmButtonColor: '#2DC679',
+                confirmButtonText: 'ตกลง'
+            });
+        @endif
     });
 </script>
+
+<!-- Include SweetAlert message partial -->
+@include('partials.sweetalert-messages')
 @endsection

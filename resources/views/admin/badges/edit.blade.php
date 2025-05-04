@@ -198,6 +198,25 @@
         const typeSelect = document.getElementById('type');
         const criteriaUnit = document.querySelector('.criteria-unit');
         const criteriaHelp = document.getElementById('criteria-help');
+        const descriptionField = document.getElementById('badge_description');
+
+        // เก็บข้อมูลคำอธิบายเดิมไว้
+        let originalDescription = descriptionField.value;
+        let userEditedDescription = false;
+
+        // เช็คว่าผู้ใช้แก้ไขคำอธิบายหรือไม่
+        descriptionField.addEventListener('input', function() {
+            userEditedDescription = true;
+        });
+
+        // กำหนดคำอธิบายตามประเภทเหรียญตรา
+        const defaultDescriptions = {
+            'distance': 'เหรียญตรานี้จะปลดล็อกเมื่อคุณวิ่งได้ระยะทางสะสมครบตามเป้าหมาย เพื่อเป็นเครื่องแสดงความสำเร็จในการสร้างความอดทนและความมุ่งมั่นในการวิ่งระยะทางไกล',
+            'calories': 'เหรียญตรานี้จะปลดล็อกเมื่อคุณเผาผลาญแคลอรี่สะสมได้ตามเป้าหมาย เพื่อเป็นเครื่องแสดงความสำเร็จในการเผาผลาญพลังงานและการออกกำลังกายอย่างสม่ำเสมอ',
+            'streak': 'เหรียญตรานี้จะปลดล็อกเมื่อคุณวิ่งติดต่อกันครบตามจำนวนวัน เพื่อเป็นเครื่องแสดงความสำเร็จในการรักษาความสม่ำเสมอและความมุ่งมั่นในการออกกำลังกาย',
+            'speed': 'เหรียญตรานี้จะปลดล็อกเมื่อคุณวิ่งด้วยความเร็วเฉลี่ยตามที่กำหนด เพื่อเป็นเครื่องแสดงความสำเร็จในการพัฒนาความเร็วและความแข็งแกร่งในการวิ่ง',
+            'event': 'เหรียญตรานี้จะปลดล็อกเมื่อคุณเข้าร่วมกิจกรรมการวิ่งครบตามจำนวน เพื่อเป็นเครื่องแสดงความสำเร็จในการมีส่วนร่วมในชุมชนนักวิ่งและกิจกรรมเพื่อสุขภาพ'
+        };
 
         function updateCriteriaUnit() {
             switch(typeSelect.value) {
@@ -225,13 +244,25 @@
                     criteriaUnit.textContent = 'หน่วย';
                     criteriaHelp.textContent = 'ค่าเกณฑ์ขั้นต่ำในการได้รับเหรียญตรา';
             }
+
+            // อัพเดทคำอธิบายหากผู้ใช้ยังไม่ได้แก้ไข หรือเมื่อเปลี่ยนประเภท
+            if (!userEditedDescription || originalDescription.trim() === '' ||
+                (Object.values(defaultDescriptions).includes(originalDescription.trim()))) {
+                const defaultDesc = defaultDescriptions[typeSelect.value] || '';
+                descriptionField.value = defaultDesc;
+                originalDescription = defaultDesc;
+            }
         }
 
         // อัพเดทหน่วยเมื่อโหลดหน้า
         updateCriteriaUnit();
 
-        // อัพเดทหน่วยเมื่อเปลี่ยนประเภท
-        typeSelect.addEventListener('change', updateCriteriaUnit);
+        // อัพเดทหน่วยและคำอธิบายเมื่อเปลี่ยนประเภท
+        typeSelect.addEventListener('change', function() {
+            // รีเซ็ตสถานะการแก้ไขเมื่อเปลี่ยนประเภท
+            userEditedDescription = false;
+            updateCriteriaUnit();
+        });
     });
 </script>
 @endsection

@@ -115,7 +115,20 @@
                     <tbody>
                         @foreach($userRuns as $run)
                         <tr>
-                            <td>{{ $run->created_at->format('d/m/Y H:i') }}</td>
+                            <td>
+                                @php
+                                    $thaiMonths = [
+                                        1 => 'ม.ค.', 2 => 'ก.พ.', 3 => 'มี.ค.', 4 => 'เม.ย.',
+                                        5 => 'พ.ค.', 6 => 'มิ.ย.', 7 => 'ก.ค.', 8 => 'ส.ค.',
+                                        9 => 'ก.ย.', 10 => 'ต.ค.', 11 => 'พ.ย.', 12 => 'ธ.ค.'
+                                    ];
+                                    $day = $run->created_at->format('j');
+                                    $month = $thaiMonths[$run->created_at->format('n')];
+                                    $year = $run->created_at->format('Y') + 543 - 2500; // แปลงเป็น พ.ศ. 2 หลัก
+                                    $time = $run->created_at->format('H:i');
+                                    echo "{$day} {$month} {$year} {$time}";
+                                @endphp
+                            </td>
                             <td>{{ number_format($run->distance, 2) }} กม.</td>
                             <td>
                                 @php

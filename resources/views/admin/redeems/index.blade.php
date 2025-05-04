@@ -6,6 +6,10 @@
 <!-- SweetAlert2 CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
 <style>
+    /* แก้ไข SweetAlert z-index */
+    .swal2-container {
+        z-index: 999999 !important;
+    }
     .search-box {
         border-radius: 20px;
         border: 1px solid #e0e0e0;
@@ -201,17 +205,13 @@
                                     <div class="d-flex">
                                         @if($redeem->status == 'pending')
                                             <button type="button"
-                                                    class="btn btn-success btn-sm me-1"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#updateStatusModal"
+                                                    class="btn btn-success btn-sm me-1 btn-update-status"
                                                     data-redeem-id="{{ $redeem->redeem_id }}"
                                                     data-status="completed">
                                                 <i class="fas fa-check"></i>
                                             </button>
                                             <button type="button"
-                                                    class="btn btn-danger btn-sm"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#updateStatusModal"
+                                                    class="btn btn-danger btn-sm btn-update-status"
                                                     data-redeem-id="{{ $redeem->redeem_id }}"
                                                     data-status="cancelled">
                                                 <i class="fas fa-times"></i>
@@ -236,37 +236,33 @@
     </div>
 </div>
 
-<!-- Update Status Modal -->
-<div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="updateStatusForm" action="" method="POST">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title" id="updateStatusModalLabel">อัปเดตสถานะการแลกรางวัล</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="note" class="form-label">หมายเหตุ (ถ้ามี)</label>
-                        <textarea name="note" id="note" class="form-control" rows="3"></textarea>
-                    </div>
-                    <input type="hidden" name="status" id="status">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="submit" class="btn btn-primary">บันทึก</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+<!-- ไม่มี Modal ใช้ SweetAlert แทน -->
 @endsection
 
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 <script>
+    // แก้ไข SweetAlert z-index เพื่อให้แสดงด้านหน้าเสมอ
     document.addEventListener('DOMContentLoaded', function() {
+        // กำหนดค่า z-index ให้ SweetAlert เป็นค่าสูงสุด
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'กำลังโหลด...',
+                text: 'กรุณารอสักครู่',
+                timer: 300,
+                showConfirmButton: false,
+                willOpen: () => {
+                    // ปรับแต่ง z-index ของ SweetAlert container
+                    document.querySelector('.swal2-container').style.zIndex = "999999";
+                }
+            });
+        }
+        // ตรวจสอบว่ามี Bootstrap Modal ในหน้านี้หรือไม่
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            console.log('Bootstrap Modal is loaded');
+        } else {
+            console.error('Bootstrap Modal is not loaded!');
+        }
         // Handle filter badge clicks
         document.querySelectorAll('.filter-badge').forEach(badge => {
             badge.addEventListener('click', function(e) {
@@ -277,47 +273,138 @@
             });
         });
 
-        // Update Status Modal
-        const updateStatusModal = document.getElementById('updateStatusModal');
-        if (updateStatusModal) {
-            updateStatusModal.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget;
-                const redeemId = button.getAttribute('data-redeem-id');
-                const status = button.getAttribute('data-status');
+        // ใช้ SweetAlert แทน Modal
+        document.querySelectorAll('.btn-update-status').forEach(button => {
+            button.addEventListener('click', function() {
+                const redeemId = this.getAttribute('data-redeem-id');
+                const status = this.getAttribute('data-status');
+                const isCompleted = status === 'completed';
+                const title = isCompleted ? 'ยืนยันการจัดส่งรางวัล' : 'ยกเลิกการแลกรางวัล';
+                const confirmButtonText = isCompleted ? 'ยืนยันการจัดส่ง' : 'ยกเลิกรางวัล';
+                const confirmButtonColor = isCompleted ? '#28a745' : '#dc3545';
+                const icon = isCompleted ? 'success' : 'warning';
 
-                const form = document.getElementById('updateStatusForm');
-                form.action = `/admin/redeems/${redeemId}/status`;
+                console.log("กำลังแสดง SweetAlert สำหรับ redeem_id:", redeemId);
 
-                const statusInput = document.getElementById('status');
+                Swal.fire({
+                    title: title,
+                    icon: icon,
+                    html: `
+                        <form id="updateStatusForm">
+                            <div class="mb-3 text-start">
+                                <label for="note" class="form-label">หมายเหตุ (ถ้ามี)</label>
+                                <textarea id="swal-note" class="form-control" rows="3"></textarea>
+                            </div>
+                            <div class="text-start">
+                                <small class="text-muted">รหัสรายการแลกรางวัล: ${redeemId}</small>
+                            </div>
+                        </form>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonColor: '#2DC679',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: confirmButtonText,
+                    cancelButtonText: 'ยกเลิก',
+                    focusConfirm: false,
+                    customClass: {
+                        container: 'my-swal-container'
+                    },
+                    didOpen: () => {
+                        document.querySelector('.my-swal-container').style.zIndex = "999999";
+                    },
+                    preConfirm: () => {
+                        return {
+                            note: document.getElementById('swal-note').value
+                        };
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // สร้าง form เพื่อส่งข้อมูล
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        // สร้าง URL ด้วย string template แทน
+                        form.action = `{{ url('admin/redeems') }}/${redeemId}/status`;
+                        form.style.display = 'none';
+
+                        // CSRF Token
+                        const csrfToken = document.createElement('input');
+                        csrfToken.type = 'hidden';
+                        csrfToken.name = '_token';
+                        csrfToken.value = "{{ csrf_token() }}";
+
+                        // Status
+                        const statusInput = document.createElement('input');
+                        statusInput.type = 'hidden';
+                        statusInput.name = 'status';
                 statusInput.value = status;
 
-                const modalTitle = updateStatusModal.querySelector('.modal-title');
-                if (status === 'completed') {
-                    modalTitle.textContent = 'ยืนยันการจัดส่งรางวัล';
-                } else if (status === 'cancelled') {
-                    modalTitle.textContent = 'ยกเลิกการแลกรางวัล';
+                        // Note
+                        const noteInput = document.createElement('input');
+                        noteInput.type = 'hidden';
+                        noteInput.name = 'note';
+                        noteInput.value = result.value.note;
+
+                        // เพิ่ม input เข้าไปใน form
+                        form.appendChild(csrfToken);
+                        form.appendChild(statusInput);
+                        form.appendChild(noteInput);
+
+                        // เพิ่ม form เข้าไปใน document และส่งข้อมูล
+                        document.body.appendChild(form);
+                        form.submit();
+
+                        // แสดงข้อความกำลังดำเนินการ
+                        Swal.fire({
+                            title: 'กำลังดำเนินการ...',
+                            text: 'โปรดรอสักครู่',
+                            icon: 'info',
+                            allowOutsideClick: false,
+                            showConfirmButton: false,
+                            didOpen: () => {
+                                Swal.showLoading();
                 }
             });
         }
+                });
+            });
+        });
 
         // Show flash message if exists
         @if(session('success'))
+            setTimeout(function() {
             Swal.fire({
                 icon: 'success',
                 title: 'สำเร็จ!',
                 text: "{{ session('success') }}",
-                confirmButtonColor: '#28a745'
+                    confirmButtonColor: '#28a745',
+                    customClass: {
+                        container: 'my-swal-container'
+                    },
+                    didOpen: () => {
+                        document.querySelector('.my-swal-container').style.zIndex = "999999";
+                    }
             });
+            }, 500);
         @endif
 
         @if(session('error'))
+            setTimeout(function() {
             Swal.fire({
                 icon: 'error',
                 title: 'เกิดข้อผิดพลาด!',
                 text: "{{ session('error') }}",
-                confirmButtonColor: '#dc3545'
+                    confirmButtonColor: '#dc3545',
+                    customClass: {
+                        container: 'my-swal-container'
+                    },
+                    didOpen: () => {
+                        document.querySelector('.my-swal-container').style.zIndex = "999999";
+                    }
             });
+            }, 500);
         @endif
+
+
     });
 </script>
 @endsection

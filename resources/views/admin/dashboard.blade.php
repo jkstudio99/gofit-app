@@ -5,7 +5,7 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="m-0">แดชบอร์ดผู้ดูแลระบบ</h2>
-        <a href="{{ route('admin.reports.index') }}" class="btn btn-primary">
+        <a href="{{ route('admin.badges.statistics') }}" class="btn btn-primary">
             <i class="fas fa-chart-line me-1"></i> รายงานและสถิติทั้งหมด
         </a>
     </div>
@@ -246,10 +246,10 @@
                             </tbody>
                         </table>
                     </div>
-                    @if(($topUsers ?? []) && count($topUsers) > 5)
-                    <div class="p-2 border-top d-flex justify-content-center">
-                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#topUsersModal">
-                            แสดงผู้ใช้เพิ่มเติม
+                    @if(isset($topUsers) && count($topUsers) > 5)
+                    <div class="py-3 px-2 border-top d-flex justify-content-center align-items-center">
+                        <button type="button" class="btn btn-sm btn-outline-primary show-more-users mx-auto">
+                            <i class="fas fa-plus-circle me-1"></i> แสดงผู้ใช้เพิ่มเติม
                         </button>
                     </div>
                     @endif
@@ -283,7 +283,20 @@
                                         <td class="ps-3">{{ $run->user->username ?? 'ไม่ระบุชื่อ' }}</td>
                                         <td>{{ number_format($run->distance, 2) }} กม.</td>
                                         <td>{{ number_format($run->calories_burned) }} kcal</td>
-                                        <td class="text-end pe-3">{{ $run->created_at->format('d/m/Y H:i') }}</td>
+                                        <td class="text-end pe-3">
+                                            @php
+                                                $thaiMonths = [
+                                                    1 => 'ม.ค.', 2 => 'ก.พ.', 3 => 'มี.ค.', 4 => 'เม.ย.',
+                                                    5 => 'พ.ค.', 6 => 'มิ.ย.', 7 => 'ก.ค.', 8 => 'ส.ค.',
+                                                    9 => 'ก.ย.', 10 => 'ต.ค.', 11 => 'พ.ย.', 12 => 'ธ.ค.'
+                                                ];
+                                                $day = $run->created_at->format('j');
+                                                $month = $thaiMonths[$run->created_at->format('n')];
+                                                $year = $run->created_at->format('Y') + 543 - 2500; // แปลงเป็น พ.ศ. 2 หลัก
+                                                $time = $run->created_at->format('H:i');
+                                                echo "{$day} {$month} {$year} {$time}";
+                                            @endphp
+                                        </td>
                                     </tr>
                                     @php $count++; @endphp
                                         @endif
@@ -291,10 +304,10 @@
                             </tbody>
                         </table>
                     </div>
-                    @if(($latestRuns ?? []) && count($latestRuns) > 5)
-                    <div class="p-2 border-top d-flex justify-content-center">
-                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#latestRunsModal">
-                            แสดงกิจกรรมเพิ่มเติม
+                    @if(isset($latestRuns) && count($latestRuns) > 5)
+                    <div class="py-3 px-2 border-top d-flex justify-content-center align-items-center">
+                        <button type="button" class="btn btn-sm btn-outline-primary show-more-runs mx-auto">
+                            <i class="fas fa-plus-circle me-1"></i> แสดงกิจกรรมเพิ่มเติม
                         </button>
                     </div>
                     @endif
@@ -361,105 +374,145 @@
         </div>
     </div>
 
-    <!-- Modals for expanded tables -->
-    <div class="modal fade" id="topUsersModal" tabindex="-1" aria-labelledby="topUsersModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="topUsersModalLabel">ผู้ใช้ที่มีกิจกรรมมากที่สุด</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-0">
-                    <div class="table-responsive">
-                        <table class="table mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-3">#</th>
-                                    <th>ชื่อผู้ใช้</th>
-                                    <th>จำนวนกิจกรรม</th>
-                                    <th class="text-end pe-3">การมีส่วนร่วม</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($topUsers ?? [] as $index => $user)
-                                <tr>
-                                    <td class="ps-3">{{ $index + 1 }}</td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="rounded-circle bg-light p-2 me-2" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-                                                <i class="fas fa-user fa-lg text-secondary"></i>
-                                            </div>
-                                            <div>{{ $user->firstname }} {{ $user->lastname }}</div>
-                                        </div>
-                                    </td>
-                                    <td>{{ $user->activity_count }}</td>
-                                    <td class="text-end pe-3">
-                                        <div class="progress" style="height: 6px;">
-                                            @php
-                                                $maxCount = $topUsers->max('activity_count');
-                                                $percentage = $maxCount > 0 ? ($user->activity_count / $maxCount * 100) : 0;
-                                            @endphp
-                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ $percentage }}%"></div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-                    <a href="{{ route('admin.users.index', ['sort' => 'activity']) }}" class="btn btn-primary">ดูทั้งหมด</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-    <div class="modal fade" id="latestRunsModal" tabindex="-1" aria-labelledby="latestRunsModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="latestRunsModalLabel">การวิ่งล่าสุด</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-0">
-                    <div class="table-responsive">
-                        <table class="table mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-3">ผู้ใช้</th>
-                                    <th>ระยะทาง</th>
-                                    <th>แคลอรี่</th>
-                                    <th class="text-end pe-3">วันที่</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($latestRuns ?? [] as $run)
-                                <tr>
-                                    <td class="ps-3">{{ $run->user->username ?? 'ไม่ระบุชื่อ' }}</td>
-                                    <td>{{ number_format($run->distance, 2) }} กม.</td>
-                                    <td>{{ number_format($run->calories_burned) }} kcal</td>
-                                    <td class="text-end pe-3">{{ $run->created_at->format('d/m/Y H:i') }}</td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-                    <a href="{{ route('admin.run.stats') }}" class="btn btn-primary">ดูทั้งหมด</a>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- ไม่ใช้ Modal แต่ใช้ SweetAlert2 แทน -->
 @endsection
 
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // ใช้ SweetAlert2 แทน Modal
+
+        // แสดงรายการผู้ใช้เพิ่มเติม
+        document.querySelector('.show-more-users')?.addEventListener('click', function() {
+            // เตรียมข้อมูลตาราง
+            let tableHTML = `
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">#</th>
+                                <th>ชื่อผู้ใช้</th>
+                                <th>จำนวนกิจกรรม</th>
+                                <th class="text-end pe-3">การมีส่วนร่วม</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @if(isset($topUsers) && count($topUsers) > 0)
+                            @foreach($topUsers as $index => $user)
+                            <tr>
+                                <td class="ps-3">{{ $index + 1 }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-light p-2 me-2" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-user text-secondary"></i>
+                                        </div>
+                                        <div>{{ $user->firstname }} {{ $user->lastname }}</div>
+                                    </div>
+                                </td>
+                                <td>{{ $user->activity_count }}</td>
+                                <td class="text-end pe-3">
+                                    <div class="progress" style="height: 6px;">
+                                        @php
+                                            $maxCount = $topUsers->max('activity_count');
+                                            $percentage = $maxCount > 0 ? ($user->activity_count / $maxCount * 100) : 0;
+                                        @endphp
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ $percentage }}%"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td colspan="4" class="text-center py-3">ไม่พบข้อมูลผู้ใช้</td>
+                            </tr>
+                        @endif
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            Swal.fire({
+                title: 'ผู้ใช้ที่มีกิจกรรมมากที่สุด',
+                html: tableHTML,
+                width: '800px',
+                showCloseButton: true,
+                showCancelButton: true,
+                cancelButtonText: 'ปิด',
+                confirmButtonText: 'ดูทั้งหมด',
+                cancelButtonColor: '#6c757d',
+                confirmButtonColor: '#0d6efd'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{{ route('admin.users.index', ['sort' => 'activity']) }}";
+                }
+            });
+        });
+
+        // แสดงรายการวิ่งล่าสุดเพิ่มเติม
+        document.querySelector('.show-more-runs')?.addEventListener('click', function() {
+            // เตรียมข้อมูลตาราง
+            let tableHTML = `
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">ผู้ใช้</th>
+                                <th>ระยะทาง</th>
+                                <th>แคลอรี่</th>
+                                <th class="text-end pe-3">วันที่</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @if(isset($latestRuns) && count($latestRuns) > 0)
+                            @foreach($latestRuns as $run)
+                            <tr>
+                                <td class="ps-3">{{ $run->user->username ?? 'ไม่ระบุชื่อ' }}</td>
+                                <td>{{ number_format($run->distance, 2) }} กม.</td>
+                                <td>{{ number_format($run->calories_burned) }} kcal</td>
+                                <td class="text-end pe-3">
+                                    @php
+                                        $thaiMonths = [
+                                            1 => 'ม.ค.', 2 => 'ก.พ.', 3 => 'มี.ค.', 4 => 'เม.ย.',
+                                            5 => 'พ.ค.', 6 => 'มิ.ย.', 7 => 'ก.ค.', 8 => 'ส.ค.',
+                                            9 => 'ก.ย.', 10 => 'ต.ค.', 11 => 'พ.ย.', 12 => 'ธ.ค.'
+                                        ];
+                                        $day = $run->created_at->format('j');
+                                        $month = $thaiMonths[$run->created_at->format('n')];
+                                        $year = $run->created_at->format('Y') + 543 - 2500; // แปลงเป็น พ.ศ. 2 หลัก
+                                        $time = $run->created_at->format('H:i');
+                                        echo "{$day} {$month} {$year} {$time}";
+                                    @endphp
+                                </td>
+                            </tr>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td colspan="4" class="text-center py-3">ไม่พบข้อมูลการวิ่ง</td>
+                            </tr>
+                        @endif
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            Swal.fire({
+                title: 'การวิ่งล่าสุด',
+                html: tableHTML,
+                width: '800px',
+                showCloseButton: true,
+                showCancelButton: true,
+                cancelButtonText: 'ปิด',
+                confirmButtonText: 'ดูทั้งหมด',
+                cancelButtonColor: '#6c757d',
+                confirmButtonColor: '#0d6efd'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{{ route('admin.run.stats') }}";
+                }
+            });
+        });
         // ชื่อวันในสัปดาห์
         var defaultLabelsWeek = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์'];
 

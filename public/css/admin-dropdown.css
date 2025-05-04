@@ -1,0 +1,85 @@
+/**
+ * รายละเอียด CSS เฉพาะสำหรับ dropdown menu ในหน้า admin
+ */
+
+/* แก้ไขปัญหาการซ้อนทับ */
+.navbar-nav .dropdown-menu {
+    position: absolute !important;
+    z-index: 99999 !important;
+    top: 100% !important;
+    left: 0;
+    float: left;
+    min-width: 10rem;
+    padding: 0.5rem 0;
+    margin: 0;
+    font-size: 1rem;
+    color: #212529;
+    text-align: left;
+    list-style: none;
+    background-color: #fff !important;
+    background-clip: padding-box;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 0.25rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175) !important;
+    display: none;
+}
+
+.navbar-nav .dropdown-menu.show {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* กำหนดสไตล์สำหรับรายการในเมนู dropdown */
+.dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    clear: both;
+    font-weight: 400;
+    color: #212529;
+    text-align: inherit;
+    text-decoration: none;
+    white-space: nowrap;
+    background-color: transparent;
+    border: 0;
+    cursor: pointer;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    color: #16181b;
+    background-color: #f8f9fa;
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+    color: #fff;
+    text-decoration: none;
+    background-color: #2DC679;
+}
+
+/* แก้ไขปัญหาการซ้อนทับใน dropdown "รางวัลและเหรียญตรา" */
+.nav-item:nth-child(2) .dropdown-menu {
+    z-index: 999999 !important;
+}
+
+/* แก้ไขแบบเจาะจงสำหรับเมนูที่มีปัญหา */
+#rewardsDropdown + .dropdown-menu,
+#eventsDropdown + .dropdown-menu,
+#articlesDropdown + .dropdown-menu {
+    z-index: 999999 !important;
+    position: absolute !important;
+    display: none;
+    top: 100% !important;
+    left: 0;
+    background-color: white !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+#rewardsDropdown + .dropdown-menu.show,
+#eventsDropdown + .dropdown-menu.show,
+#articlesDropdown + .dropdown-menu.show {
+    display: block !important;
+}

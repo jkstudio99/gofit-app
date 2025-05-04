@@ -137,12 +137,36 @@ class BadgeController extends Controller
         $query->orderBy($sortField, $sortDirection);
 
         // Get badges with count of users who earned each badge
-        $badges = $query->withCount('users')->paginate(10);
+        $badges = $query->withCount('users')->paginate(50); // Increased to 50 to show all badges together
 
         // Badge types for filter dropdown
         $badgeTypes = Badge::select('type')->distinct()->pluck('type');
 
-        return view('admin.badges.index', compact('badges', 'badgeTypes', 'sortField', 'sortDirection'));
+        // Calculate statistics for cards
+        $totalUsers = DB::table('tb_user_badge')
+            ->select('user_id')
+            ->distinct()
+            ->count();
+
+        $recentBadges = DB::table('tb_user_badge')
+            ->whereDate('created_at', '>=', now()->subDays(7))
+            ->count();
+
+        $badgeCount = Badge::count();
+        $userBadgeCount = DB::table('tb_user_badge')->count();
+        $unlockRate = $badgeCount > 0 && $totalUsers > 0
+            ? round(($userBadgeCount / ($badgeCount * $totalUsers)) * 100)
+            : 0;
+
+        return view('admin.badges.index', compact(
+            'badges',
+            'badgeTypes',
+            'sortField',
+            'sortDirection',
+            'totalUsers',
+            'recentBadges',
+            'unlockRate'
+        ));
     }
 
     /**
@@ -181,7 +205,7 @@ class BadgeController extends Controller
 
         $badge->save();
 
-        return redirect()->route('admin.badges.index')->with('success', 'Badge created successfully');
+        return redirect()->route('admin.badges.index')->with('success', 'สร้างเหรียญตราใหม่สำเร็จแล้ว');
     }
 
     /**
@@ -231,7 +255,7 @@ class BadgeController extends Controller
 
         $badge->save();
 
-        return redirect()->route('admin.badges.index')->with('success', 'Badge updated successfully');
+        return redirect()->route('admin.badges.index')->with('success', 'อัปเดตเหรียญตราสำเร็จแล้ว');
     }
 
     /**
@@ -250,7 +274,7 @@ class BadgeController extends Controller
         // Delete badge
         $badge->delete();
 
-        return redirect()->route('admin.badges.index')->with('success', 'Badge deleted successfully');
+        return redirect()->route('admin.badges.index')->with('success', 'ลบเหรียญตราสำเร็จแล้ว');
     }
 
     /**

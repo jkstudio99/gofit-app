@@ -70,6 +70,26 @@
         object-fit: cover;
     }
 
+    /* Add improved styling for article images */
+    .article-img-container {
+        height: 180px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background-color: #f8f9fa;
+    }
+    .article-img-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    .article-card:hover .article-img-container img {
+        transform: scale(1.05);
+    }
+
     .article-card .card-body {
         padding: 1.25rem;
     }
@@ -344,9 +364,13 @@
         @forelse($articles as $article)
         <div class="col-md-6 col-lg-4">
             <div class="card article-card h-100">
-                <img src="{{ $article->thumbnail ? asset('storage/' . $article->thumbnail) : asset('images/article-placeholders/placeholder-' . (($loop->index % 5) + 1) . '.jpg') }}"
-                     class="article-thumbnail"
-                     alt="{{ $article->title }}">
+                <div class="article-img-container">
+                    @if($article->thumbnail)
+                        <img src="{{ asset('storage/' . $article->thumbnail) }}" alt="{{ $article->title }}">
+                    @else
+                        <img src="{{ asset('images/article-placeholders/placeholder-' . (($loop->index % 5) + 1) . '.jpg') }}" alt="{{ $article->title }} placeholder">
+                    @endif
+                </div>
 
                 <div class="card-body d-flex flex-column">
                     <div class="mb-2">

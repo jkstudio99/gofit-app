@@ -34,19 +34,18 @@
     }
     .article-featured-image {
         width: 100%;
-        height: 350px;
-        object-fit: cover;
-        border-radius: 5px;
+        border-radius: 8px;
         margin-bottom: 1.5rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     .article-image-placeholder {
-        width: 100%;
-        height: 350px;
-        background-color: #e9ecef;
-        border-radius: 5px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 3rem;
         display: flex;
-        align-items: center;
         justify-content: center;
+        align-items: center;
+        margin-bottom: 1.5rem;
         color: #adb5bd;
         margin-bottom: 1.5rem;
     }
@@ -117,6 +116,30 @@
     .badge.bg-draft {
         background-color: #6c757d;
     }
+
+    /* Action button styling */
+    .article-action-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 5px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        padding: 0;
+    }
+
+    .article-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .article-action-btn i {
+        color: white;
+        font-size: 15px;
+    }
 </style>
 @endsection
 
@@ -128,13 +151,13 @@
             <a href="{{ route('admin.health-articles.index') }}" class="btn btn-outline-secondary me-2">
                 <i class="fas fa-arrow-left me-1"></i> กลับไปยังรายการบทความ
             </a>
-            <a href="{{ route('admin.health-articles.edit', $article->article_id) }}" class="btn btn-primary me-2">
-                <i class="fas fa-edit me-1"></i> แก้ไขบทความ
+            <a href="{{ route('admin.health-articles.edit', $article->article_id) }}" class="btn article-action-btn btn-warning me-2">
+                <i class="fas fa-edit"></i>
             </a>
-            <button type="button" class="btn btn-danger delete-article"
+            <button type="button" class="btn article-action-btn btn-danger delete-article"
                     data-article-id="{{ $article->article_id }}"
                     data-article-title="{{ $article->title }}">
-                <i class="fas fa-trash-alt me-1"></i> ลบบทความ
+                <i class="fas fa-trash-alt"></i>
             </button>
         </div>
     </div>
@@ -196,13 +219,26 @@
                 </div>
             </div>
 
-            @if($article->tags->count() > 0)
+            @php
+                $showTags = false;
+                $articleTags = [];
+                try {
+                    if($article->tags && $article->tags->count() > 0) {
+                        $showTags = true;
+                        $articleTags = $article->tags;
+                    }
+                } catch (\Exception $e) {
+                    // Silently fail if tags relationship encounters an error
+                }
+            @endphp
+
+            @if($showTags)
             <div class="card mb-4">
                 <div class="card-header">
                     <i class="fas fa-tags me-1"></i> แท็ก
                 </div>
                 <div class="card-body">
-                    @foreach($article->tags as $tag)
+                    @foreach($articleTags as $tag)
                         <a href="{{ route('admin.health-articles.index', ['tag' => $tag->tag_id]) }}" class="btn btn-sm btn-outline-secondary me-2 mb-2">
                             {{ $tag->tag_name }}
                         </a>
@@ -331,17 +367,19 @@
                     @endif
                     @if(!empty($article->meta_description))
                     <div class="article-info-item">
-                        <div class="article-info-label">Meta Description</div>
-                        <div class="small">{{ $article->meta_description }}</div>
+                        <div class="article-info-label mb-2">Meta Description</div>
+                        <div class="small" style="line-height: 1.6; word-wrap: break-word; background: #f8f9fa; padding: 10px; border-radius: 5px;">
+                            {{ $article->meta_description }}
+                        </div>
                     </div>
                     @endif
                 </div>
             </div>
             @endif
 
-            <div class="d-grid gap-2">
-                <a href="{{ route('admin.health-articles.edit', $article->article_id) }}" class="btn btn-primary">
-                    <i class="fas fa-edit me-1"></i> แก้ไขบทความ
+            <div class="d-flex justify-content-end mt-3">
+                <a href="{{ route('admin.health-articles.edit', $article->article_id) }}" class="btn article-action-btn btn-warning me-2">
+                    <i class="fas fa-edit"></i>
                 </a>
             </div>
         </div>

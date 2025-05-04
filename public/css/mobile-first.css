@@ -1,0 +1,634 @@
+/**
+ * GoFit - Mobile First UI/UX Improvements
+ * เวอร์ชัน 1.0.0
+ */
+
+/* ===== ค่าตัวแปรสี และ ธีม ===== */
+:root {
+    --primary-color: #2ecc71;
+    --primary-dark: #27ae60;
+    --primary-light: #a5e6c0;
+    --accent-color: #3498db;
+    --accent-light: #5dade2;
+    --warning-color: #f39c12;
+    --danger-color: #e74c3c;
+    --text-color: #333;
+    --text-light: #6c757d;
+    --background-light: #f8f9fa;
+    --background-fade: #f2f2f2;
+    --white: #ffffff;
+    --border-radius-sm: 8px;
+    --border-radius-md: 12px;
+    --border-radius-lg: 20px;
+    --shadow-sm: 0 2px 5px rgba(0,0,0,0.05);
+    --shadow-md: 0 3px 8px rgba(0,0,0,0.07);
+    --shadow-lg: 0 5px 15px rgba(0,0,0,0.1);
+    --transition-speed: 0.3s;
+}
+
+/* ===== พื้นฐาน ===== */
+body {
+    background-color: #f8f8f8 !important;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* ปรับปรุงขนาดฟอนต์สำหรับความสบายตาบนมือถือ */
+@media (max-width: 767px) {
+    body {
+        font-size: 16px !important;
+    }
+    h1, .h1 { font-size: 1.8rem !important; }
+    h2, .h2 { font-size: 1.6rem !important; }
+    h3, .h3 { font-size: 1.4rem !important; }
+    h4, .h4 { font-size: 1.2rem !important; }
+    h5, .h5 { font-size: 1.1rem !important; }
+}
+
+/* ปรับปรุงการแสดงผลรูปภาพ */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ===== การจัดการ Container ===== */
+.container-fluid {
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+}
+
+/* ปรับขนาด container หลักบนมือถือ */
+@media (max-width: 767px) {
+    .container, .container-md, .container-sm {
+        max-width: 100% !important;
+    }
+    .row {
+        margin-left: -10px !important;
+        margin-right: -10px !important;
+    }
+    .col, .col-1, .col-2, .col-3, .col-4, .col-5, .col-6,
+    .col-7, .col-8, .col-9, .col-10, .col-11, .col-12,
+    .col-auto, .col-md, .col-md-1, .col-md-2, .col-md-3,
+    .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8,
+    .col-md-9, .col-md-10, .col-md-11, .col-md-12, .col-md-auto {
+        padding-right: 10px !important;
+        padding-left: 10px !important;
+    }
+}
+
+/* ===== ปรับปรุง Header และ Navbar ===== */
+.navbar {
+    background-color: var(--white) !important;
+    border-bottom: none !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+/* ===== ปรับปรุงแบบฟอร์ม ===== */
+.form-control {
+    border-radius: var(--border-radius-sm) !important;
+    border: 1px solid rgba(0,0,0,0.1) !important;
+    padding: 0.6rem 1rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 0.2rem rgba(46, 204, 113, 0.15) !important;
+}
+
+.form-label {
+    margin-bottom: 0.5rem !important;
+    font-weight: 500 !important;
+}
+
+/* ปรับปรุงปุ่ม */
+.btn {
+    border-radius: var(--border-radius-sm) !important;
+    padding: 0.6rem 1.2rem !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+}
+
+.btn-outline-primary {
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color) !important;
+    color: var(--white) !important;
+}
+
+/* ===== ปรับปรุงการ์ด ===== */
+.card {
+    border: none !important;
+    border-radius: var(--border-radius-md) !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: all 0.3s ease !important;
+    margin-bottom: 1rem !important;
+}
+
+.card-header {
+    background-color: transparent !important;
+    border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+    padding: 1rem 1.25rem !important;
+}
+
+.card-body {
+    padding: 1.25rem !important;
+}
+
+.card-footer {
+    background-color: transparent !important;
+    border-top: 1px solid rgba(0,0,0,0.05) !important;
+    padding: 1rem 1.25rem !important;
+}
+
+/* ===== ปรับปรุงการแสดงข้อมูล ===== */
+.table {
+    vertical-align: middle !important;
+}
+
+.table th {
+    background-color: var(--background-light) !important;
+    font-weight: 600 !important;
+}
+
+/* ===== ปรับปรุงส่วน Run ===== */
+.run-stats-container {
+    background-color: var(--white);
+    border-radius: var(--border-radius-lg);
+    padding: 20px;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.run-map-container {
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.timer-display {
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.run-control-button {
+    border-radius: 50% !important;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    box-shadow: var(--shadow-md);
+}
+
+.run-stat-label {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 0.2rem;
+}
+
+.run-stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+/* ===== ปรับปรุงส่วน Rewards ===== */
+.reward-card {
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    height: 100%;
+    background-color: var(--white);
+    position: relative;
+    overflow: hidden;
+}
+
+.reward-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.reward-image {
+    height: 180px;
+    object-fit: cover;
+    width: 100%;
+}
+
+.reward-points {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    padding: 5px 10px;
+    font-weight: 600;
+    color: var(--accent-color);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.reward-content {
+    padding: 1rem;
+}
+
+.reward-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.reward-description {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ===== ปรับปรุง Profile ===== */
+.profile-header {
+    background-color: var(--white);
+    padding: 20px;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1rem;
+}
+
+.profile-picture {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--white);
+    box-shadow: var(--shadow-sm);
+}
+
+.profile-stats {
+    display: flex;
+    justify-content: space-around;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding-top: 1rem;
+    margin-top: 1rem;
+}
+
+.profile-stat-item {
+    text-align: center;
+}
+
+.profile-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.profile-stat-label {
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+/* ===== ปรับปรุง Health Articles ===== */
+.article-card {
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    background-color: var(--white);
+}
+
+.article-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.article-image {
+    height: 200px;
+    object-fit: cover;
+    width: 100%;
+}
+
+.article-content {
+    padding: 1rem;
+}
+
+.article-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.article-excerpt {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.article-meta {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-light);
+    font-size: 0.8rem;
+}
+
+/* ===== ปรับปรุง Badges ===== */
+.badges-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+    .badges-container {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 992px) {
+    .badges-container {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.badge-card {
+    border-radius: var(--border-radius-md);
+    padding: 1rem;
+    background-color: var(--white);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.badge-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.badge-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1rem;
+    object-fit: contain;
+}
+
+.badge-locked {
+    opacity: 0.5;
+    filter: grayscale(100%);
+}
+
+.badge-locked-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: var(--white);
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+}
+
+.badge-name {
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    font-size: 1rem;
+}
+
+.badge-description {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.badge-progress {
+    height: 6px;
+    margin-bottom: 0.5rem;
+}
+
+/* ===== ปรับปรุง Events ===== */
+.event-card {
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1rem;
+    background-color: var(--white);
+    transition: all 0.3s ease;
+}
+
+.event-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.event-image {
+    height: 180px;
+    object-fit: cover;
+    width: 100%;
+}
+
+.event-date-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: var(--border-radius-sm);
+    padding: 5px 10px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.event-date-day {
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.event-date-month {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--text-light);
+}
+
+.event-content {
+    padding: 1rem;
+}
+
+.event-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.event-details {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 1rem;
+}
+
+.event-detail-item {
+    display: flex;
+    gap: 10px;
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.event-detail-icon {
+    color: var(--primary-color);
+    width: 20px;
+    text-align: center;
+}
+
+/* ===== ปรับปรุง Goals ===== */
+.goal-card {
+    border-radius: var(--border-radius-md);
+    background-color: var(--white);
+    box-shadow: var(--shadow-sm);
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.goal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.goal-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0;
+}
+
+.goal-status {
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.goal-status-active {
+    background-color: rgba(46, 204, 113, 0.1);
+    color: var(--primary-color);
+}
+
+.goal-status-completed {
+    background-color: rgba(52, 152, 219, 0.1);
+    color: var(--accent-color);
+}
+
+.goal-progress-container {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.goal-progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+}
+
+.goal-progress-bar {
+    height: 8px;
+    border-radius: 4px;
+    background-color: #f1f1f1;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+}
+
+.goal-progress-fill {
+    height: 100%;
+    background-color: var(--primary-color);
+    border-radius: 4px;
+}
+
+.goal-date {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-light);
+    font-size: 0.8rem;
+}
+
+/* ===== Mobile Bottom Navigation ===== */
+.mobile-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: var(--white);
+    border-top: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0;
+    z-index: 1020;
+}
+
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--text-light);
+    text-decoration: none;
+    padding: 5px;
+}
+
+.mobile-nav-item.active {
+    color: var(--primary-color);
+}
+
+.mobile-nav-icon {
+    font-size: 1.3rem;
+    margin-bottom: 3px;
+}
+
+/* ===== ไฟล์นี้สร้างโดย AI เพื่อปรับปรุง Mobile First Design ===== */

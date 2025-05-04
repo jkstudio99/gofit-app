@@ -252,9 +252,23 @@
                         columns: [0, 1, 2, 3, 4, 5]
                     },
                     customize: function(doc) {
-                        doc.defaultStyle.font = 'THSarabunNew';
-                        doc.styles.tableHeader.fontSize = 14;
-                        doc.defaultStyle.fontSize = 12;
+                        // ใช้ฟังก์ชันช่วยจัดการฟอนต์
+                        if (typeof window.fixThaiPdf === 'function') {
+                            window.fixThaiPdf(doc);
+                        } else {
+                            // กำหนดฟอนต์เริ่มต้น
+                            doc.defaultStyle = {
+                                fontSize: 12
+                            };
+                            doc.styles.tableHeader = {
+                                fontSize: 14,
+                                bold: true,
+                                alignment: 'center'
+                            };
+                        }
+
+                        // กำหนดขอบกระดาษ
+                        doc.pageMargins = [20, 20, 20, 20];
                     }
                 }
             ]

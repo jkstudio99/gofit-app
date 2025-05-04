@@ -275,147 +275,16 @@
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin="" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
+    <link href="{{ asset('css/run-mobile.css') }}" rel="stylesheet">
 <!-- Pre-load Leaflet JavaScript -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin=""></script>
 <style>
-    /* Ensure map container has explicit height */
-    #map {
-        height: 400px !important;
-        width: 100% !important;
+        /* เพิ่มสไตล์เฉพาะหน้านี้ (ถ้ามี) */
+        #map, #summaryMap {
         z-index: 1;
-        max-width: 100%;
         overflow: hidden;
-        border-radius: var(--radius-lg);
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    /* Fix for Leaflet map container to stay within bounds */
-    .leaflet-container {
-        max-width: 100%;
-        max-height: 100%;
-        border-radius: var(--radius-lg);
-    }
-
-    #summaryMap {
-        height: 300px !important;
-        width: 100%;
-        z-index: 1;
-        max-width: 100%;
-        overflow: hidden;
-        border-radius: var(--radius-md);
-    }
-
-    /* Rest of existing styles */
-    .run-stat {
-        border-radius: var(--radius-md);
-        box-shadow: var(--shadow-sm);
-        transition: all var(--transition-normal);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .run-stat:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow-md);
-    }
-
-    .run-controls {
-        margin-top: 1.5rem;
-    }
-
-    #startRunBtn, #pauseRunBtn, #stopRunBtn {
-        border-radius: var(--radius-full);
-        box-shadow: var(--shadow-sm);
-        font-weight: var(--font-weight-medium);
-        padding: 0.75rem 1.5rem;
-        transition: all 0.3s ease;
-    }
-
-    #startRunBtn:hover, #pauseRunBtn:hover, #stopRunBtn:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-    }
-
-    .location-pin {
-        transition: all 0.3s ease;
-    }
-
-    .location-pin:hover {
-        transform: scale(1.2);
-    }
-
-    /* สไตล์สำหรับปุ่มควบคุม */
-    .control-buttons {
-        margin-top: 1rem;
-    }
-
-    /* สไตล์สำหรับสถิติการวิ่ง */
-    .run-stat {
-        text-align: center;
-        padding: 1rem;
-        background-color: #f8f9fa;
-        border-radius: 0.5rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        transition: transform 0.3s ease;
-    }
-
-    .run-stat:hover {
-        transform: translateY(-5px);
-    }
-
-    /* เอฟเฟกต์การเต้นของไอคอนแคลอรี่ */
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
-    }
-
-    .calorie-pulse {
-        animation: pulse 0.5s ease-in-out;
-    }
-
-    /* ทำให้ dropdown ในแผนที่สวยงามขึ้น */
-    #speedSelector {
-        background-color: white;
-        border: 1px solid #dee2e6;
-        border-radius: 20px;
-        font-size: 0.875rem;
-        padding: 0.4rem 0.8rem;
-        appearance: none;
-        -webkit-appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 0.8rem center;
-        background-size: 16px 12px;
-        padding-right: 2.5rem;
-        min-width: 180px; /* เพิ่มความกว้างขั้นต่ำ */
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        transition: all 0.2s ease;
-    }
-
-    #speedSelector:hover {
-        border-color: #adb5bd;
-        box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-    }
-
-    #speedSelector:focus {
-        border-color: #86b7fe;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-        outline: none;
-    }
-
-    #speedSelectorContainer {
-        padding: 0.5rem 0.8rem;
-        border-radius: 22px;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-    }
-
-    /* ฟอร์มูล่าการคำนวณแคลอรี่ */
-    .formula-calculation {
-        background-color: #f8f9fa;
-        border-left: 4px solid #3085d6;
     }
 </style>
 @endsection

@@ -1,0 +1,55 @@
+/* Custom SweetAlert Styles for GoFit */
+
+/* กำหนดสีปุ่ม Primary เป็นสีหลักของแอพ */
+.swal2-styled.swal2-confirm {
+    background-color: #2DC679 !important;
+    border-color: #2DC679 !important;
+}
+
+.swal2-styled.swal2-confirm:focus {
+    box-shadow: 0 0 0 3px rgba(45, 198, 121, 0.5) !important;
+}
+
+/* Hover effect */
+.swal2-styled.swal2-confirm:hover {
+    background-color: #24A664 !important;
+}
+
+/* Focus ring */
+.swal2-styled.swal2-confirm:focus {
+    box-shadow: 0 0 0 3px rgba(45, 198, 121, 0.5) !important;
+}
+
+/* เปลี่ยนสีไอคอน success เป็นสีหลัก */
+.swal2-icon.swal2-success {
+    border-color: #2DC679 !important;
+    color: #2DC679 !important;
+}
+
+.swal2-icon.swal2-success [class^=swal2-success-line] {
+    background-color: #2DC679 !important;
+}
+
+.swal2-icon.swal2-success .swal2-success-ring {
+    border-color: rgba(45, 198, 121, 0.3) !important;
+}
+
+/* สีของตัวโหลดเมื่อกำลังรอ */
+.swal2-loader {
+    border-color: #2DC679 transparent #2DC679 transparent !important;
+}
+
+/* สีพื้นหลังของปุ่ม secondary */
+.swal2-styled.swal2-cancel {
+    background-color: #6c757d !important;
+}
+
+/* กำหนดสีของ links ในกล่อง SweetAlert */
+.swal2-container a {
+    color: #2DC679 !important;
+}
+
+/* กำหนด z-index เพื่อให้แสดงด้านหน้าเสมอ */
+.swal2-container {
+    z-index: 999999 !important;
+}

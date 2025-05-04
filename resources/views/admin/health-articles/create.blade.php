@@ -381,7 +381,7 @@
             formData.append('_token', '{{ csrf_token() }}');
 
             $.ajax({
-                url: '{{ route("admin.upload.image") }}',
+                url: '{{ route("admin.health-articles.upload-image") }}',
                 method: 'POST',
                 data: formData,
                 contentType: false,

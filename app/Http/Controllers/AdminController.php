@@ -372,7 +372,7 @@ class AdminController extends Controller
 
         $user->update($validated);
 
-        return redirect()->route('admin.users.index')
+        return redirect()->route('admin.users.show', $user)
             ->with('success', 'อัพเดทข้อมูลผู้ใช้สำเร็จแล้ว');
     }
 
@@ -436,27 +436,61 @@ class AdminController extends Controller
      */
     public function updateProfileImage(Request $request, $userId)
     {
+        // ตรวจสอบว่ามีผู้ใช้นี้หรือไม่
         $user = User::findOrFail($userId);
 
+        // ตรวจสอบไฟล์รูปภาพ
         $request->validate([
-            'profile_image' => 'required|image|max:2048', // ไม่เกิน 2MB
+            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB max
+        ], [
+            'profile_image.required' => 'กรุณาเลือกรูปภาพ',
+            'profile_image.image' => 'ไฟล์ที่อัพโหลดต้องเป็นรูปภาพเท่านั้น',
+            'profile_image.mimes' => 'รูปภาพต้องเป็นประเภท: jpeg, png, jpg, gif หรือ webp',
+            'profile_image.max' => 'ขนาดไฟล์ต้องไม่เกิน 5MB',
         ]);
 
-        // ตรวจสอบว่ามีรูปเก่าอยู่หรือไม่
-        if ($user->profile_image && file_exists(public_path('profile_images/' . $user->profile_image))) {
-            unlink(public_path('profile_images/' . $user->profile_image));
+        try {
+            // เตรียม path ที่จะเก็บไฟล์
+            $uploadPath = public_path('profile_images');
+
+            // สร้างโฟลเดอร์ถ้ายังไม่มี
+            if (!file_exists($uploadPath)) {
+                if (!mkdir($uploadPath, 0777, true)) {
+                    throw new \Exception('ไม่สามารถสร้างโฟลเดอร์ได้');
+                }
+            }
+
+            // ลบรูปเก่า (ถ้ามี)
+            if ($user->profile_image && file_exists($uploadPath . '/' . $user->profile_image)) {
+                @unlink($uploadPath . '/' . $user->profile_image);
+            }
+
+            // เตรียมชื่อไฟล์ใหม่
+            $image = $request->file('profile_image');
+            $extension = $image->getClientOriginalExtension();
+            $imageName = time() . '_' . str_replace(' ', '_', $user->username) . '.' . $extension;
+
+            // อัพโหลดไฟล์
+            if ($image->move($uploadPath, $imageName)) {
+                // อัพเดทข้อมูลในฐานข้อมูล
+                $user->profile_image = $imageName;
+                $user->save();
+
+                return redirect()->route('admin.users.show', $user)
+                    ->with('success', 'อัพเดทรูปโปรไฟล์สำเร็จแล้ว');
+            } else {
+                throw new \Exception('ไม่สามารถอัพโหลดไฟล์ได้');
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Profile image upload error: ' . $e->getMessage(), [
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('admin.users.show', $user)
+                ->with('error', 'เกิดข้อผิดพลาดในการอัพเดทรูปโปรไฟล์: ' . $e->getMessage());
         }
-
-        // บันทึกรูปภาพใหม่
-        $imageName = time() . '_' . $user->username . '.' . $request->profile_image->extension();
-        $request->profile_image->move(public_path('profile_images'), $imageName);
-
-        // อัพเดทชื่อไฟล์ในฐานข้อมูล
-        $user->profile_image = $imageName;
-        $user->save();
-
-        return redirect()->route('admin.users.show', $user->user_id)
-            ->with('success', 'อัพเดทรูปโปรไฟล์สำเร็จแล้ว');
     }
 
     /**
@@ -479,7 +513,7 @@ class AdminController extends Controller
      */
     public function badges()
     {
-        $badges = Badge::orderBy('created_at', 'desc')->paginate(20);
+        $badges = Badge::orderBy('created_at', 'desc')->paginate(50); // Increased to 50 to show all badges together
         return view('admin.badges.index', compact('badges'));
     }
 

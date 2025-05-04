@@ -169,7 +169,20 @@
                                         @endphp
                                     </td>
                                     <td>{{ number_format($run->calories_burned) }} kcal</td>
-                                    <td>{{ $run->created_at->format('d/m/Y H:i') }}</td>
+                                    <td>
+                                        @php
+                                            $thaiMonths = [
+                                                1 => 'ม.ค.', 2 => 'ก.พ.', 3 => 'มี.ค.', 4 => 'เม.ย.',
+                                                5 => 'พ.ค.', 6 => 'มิ.ย.', 7 => 'ก.ค.', 8 => 'ส.ค.',
+                                                9 => 'ก.ย.', 10 => 'ต.ค.', 11 => 'พ.ย.', 12 => 'ธ.ค.'
+                                            ];
+                                            $day = $run->created_at->format('j');
+                                            $month = $thaiMonths[$run->created_at->format('n')];
+                                            $year = $run->created_at->format('Y') + 543 - 2500; // แปลงเป็น พ.ศ. 2 หลัก
+                                            $time = $run->created_at->format('H:i');
+                                            echo "{$day} {$month} {$year} {$time}";
+                                        @endphp
+                                    </td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -233,17 +246,20 @@
 
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script src="{{ asset('js/pdfmake-fonts.js') }}"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // สร้างกราฟสถิติการวิ่งในรอบสัปดาห์
-
-        // ข้อมูลจาก controller
-        var dates = {!! json_encode(array_column($lastWeekStats ?? [], 'date')) !!};
-        var counts = {!! json_encode(array_column($lastWeekStats ?? [], 'count')) !!};
+        // Weekly Run Chart
+        const chartData = @json($lastWeekStats ?? []);
+        const labels = chartData.map(item => item.date);
+        const counts = chartData.map(item => item.count);
 
         var options = {
             series: [{
-                name: 'จำนวนการวิ่ง',
+                name: 'จำนวนกิจกรรมการวิ่ง',
                 data: counts
             }],
             chart: {
@@ -260,7 +276,7 @@
                 curve: 'smooth',
                 width: 3
             },
-            colors: ['#36A2EB'],
+            colors: ['#3b82f6'],
             fill: {
                 type: 'gradient',
                 gradient: {
@@ -270,43 +286,19 @@
                     stops: [0, 90, 100]
                 }
             },
-            markers: {
-                size: 4,
-                colors: ['#36A2EB'],
-                strokeColors: '#fff',
-                strokeWidth: 2,
-                hover: {
-                    size: 7,
-                }
-            },
             xaxis: {
-                categories: dates,
-                title: {
-                    text: 'วันที่'
-                }
-            },
-            yaxis: {
-                title: {
-                    text: 'จำนวนการวิ่ง'
-                },
-                min: 0,
-                forceNiceScale: true,
-                labels: {
-                    formatter: function(value) {
-                        return Math.round(value);
-                    }
-                }
+                categories: labels,
             },
             tooltip: {
                 y: {
-                    formatter: function(value) {
-                        return Math.round(value) + ' ครั้ง';
+                    formatter: function (val) {
+                        return val + " ครั้ง"
                     }
                 }
             }
         };
 
-        var chart = new ApexCharts(document.getElementById('weeklyRunChart'), options);
+        var chart = new ApexCharts(document.querySelector("#weeklyRunChart"), options);
         chart.render();
     });
 </script>

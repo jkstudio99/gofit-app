@@ -30,6 +30,8 @@ class HealthArticle extends Model
      */
     protected $fillable = [
         'title',
+        'slug',
+        'excerpt',
         'content',
         'thumbnail',
         'category_id',
@@ -37,6 +39,8 @@ class HealthArticle extends Model
         'is_published',
         'published_at',
         'view_count',
+        'meta_title',
+        'meta_description',
     ];
 
     /**
@@ -96,7 +100,9 @@ class HealthArticle extends Model
     public function tags()
     {
         return $this->belongsToMany(ArticleTag::class, 'tb_health_article_tag', 'article_id', 'tag_id')
-                    ->withTimestamps();
+                    ->withTimestamps()
+                    ->withPivot(['created_at', 'updated_at'])
+                    ->using(ArticleTagPivot::class);
     }
 
     /**

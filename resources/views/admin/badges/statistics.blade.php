@@ -43,97 +43,167 @@
     .table-hover tbody tr:hover {
         background-color: rgba(45, 198, 121, 0.05);
     }
+
+    /* Style for the badges */
+    .badge-type-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 8px;
+        color: white;
+    }
+
+    /* User links - remove underline */
+    .user-link {
+        color: #495057;
+        text-decoration: none !important;
+    }
+
+    .user-link:hover {
+        color: #2DC679;
+    }
+
+    /* Card and Table Design */
+    .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1.5rem rgba(0,0,0,0.15) !important;
+    }
+
+    .card-header {
+        background-color: white;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 1rem 1.5rem;
+    }
+
+    .table th {
+        font-weight: 600;
+        color: #495057;
+        background-color: #f8f9fa;
+        border-top: none;
+    }
+
+    .table td {
+        vertical-align: middle;
+        padding: 0.75rem 1rem;
+    }
+
+    /* Badge pill styling */
+    .badge-pill-custom {
+        border-radius: 50px;
+        padding: 0.35rem 0.75rem;
+        font-weight: 500;
+        font-size: 0.8rem;
+    }
+
+    /* Dashboard style icon container */
+    .icon-container {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 </style>
 @endsection
 
 @section('content')
-<div class="container">
+<div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">สถิติและการวิเคราะห์เหรียญตรา</h1>
+        <h2 class="mb-0">สถิติและการวิเคราะห์เหรียญตรา</h2>
         <div>
-            <a href="{{ route('admin.badges.index') }}" class="btn btn-outline-primary">
-                <i class="fas fa-medal me-2"></i>จัดการเหรียญตรา
+            <a href="{{ route('admin.badges.history') }}" class="btn btn-outline-info me-2">
+                <i class="fas fa-history me-1"></i> ประวัติการได้รับ
+            </a>
+            <a href="{{ route('admin.badges.index') }}" class="btn btn-primary">
+                <i class="fas fa-medal me-1"></i> จัดการเหรียญตรา
             </a>
         </div>
     </div>
 
     <!-- Summary Cards -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="card h-100 border-0 shadow-sm stat-card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="text-primary stat-icon">
-                            <i class="fas fa-medal"></i>
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 border-0 shadow-sm rounded-3">
+                <div class="card-body py-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="fs-1 fw-bold mb-0 text-primary">{{ number_format($totalBadges) }}</h2>
+                            <p class="text-muted mb-0">เหรียญตราทั้งหมด</p>
                         </div>
-                        <div class="badge bg-primary-soft text-primary rounded-pill px-3 py-2">
-                            <i class="fas fa-certificate me-1"></i> รวมทั้งหมด
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-0 icon-container">
+                            <i class="fas fa-medal fa-2x text-primary"></i>
                         </div>
                     </div>
-                    <h3 class="display-6 fw-bold mb-0">{{ number_format($totalBadges) }}</h3>
-                    <p class="text-muted mb-0">เหรียญตราทั้งหมด</p>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-3">
-            <div class="card h-100 border-0 shadow-sm stat-card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="text-success stat-icon">
-                            <i class="fas fa-award"></i>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 border-0 shadow-sm rounded-3">
+                <div class="card-body py-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="fs-1 fw-bold mb-0 text-success">{{ number_format($totalAssignments) }}</h2>
+                            <p class="text-muted mb-0">จำนวนการได้รับ</p>
                         </div>
-                        <div class="badge bg-success-soft text-success rounded-pill px-3 py-2">
-                            <i class="fas fa-check-circle me-1"></i> การได้รับทั้งหมด
+                        <div class="rounded-circle bg-success bg-opacity-10 p-0 icon-container">
+                            <i class="fas fa-award fa-2x text-success"></i>
                         </div>
                     </div>
-                    <h3 class="display-6 fw-bold mb-0">{{ number_format($totalAssignments) }}</h3>
-                    <p class="text-muted mb-0">จำนวนครั้งที่มีการได้รับเหรียญตรา</p>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-3">
-            <div class="card h-100 border-0 shadow-sm stat-card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="text-info stat-icon">
-                            <i class="fas fa-users"></i>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 border-0 shadow-sm rounded-3">
+                <div class="card-body py-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="fs-1 fw-bold mb-0 text-info">{{ number_format($usersWithBadges) }}</h2>
+                            <p class="text-muted mb-0">ผู้ใช้ที่มีเหรียญ</p>
                         </div>
-                        <div class="badge bg-info-soft text-info rounded-pill px-3 py-2">
-                            <i class="fas fa-user-check me-1"></i> ผู้ใช้ที่มีเหรียญตรา
+                        <div class="rounded-circle bg-info bg-opacity-10 p-0 icon-container">
+                            <i class="fas fa-users fa-2x text-info"></i>
                         </div>
                     </div>
-                    <h3 class="display-6 fw-bold mb-0">{{ number_format($usersWithBadges) }}</h3>
-                    <p class="text-muted mb-0">จำนวนผู้ใช้ที่มีเหรียญตราอย่างน้อย 1 อัน</p>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-3">
-            <div class="card h-100 border-0 shadow-sm stat-card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="text-warning stat-icon">
-                            <i class="fas fa-chart-pie"></i>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 border-0 shadow-sm rounded-3">
+                <div class="card-body py-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="fs-1 fw-bold mb-0 text-warning">{{ $averageBadgesPerUser }}</h2>
+                            <p class="text-muted mb-0">เหรียญเฉลี่ยต่อผู้ใช้</p>
                         </div>
-                        <div class="badge bg-warning-soft text-warning rounded-pill px-3 py-2">
-                            <i class="fas fa-calculator me-1"></i> ค่าเฉลี่ย
+                        <div class="rounded-circle bg-warning bg-opacity-10 p-0 icon-container">
+                            <i class="fas fa-chart-pie fa-2x text-warning"></i>
                         </div>
                     </div>
-                    <h3 class="display-6 fw-bold mb-0">{{ $averageBadgesPerUser }}</h3>
-                    <p class="text-muted mb-0">เหรียญตราเฉลี่ยต่อผู้ใช้</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row g-4 mb-4">
+    <div class="row mb-4">
         <!-- Badge Distribution by Type -->
-        <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white py-3">
-                    <h5 class="card-title mb-0">
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100 rounded-3">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-0">
+                    <h5 class="card-title mb-0 fw-bold">
                         <i class="fas fa-chart-pie text-primary me-2"></i>การกระจายตัวของเหรียญตราตามประเภท
                     </h5>
                 </div>
@@ -147,20 +217,27 @@
                         @foreach($badgesByType as $type)
                         <div class="col-md-6 mb-2">
                             <div class="d-flex align-items-center">
-                                <div class="me-2">
-                                    @if($type['type'] == 'distance')
-                                        <i class="fas fa-route text-info"></i>
-                                    @elseif($type['type'] == 'calories')
-                                        <i class="fas fa-fire-alt text-danger"></i>
-                                    @elseif($type['type'] == 'streak')
-                                        <i class="fas fa-calendar-check text-warning"></i>
-                                    @elseif($type['type'] == 'speed')
-                                        <i class="fas fa-tachometer-alt text-success"></i>
-                                    @elseif($type['type'] == 'event')
-                                        <i class="fas fa-calendar-day text-primary"></i>
-                                    @else
-                                        <i class="fas fa-medal text-secondary"></i>
-                                    @endif
+                                @php
+                                    $bgColors = [
+                                        'distance' => 'bg-info',
+                                        'calories' => 'bg-danger',
+                                        'streak' => 'bg-warning',
+                                        'speed' => 'bg-success',
+                                        'event' => 'bg-primary',
+                                    ];
+                                    $bgColor = isset($bgColors[$type['type']]) ? $bgColors[$type['type']] : 'bg-secondary';
+
+                                    $icons = [
+                                        'distance' => 'fa-route',
+                                        'calories' => 'fa-fire-alt',
+                                        'streak' => 'fa-calendar-check',
+                                        'speed' => 'fa-tachometer-alt',
+                                        'event' => 'fa-calendar-day',
+                                    ];
+                                    $icon = isset($icons[$type['type']]) ? $icons[$type['type']] : 'fa-medal';
+                                @endphp
+                                <div class="badge-type-icon {{ $bgColor }}">
+                                    <i class="fas {{ $icon }}"></i>
                                 </div>
                                 <div>
                                     <strong>{{ $type['label'] }}:</strong>
@@ -175,10 +252,10 @@
         </div>
 
         <!-- Monthly Badge Trends -->
-        <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white py-3">
-                    <h5 class="card-title mb-0">
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100 rounded-3">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-0">
+                    <h5 class="card-title mb-0 fw-bold">
                         <i class="fas fa-chart-line text-primary me-2"></i>แนวโน้มการได้รับเหรียญตรารายเดือน
                     </h5>
                 </div>
@@ -201,7 +278,7 @@
                                 <tr>
                                     <td>{{ $trend['month'] }}</td>
                                     <td class="text-center">
-                                        <span class="badge bg-primary rounded-pill">{{ $trend['count'] }}</span>
+                                        <span class="badge-pill-custom bg-primary">{{ $trend['count'] }}</span>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -216,9 +293,9 @@
     <div class="row g-4 mb-4">
         <!-- Most Earned Badges -->
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white py-3">
-                    <h5 class="card-title mb-0">
+            <div class="card border-0 shadow-sm h-100 rounded-3">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="card-title mb-0 fw-bold">
                         <i class="fas fa-trophy text-warning me-2"></i>เหรียญตราที่มีผู้ได้รับมากที่สุด
                     </h5>
                 </div>
@@ -253,7 +330,7 @@
                                     </td>
                                     <td>
                                         @if($badge->type == 'distance')
-                                            <span class="badge bg-info text-dark">
+                                            <span class="badge bg-info text-white">
                                                 <i class="fas fa-route me-1"></i> ระยะทาง
                                             </span>
                                         @elseif($badge->type == 'calories')
@@ -292,9 +369,9 @@
 
         <!-- Least Earned Badges -->
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white py-3">
-                    <h5 class="card-title mb-0">
+            <div class="card border-0 shadow-sm h-100 rounded-3">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="card-title mb-0 fw-bold">
                         <i class="fas fa-medal text-danger me-2"></i>เหรียญตราที่มีผู้ได้รับน้อยที่สุด
                     </h5>
                 </div>
@@ -329,7 +406,7 @@
                                     </td>
                                     <td>
                                         @if($badge->type == 'distance')
-                                            <span class="badge bg-info text-dark">
+                                            <span class="badge bg-info text-white">
                                                 <i class="fas fa-route me-1"></i> ระยะทาง
                                             </span>
                                         @elseif($badge->type == 'calories')
@@ -370,9 +447,9 @@
     <div class="row g-4 mb-4">
         <!-- Top Users with Badges -->
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white py-3">
-                    <h5 class="card-title mb-0">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="card-title mb-0 fw-bold">
                         <i class="fas fa-users text-primary me-2"></i>ผู้ใช้ที่มีเหรียญตรามากที่สุด
                     </h5>
                 </div>
@@ -428,9 +505,9 @@
 
         <!-- Recent Badge Assignments -->
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white py-3">
-                    <h5 class="card-title mb-0">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="card-title mb-0 fw-bold">
                         <i class="fas fa-history text-primary me-2"></i>การได้รับเหรียญตราล่าสุด
                     </h5>
                 </div>
@@ -569,4 +646,13 @@
         });
     });
 </script>
+<style>
+    body {
+        background-color: #f9f9f9;
+    }
+    .hover-shadow:hover {
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+        transition: box-shadow 0.3s ease-in-out;
+    }
+</style>
 @endsection

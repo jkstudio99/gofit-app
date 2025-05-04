@@ -1,0 +1,161 @@
+/**
+ * navbar-fix.css
+ * แก้ไขปัญหาเฉพาะเรื่อง navbar และปุ่มกด
+ */
+
+/* แก้ไขปัญหาทั่วไป */
+* {
+    pointer-events: auto !important;
+}
+
+/* แก้ไขปัญหา Navbar */
+.navbar {
+    position: relative !important;
+    z-index: 1030 !important;
+}
+
+.navbar-brand {
+    z-index: 1035 !important;
+    position: relative !important;
+}
+
+.navbar-nav {
+    position: relative !important;
+    z-index: 1040 !important;
+}
+
+.nav-item {
+    position: relative !important;
+    z-index: 1045 !important;
+}
+
+.nav-link,
+.dropdown-toggle {
+    position: relative !important;
+    z-index: 1050 !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+.dropdown-menu {
+    position: absolute !important;
+    z-index: 9999 !important;
+    border: none !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    margin-top: 0 !important;
+    background-color: white !important;
+    display: none;
+}
+
+.dropdown-menu.show {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    margin-top: 0 !important;
+}
+
+.dropdown-item {
+    position: relative !important;
+    z-index: 10000 !important;
+    cursor: pointer !important;
+}
+
+/* แก้ไขปัญหาเฉพาะ Bootstrap 5 */
+[data-bs-toggle="dropdown"] {
+    cursor: pointer !important;
+}
+
+.navbar-toggler {
+    z-index: 1065 !important;
+    position: relative !important;
+}
+
+/* แก้ไขปัญหาปุ่มต่างๆ */
+a, button, .btn {
+    position: relative !important;
+    z-index: 1040 !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+/* แก้ไขการซ้อนทับกันของเมนู dropdown */
+.navbar-collapse.show .dropdown-menu.show {
+    position: static !important;
+    float: none !important;
+    width: auto !important;
+    margin-top: 0 !important;
+    background-color: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+/* แก้ไขปัญหาสำหรับอุปกรณ์มือถือ */
+@media (max-width: 767px) {
+    .navbar-collapse {
+        z-index: 1070 !important;
+        position: absolute !important;
+        top: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+        background-color: white !important;
+        padding: 1rem !important;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .navbar-collapse.show {
+        display: block !important;
+    }
+
+    .navbar-nav {
+        margin: 0 !important;
+    }
+
+    .dropdown-menu {
+        margin-left: 1rem !important;
+    }
+}
+
+/* ป้องกันการซ้อนทับของ dropdown กับเนื้อหา */
+.dropdown {
+    position: relative !important;
+}
+
+.dropdown.show {
+    position: relative !important;
+    z-index: 9999 !important;
+}
+
+.dropdown-menu.show {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    margin-top: 0 !important;
+    transform: none !important;
+    top: 100% !important;
+    left: 0 !important;
+}
+
+/* ปรับปรุงสไตล์ของรายการในเมนู dropdown */
+.dropdown-item {
+    padding: 0.5rem 1rem !important;
+    clear: both !important;
+    text-align: inherit !important;
+    white-space: nowrap !important;
+    background-color: transparent !important;
+    border: 0 !important;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background-color: #f8f9fa !important;
+    text-decoration: none !important;
+}
+
+/* กำหนดให้เนื้อหาหลักมี z-index ต่ำกว่า dropdown */
+main, .main-content, .container, .row, .card {
+    position: relative !important;
+    z-index: 1 !important;
+}

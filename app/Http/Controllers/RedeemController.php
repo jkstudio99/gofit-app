@@ -148,12 +148,15 @@ class RedeemController extends Controller
     /**
      * Admin panel: Update redemption status
      */
-    public function updateStatus(Request $request, Redeem $redeem)
+    public function updateStatus(Request $request, $redeemId)
     {
         $request->validate([
             'status' => 'required|in:pending,completed,cancelled',
             'note' => 'nullable|string',
         ]);
+
+        // ค้นหา Redeem โดยตรงด้วย ID แทนการใช้ route model binding
+        $redeem = Redeem::findOrFail($redeemId);
 
         $redeem->status = $request->status;
 
@@ -163,7 +166,7 @@ class RedeemController extends Controller
 
         $redeem->save();
 
-        return redirect()->route('admin.redeems.index')->with('success', 'อัปเดตสถานะการแลกรางวัลเรียบร้อยแล้ว');
+        return redirect()->route('admin.redeems')->with('success', 'อัปเดตสถานะการแลกรางวัลเรียบร้อยแล้ว');
     }
 
     /**

@@ -210,7 +210,7 @@
 
     /* Search and Filter */
     .search-box {
-        border-radius: 20px;
+        border-radius: 8px;
         border: 1px solid #e0e0e0;
         padding-left: 20px;
     }
@@ -228,6 +228,29 @@
         align-items: center;
         justify-content: center;
         margin-right: 5px;
+    }
+
+    /* Make delete button icons white */
+    .btn-danger.badge-action-btn i,
+    .btn-danger i {
+        color: white !important;
+    }
+
+    /* Use primary color from design system */
+    .btn-primary, .bg-primary {
+        background-color: #2DC679 !important;
+        border-color: #2DC679 !important;
+    }
+
+    .btn-primary:hover {
+        background-color: #24A664 !important;
+        border-color: #24A664 !important;
+    }
+
+    /* Badge info styling */
+    .badge.bg-info {
+        background-color: #3B82F6 !important;
+        color: white !important;
     }
 
     .sort-icon {
@@ -250,12 +273,7 @@
     <div class="d-flex justify-content-between align-items-center mb-2">
         <h2 class="mb-0">จัดการเหรียญตรา</h2>
         <div class="d-flex gap-2">
-            <a href="{{ route('admin.badges.statistics') }}" class="btn btn-info">
-                <i class="fas fa-chart-pie me-2"></i>สถิติ
-            </a>
-            <a href="{{ route('admin.badges.history') }}" class="btn btn-success">
-                <i class="fas fa-history me-2"></i>ประวัติการได้รับ
-            </a>
+
             <a href="{{ route('admin.badges.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus me-2"></i>เพิ่มเหรียญตราใหม่
             </a>
@@ -269,7 +287,7 @@
             <div class="card h-100 shadow-sm border-0 badge-stat-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="badge-stat-icon bg-primary bg-opacity-10 me-3">
-                        <i class="fas fa-medal text-primary"></i>
+                        <i class="fas fa-medal text-white"></i>
                     </div>
                     <div>
                         <h6 class="text-muted mb-1">เหรียญทั้งหมด</h6>
@@ -399,35 +417,6 @@
         </div>
     </div>
 
-    <!-- Type Filter Tags -->
-    <div class="mb-3">
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{{ route('admin.badges.index', request()->except('type')) }}"
-               class="badge bg-{{ request('type') ? 'light text-dark' : 'primary' }} py-2 px-3 filter-badge">
-                <i class="fas fa-medal me-1"></i> ทั้งหมด
-            </a>
-
-            @foreach($badgeTypes as $type)
-                <a href="{{ route('admin.badges.index', array_merge(request()->except('type'), ['type' => $type])) }}"
-                   class="badge bg-{{ request('type') == $type ? 'primary' : 'light text-dark' }} py-2 px-3 filter-badge">
-                    @if($type == 'distance')
-                        <i class="fas fa-route me-1"></i> ระยะทาง
-                    @elseif($type == 'calories')
-                        <i class="fas fa-fire-alt me-1"></i> แคลอรี่
-                    @elseif($type == 'streak')
-                        <i class="fas fa-calendar-check me-1"></i> ต่อเนื่อง
-                    @elseif($type == 'speed')
-                        <i class="fas fa-tachometer-alt me-1"></i> ความเร็ว
-                    @elseif($type == 'event')
-                        <i class="fas fa-calendar-day me-1"></i> กิจกรรม
-                    @else
-                        <i class="fas fa-medal me-1"></i> {{ $type }}
-                    @endif
-                </a>
-            @endforeach
-        </div>
-    </div>
-
     <!-- Badges Grid -->
     <div class="row mb-4">
         <div class="col">
@@ -442,7 +431,7 @@
                             </span>
                             @endif
                         </h5>
-                        <span class="badge bg-info rounded-pill px-3 py-2">
+                        <span class="badge bg-info text-white rounded-pill px-3 py-2">
                             <i class="fas fa-medal me-1"></i> เหรียญตราทั้งหมด: {{ $badges->total() }}
                         </span>
                     </div>
@@ -458,13 +447,12 @@
                             <p class="text-muted">ไม่พบข้อมูลที่ตรงกับเงื่อนไขการค้นหา</p>
                         </div>
                     @else
-                        <!-- จัดกลุ่มเหรียญตามประเภท -->
                         @php
                             // จัดกลุ่มตามประเภท
                             $badgesByType = $badges->groupBy('type');
 
                             // กำหนดลำดับการแสดงผล และชื่อแสดงผลภาษาไทย
-                            $typeOrder = ['calories', 'distance', 'streak', 'speed', 'event'];
+                            $typeOrder = ['distance', 'calories', 'streak', 'speed', 'event'];
                             $typeNames = [
                                 'distance' => 'ระยะทาง',
                                 'calories' => 'แคลอรี่',
@@ -480,7 +468,7 @@
                                 'event' => 'fa-trophy'
                             ];
                             $typeColors = [
-                                'distance' => 'primary',
+                                'distance' => 'success',
                                 'calories' => 'danger',
                                 'streak' => 'success',
                                 'speed' => 'info',
@@ -500,7 +488,7 @@
                                     <li class="nav-item" role="presentation">
                                         <button class="nav-link" id="{{ $type }}-tab" data-bs-toggle="tab" data-bs-target="#{{ $type }}-badges" type="button" role="tab" aria-controls="{{ $type }}-badges" aria-selected="false">
                                             <i class="fas {{ $typeIcons[$type] }} me-1"></i> {{ $typeNames[$type] }}
-                                            <span class="badge bg-{{ $typeColors[$type] }} bg-opacity-75 ms-1 rounded-pill">{{ $badgesByType[$type]->count() }}</span>
+                                            <span class="badge bg-{{ $typeColors[$type] }} ms-1 rounded-pill">{{ $badgesByType[$type]->count() }}</span>
                                         </button>
                                     </li>
                                 @endif
@@ -519,7 +507,7 @@
                                                 </div>
                                                 <h5 class="mb-0">เหรียญ{{ $typeNames[$type] }}</h5>
                                                 <div class="ms-auto">
-                                                    <span class="badge bg-{{ $typeColors[$type] }} bg-opacity-75">
+                                                    <span class="badge bg-{{ $typeColors[$type] }}">
                                                         {{ $badgesByType[$type]->count() }} รายการ
                                                     </span>
                                                 </div>
@@ -586,7 +574,7 @@
 
                                                             <div class="card-footer bg-white py-2">
                                                                 <div class="d-flex justify-content-center">
-                                                                    <a href="{{ route('admin.badges.show', $badge) }}" class="btn btn-sm btn-info badge-action-btn me-2" title="ดูรายละเอียด">
+                                                                    <a href="{{ route('admin.badges.show', $badge) }}" class="btn btn-sm btn-info badge-action-btn me-2 text-white" title="ดูรายละเอียด">
                                                                         <i class="fas fa-eye"></i>
                                                                     </a>
                                                                     <a href="{{ route('admin.badges.edit', $badge) }}" class="btn btn-sm btn-warning badge-action-btn me-2" title="แก้ไข">
@@ -704,7 +692,7 @@
 
                                                         <div class="card-footer bg-white py-2">
                                                             <div class="d-flex justify-content-center">
-                                                                <a href="{{ route('admin.badges.show', $badge) }}" class="btn btn-sm btn-info badge-action-btn me-2" title="ดูรายละเอียด">
+                                                                <a href="{{ route('admin.badges.show', $badge) }}" class="btn btn-sm btn-info badge-action-btn me-2 text-white" title="ดูรายละเอียด">
                                                                     <i class="fas fa-eye"></i>
                                                                 </a>
                                                                 <a href="{{ route('admin.badges.edit', $badge) }}" class="btn btn-sm btn-warning badge-action-btn me-2" title="แก้ไข">
@@ -930,6 +918,30 @@
                 });
             });
         });
+
+        // Display SweetAlert for session message if exists
+        @if(session('success'))
+            Swal.fire({
+                title: 'สำเร็จ!',
+                text: "{{ session('success') }}",
+                icon: 'success',
+                confirmButtonColor: '#2DC679',
+                confirmButtonText: 'ตกลง'
+            });
+        @endif
+
+        @if(session('error'))
+            Swal.fire({
+                title: 'ผิดพลาด!',
+                text: "{{ session('error') }}",
+                icon: 'error',
+                confirmButtonColor: '#2DC679',
+                confirmButtonText: 'ตกลง'
+            });
+        @endif
     });
 </script>
+
+<!-- Include SweetAlert message partial -->
+@include('partials.sweetalert-messages')
 @endsection

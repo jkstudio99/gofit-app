@@ -43,86 +43,152 @@
     .table-hover tbody tr:hover {
         background-color: rgba(45, 198, 121, 0.05);
     }
+
+    /* Card and Table Design */
+    .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1.5rem rgba(0,0,0,0.15) !important;
+    }
+
+    .card-header {
+        background-color: white;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 1rem 1.5rem;
+    }
+
+    .table th {
+        font-weight: 600;
+        color: #495057;
+        background-color: #f8f9fa;
+        border-top: none;
+    }
+
+    .table td {
+        vertical-align: middle;
+        padding: 0.75rem 1rem;
+    }
+
+    /* Badge styling */
+    .badge-pill-custom {
+        border-radius: 50px;
+        padding: 0.35rem 0.75rem;
+        font-weight: 500;
+        font-size: 0.8rem;
+    }
+
+    /* Dashboard style icon container */
+    .icon-container {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Badge styles with gradients */
+    .bg-primary-soft {
+        background-color: rgba(78, 115, 223, 0.1);
+        color: #4e73df;
+    }
+
+    .bg-success-soft {
+        background-color: rgba(28, 200, 138, 0.1);
+        color: #1cc88a;
+    }
+
+    .bg-danger-soft {
+        background-color: rgba(231, 74, 59, 0.1);
+        color: #e74a3b;
+    }
+
+    .bg-warning-soft {
+        background-color: rgba(246, 194, 62, 0.1);
+        color: #f6c23e;
+    }
 </style>
 @endsection
 
 @section('content')
-<div class="container">
+<div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">สถิติและการวิเคราะห์รางวัล</h1>
+        <h2 class="mb-0">สถิติและการวิเคราะห์รางวัล</h2>
         <div>
-            <a href="{{ route('admin.rewards') }}" class="btn btn-outline-primary">
-                <i class="fas fa-gift me-2"></i>จัดการรางวัล
+            <a href="{{ route('admin.rewards') }}" class="btn btn-primary">
+                <i class="fas fa-gift me-1"></i> จัดการรางวัล
             </a>
         </div>
     </div>
 
     <!-- Summary Cards -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="card h-100 border-0 shadow-sm stat-card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="text-primary stat-icon">
-                            <i class="fas fa-gift"></i>
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 border-0 shadow-sm rounded-3">
+                <div class="card-body py-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="fs-1 fw-bold mb-0 text-primary">{{ number_format($totalRewards) }}</h2>
+                            <p class="text-muted mb-0">รางวัลทั้งหมด</p>
                         </div>
-                        <div class="badge bg-primary-soft text-primary rounded-pill px-3 py-2">
-                            <i class="fas fa-cube me-1"></i> รวมทั้งหมด
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-0 icon-container">
+                            <i class="fas fa-gift fa-2x text-primary"></i>
                         </div>
                     </div>
-                    <h3 class="display-6 fw-bold mb-0">{{ number_format($totalRewards) }}</h3>
-                    <p class="text-muted mb-0">รางวัลทั้งหมด</p>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-3">
-            <div class="card h-100 border-0 shadow-sm stat-card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="text-success stat-icon">
-                            <i class="fas fa-check-circle"></i>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 border-0 shadow-sm rounded-3">
+                <div class="card-body py-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="fs-1 fw-bold mb-0 text-success">{{ number_format($availableRewards) }}</h2>
+                            <p class="text-muted mb-0">รางวัลที่มีของเหลืออยู่</p>
                         </div>
-                        <div class="badge bg-success-soft text-success rounded-pill px-3 py-2">
-                            <i class="fas fa-cubes me-1"></i> พร้อมแลก
+                        <div class="rounded-circle bg-success bg-opacity-10 p-0 icon-container">
+                            <i class="fas fa-check-circle fa-2x text-success"></i>
                         </div>
                     </div>
-                    <h3 class="display-6 fw-bold mb-0">{{ number_format($availableRewards) }}</h3>
-                    <p class="text-muted mb-0">รางวัลที่มีของเหลืออยู่</p>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-3">
-            <div class="card h-100 border-0 shadow-sm stat-card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="text-danger stat-icon">
-                            <i class="fas fa-times-circle"></i>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 border-0 shadow-sm rounded-3">
+                <div class="card-body py-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="fs-1 fw-bold mb-0 text-danger">{{ number_format($outOfStockRewards) }}</h2>
+                            <p class="text-muted mb-0">รางวัลที่หมดแล้ว</p>
                         </div>
-                        <div class="badge bg-danger-soft text-danger rounded-pill px-3 py-2">
-                            <i class="fas fa-box-open me-1"></i> หมด
+                        <div class="rounded-circle bg-danger bg-opacity-10 p-0 icon-container">
+                            <i class="fas fa-times-circle fa-2x text-danger"></i>
                         </div>
                     </div>
-                    <h3 class="display-6 fw-bold mb-0">{{ number_format($outOfStockRewards) }}</h3>
-                    <p class="text-muted mb-0">รางวัลที่หมดแล้ว</p>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-3">
-            <div class="card h-100 border-0 shadow-sm stat-card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="text-warning stat-icon">
-                            <i class="fas fa-exchange-alt"></i>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 border-0 shadow-sm rounded-3">
+                <div class="card-body py-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="fs-1 fw-bold mb-0 text-warning">{{ number_format($totalRedeems) }}</h2>
+                            <p class="text-muted mb-0">จำนวนครั้งที่มีการแลกรางวัล</p>
                         </div>
-                        <div class="badge bg-warning-soft text-warning rounded-pill px-3 py-2">
-                            <i class="fas fa-sync-alt me-1"></i> การแลก
+                        <div class="rounded-circle bg-warning bg-opacity-10 p-0 icon-container">
+                            <i class="fas fa-exchange-alt fa-2x text-warning"></i>
                         </div>
                     </div>
-                    <h3 class="display-6 fw-bold mb-0">{{ number_format($totalRedeems) }}</h3>
-                    <p class="text-muted mb-0">จำนวนครั้งที่มีการแลกรางวัล</p>
                 </div>
             </div>
         </div>
@@ -131,9 +197,9 @@
     <div class="row g-4 mb-4">
         <!-- Monthly Redeem Trends -->
         <div class="col-lg-7">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white py-3">
-                    <h5 class="card-title mb-0">
+            <div class="card border-0 shadow-sm h-100 rounded-3">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="card-title mb-0 fw-bold">
                         <i class="fas fa-chart-line text-primary me-2"></i>แนวโน้มการแลกรางวัลรายเดือน
                     </h5>
                 </div>
@@ -169,9 +235,9 @@
 
         <!-- Redeem Status Distribution -->
         <div class="col-lg-5">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white py-3">
-                    <h5 class="card-title mb-0">
+            <div class="card border-0 shadow-sm h-100 rounded-3">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="card-title mb-0 fw-bold">
                         <i class="fas fa-chart-pie text-primary me-2"></i>สถานะการแลกรางวัล
                     </h5>
                 </div>
@@ -222,9 +288,9 @@
     <div class="row g-4 mb-4">
         <!-- Most Redeemed Rewards -->
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white py-3">
-                    <h5 class="card-title mb-0">
+            <div class="card border-0 shadow-sm h-100 rounded-3">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="card-title mb-0 fw-bold">
                         <i class="fas fa-trophy text-warning me-2"></i>รางวัลที่ได้รับความนิยมสูงสุด
                     </h5>
                 </div>
@@ -268,7 +334,7 @@
                                             </div>
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge bg-warning text-dark">
+                                            <span class="badge bg-warning text-white rounded-pill">
                                                 <i class="fas fa-coins me-1"></i> {{ number_format($reward->points_required) }}
                                             </span>
                                         </td>
@@ -287,9 +353,9 @@
 
         <!-- Top Users -->
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white py-3">
-                    <h5 class="card-title mb-0">
+            <div class="card border-0 shadow-sm h-100 rounded-3">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="card-title mb-0 fw-bold">
                         <i class="fas fa-users text-primary me-2"></i>ผู้ใช้ที่แลกรางวัลบ่อยที่สุด
                     </h5>
                 </div>
@@ -352,13 +418,13 @@
     </div>
 
     <!-- Recent Redeem History -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-white py-3">
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-header bg-white py-3 border-0">
             <div class="d-flex justify-content-between align-items-center">
-                <h5 class="card-title m-0">
+                <h5 class="card-title m-0 fw-bold">
                     <i class="fas fa-history text-primary me-2"></i>ประวัติการแลกรางวัลล่าสุด
                 </h5>
-                <a href="{{ route('admin.redeems') }}" class="btn btn-sm btn-outline-primary">
+                <a href="{{ route('admin.redeems') }}" class="btn btn-sm btn-outline-primary rounded-pill">
                     <i class="fas fa-list me-1"></i> ดูประวัติทั้งหมด
                 </a>
             </div>
@@ -395,7 +461,7 @@
                                 </td>
                                 <td>{{ $redeem->reward->name }}</td>
                                 <td>
-                                    <span class="badge bg-warning text-dark">
+                                    <span class="badge bg-warning text-white rounded-pill">
                                         <i class="fas fa-coins me-1"></i> {{ number_format($redeem->reward->points_required) }}
                                     </span>
                                 </td>

@@ -20,6 +20,36 @@
         border-radius: 10px;
         padding: 20px;
     }
+
+    /* Design system styles */
+    .btn-primary, .bg-primary {
+        background-color: #2DC679 !important;
+        border-color: #2DC679 !important;
+    }
+
+    .btn-primary:hover {
+        background-color: #24A664 !important;
+        border-color: #24A664 !important;
+    }
+
+    .badge.bg-info {
+        background-color: #3B82F6 !important;
+        color: white !important;
+    }
+
+    .btn-info.badge-action-btn {
+        background-color: #3B82F6 !important;
+        border-color: #3B82F6 !important;
+    }
+
+    .btn-info.badge-action-btn:hover {
+        background-color: #2563EB !important;
+        border-color: #2563EB !important;
+    }
+
+    .btn-danger i, .btn-danger.badge-action-btn i {
+        color: white !important;
+    }
 </style>
 @endsection
 
@@ -50,7 +80,7 @@
 
                     <div class="mb-3">
                         @if($badge->type == 'distance')
-                            <span class="badge bg-info text-dark">
+                            <span class="badge bg-info text-white">
                                 <i class="fas fa-route me-1"></i> ระยะทาง
                             </span>
                         @elseif($badge->type == 'calories')
@@ -94,7 +124,7 @@
                 <h5 class="card-title m-0">
                     <i class="fas fa-users me-2 text-primary"></i>ผู้ใช้ที่ได้รับเหรียญตรานี้
                 </h5>
-                <span class="badge bg-info rounded-pill">
+                <span class="badge bg-info text-white rounded-pill">
                     <i class="fas fa-user-check me-1"></i> ทั้งหมด: {{ $users->total() }} คน
                 </span>
             </div>
@@ -145,7 +175,7 @@
                                     {{ \Carbon\Carbon::parse($user->pivot->earned_at)->format('d/m/Y H:i') }}
                                 </td>
                                 <td class="text-center">
-                                    <a href="{{ route('admin.users.show', $user) }}" class="btn btn-sm btn-info badge-action-btn" title="ดูข้อมูลผู้ใช้">
+                                    <a href="{{ route('admin.users.show', $user) }}" class="btn btn-sm btn-info badge-action-btn text-white" title="ดูข้อมูลผู้ใช้">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                 </td>

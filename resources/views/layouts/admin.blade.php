@@ -17,6 +17,13 @@
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
 
+    <!-- Navbar Fix CSS -->
+    <link rel="stylesheet" href="{{ asset('css/navbar-fix.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin-dropdown.css') }}">
+
+    <!-- SweetAlert Custom CSS -->
+    <link rel="stylesheet" href="{{ asset('css/sweetalert-custom.css') }}">
+
     <!-- Scripts & Styles -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
@@ -25,6 +32,7 @@
         /* Global Admin Styling */
         body {
             background-color: #f9f9f9;
+            overflow-x: hidden;
         }
 
         /* Card styles */
@@ -70,7 +78,7 @@
 
         /* CSS แก้ไขปัญหา dropdown */
         .dropdown-menu {
-            position: absolute;
+            position: absolute !important;
             display: none;
             z-index: 9999 !important;
             margin: 0;
@@ -128,6 +136,7 @@
         .navbar .dropdown-item {
             padding: 0.6rem 1.5rem;
             transition: all 0.2s ease;
+            cursor: pointer;
         }
 
         .navbar .dropdown-item:hover {
@@ -141,19 +150,12 @@
             font-weight: 500;
         }
 
-        .navbar .dropdown-divider {
-            margin: 0.25rem 0;
-        }
-
-        /* Admin profile image styles */
-        .admin-profile-img {
-            border: 2px solid #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s ease;
-        }
-
-        #userDropdown:hover .admin-profile-img {
-            transform: scale(1.05);
+        /* Ensure clickable elements have proper cursor and z-index */
+        .nav-link, .dropdown-item, button, a, .btn {
+            cursor: pointer !important;
+            position: relative;
+            z-index: 1500 !important;
+            pointer-events: auto !important;
         }
 
         /* Admin navigation styles */
@@ -186,6 +188,7 @@
             border: none;
             box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
             border-radius: 0.5rem;
+            z-index: 1600 !important;
         }
 
         /* Button styles */
@@ -258,6 +261,56 @@
             font-size: 14px;
             color: #6c757d;
         }
+
+        /* แก้ไขปัญหากดปุ่มไม่ได้ */
+        * {
+            pointer-events: auto !important;
+        }
+
+        body {
+            pointer-events: auto !important;
+        }
+
+        .navbar-nav .nav-item {
+            position: relative !important;
+            z-index: 2000 !important;
+        }
+
+        .navbar-nav .nav-link {
+            position: relative !important;
+            z-index: 2001 !important;
+        }
+
+        .dropdown-menu {
+            z-index: 2002 !important;
+        }
+
+        /* แก้ไขปัญหา navbar toggle */
+        .navbar-toggler {
+            z-index: 2003 !important;
+            position: relative !important;
+        }
+
+        /* Fix for collapse issue */
+        .collapsing {
+            position: relative;
+            height: 0;
+            overflow: hidden;
+            transition: height 0.35s ease;
+        }
+
+        .collapse.show {
+            display: block !important;
+        }
+
+        /* Fix for dropdown issues in navbar */
+        .navbar .nav-item .dropdown-menu {
+            display: none;
+        }
+
+        .navbar .nav-item.show .dropdown-menu {
+            display: block;
+        }
     </style>
     @yield('styles')
 </head>
@@ -277,10 +330,38 @@
                     <div class="collapse navbar-collapse" id="navbarContent">
                         <!-- Left Side Menu -->
                         <ul class="navbar-nav me-auto">
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
-                                    <i class="fas fa-tachometer-alt me-1"></i> แดชบอร์ด
+                            <!-- Reports Dropdown (New) -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle {{ request()->routeIs('admin.reports.*') || request()->routeIs('admin.badges.statistics') || request()->routeIs('admin.rewards.statistics') || request()->routeIs('admin.run.stats') || request()->routeIs('admin.health-articles.statistics') ? 'active' : '' }}" href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-chart-line me-1"></i> รายงานและสถิติทั้งหมด
                                 </a>
+                                <ul class="dropdown-menu" aria-labelledby="reportsDropdown">
+                                    <li>
+                                        <a class="dropdown-item {{ request()->routeIs('admin.badges.statistics') ? 'active' : '' }}" href="{{ route('admin.badges.statistics') }}">
+                                            <i class="fas fa-medal me-1"></i> สถิติเหรียญตรา
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item {{ request()->routeIs('admin.rewards.statistics') ? 'active' : '' }}" href="{{ route('admin.rewards.statistics') }}">
+                                            <i class="fas fa-gift me-1"></i> สถิติรางวัล
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item {{ request()->routeIs('admin.run.stats') ? 'active' : '' }}" href="{{ route('admin.run.stats') }}">
+                                            <i class="fas fa-running me-1"></i> สถิติการวิ่ง
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item {{ request()->routeIs('admin.health-articles.statistics') ? 'active' : '' }}" href="{{ route('admin.health-articles.statistics') }}">
+                                            <i class="fas fa-newspaper me-1"></i> สถิติบทความ
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item {{ request()->routeIs('admin.reports.index') ? 'active' : '' }}" href="{{ route('admin.reports.index') }}">
+                                            <i class="fas fa-chart-pie me-1"></i> ภาพรวมทั้งหมด
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
 
                             <!-- Badges and Rewards Dropdown -->
@@ -290,14 +371,9 @@
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="rewardsDropdown">
                                     <li>
-                                        <a class="dropdown-item {{ request()->routeIs('admin.badges.*') ? 'active' : '' }}" href="{{ route('admin.badges.index') }}">
+                                        <a class="dropdown-item {{ request()->routeIs('admin.badges.index') ? 'active' : '' }}" href="{{ route('admin.badges.index') }}">
                                     <i class="fas fa-medal me-1"></i> เหรียญตรา
                                 </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item {{ request()->routeIs('admin.badges.statistics') ? 'active' : '' }}" href="{{ route('admin.badges.statistics') }}">
-                                            <i class="fas fa-chart-pie me-1"></i> สถิติเหรียญตรา
-                                        </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item {{ request()->routeIs('admin.badges.history') ? 'active' : '' }}" href="{{ route('admin.badges.history') }}">
@@ -307,11 +383,6 @@
                                     <li>
                                         <a class="dropdown-item {{ request()->routeIs('admin.rewards') ? 'active' : '' }}" href="{{ route('admin.rewards') }}">
                                             <i class="fas fa-gift me-1"></i> รางวัล
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item {{ request()->routeIs('admin.rewards.statistics') ? 'active' : '' }}" href="{{ route('admin.rewards.statistics') }}">
-                                            <i class="fas fa-chart-bar me-1"></i> สถิติรางวัล
                                         </a>
                                     </li>
                                     <li>
@@ -355,11 +426,6 @@
                                     <li>
                                         <a class="dropdown-item {{ request()->routeIs('admin.health-articles.create') ? 'active' : '' }}" href="{{ route('admin.health-articles.create') }}">
                                             <i class="fas fa-plus me-1"></i> เพิ่มบทความใหม่
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item {{ request()->routeIs('admin.health-articles.statistics') ? 'active' : '' }}" href="{{ route('admin.health-articles.statistics') }}">
-                                            <i class="fas fa-chart-bar me-1"></i> สถิติบทความ
                                         </a>
                                     </li>
                                 </ul>
@@ -442,7 +508,7 @@
                     text: "{{ session('success') }}",
                     icon: 'success',
                     confirmButtonText: 'ตกลง',
-                    confirmButtonColor: '#28a745'
+                    confirmButtonColor: '#2DC679'
                 });
             @endif
 
@@ -453,7 +519,7 @@
                     text: "{{ session('error') }}",
                     icon: 'error',
                     confirmButtonText: 'ตกลง',
-                    confirmButtonColor: '#dc3545'
+                    confirmButtonColor: '#2DC679'
                 });
             @endif
 
@@ -468,34 +534,76 @@
                           '</div>',
                     icon: 'success',
                     confirmButtonText: 'ตกลง',
-                    confirmButtonColor: '#28a745'
+                    confirmButtonColor: '#2DC679'
                 });
             @endif
-        });
-    </script>
 
-    @yield('scripts')
+            // แก้ไขปัญหาการ collapse
+            var navbarToggler = document.querySelector('.navbar-toggler');
+            var navbarCollapse = document.querySelector('.navbar-collapse');
 
-    <!-- เพิ่ม JavaScript สำหรับ custom dropdown handling -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Bootstrap dropdowns properly
-            var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'))
-            var dropdownList = dropdownElementList.map(function(dropdownToggleEl) {
-                return new bootstrap.Dropdown(dropdownToggleEl)
-            });
-
-            // Fix for any z-index issues
-            const navbar = document.querySelector('.navbar');
-            if (navbar) {
-                navbar.style.zIndex = 1030;
+            if (navbarToggler && navbarCollapse) {
+                navbarToggler.addEventListener('click', function() {
+                    if (navbarCollapse.classList.contains('show')) {
+                        navbarCollapse.classList.remove('show');
+                    } else {
+                        navbarCollapse.classList.add('show');
+                    }
+                });
             }
 
-            // Add pointer cursor to all clickable elements
-            document.querySelectorAll('.nav-link, .dropdown-item').forEach(function(element) {
-                element.style.cursor = 'pointer';
+            // แก้ไขปัญหาการ dropdown
+            var dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+
+            dropdownToggles.forEach(function(toggle) {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    var parent = this.parentElement;
+                    var dropdownMenu = parent.querySelector('.dropdown-menu');
+
+                    // Close all other dropdowns
+                    document.querySelectorAll('.dropdown-menu.show').forEach(function(menu) {
+                        if (menu !== dropdownMenu) {
+                            menu.classList.remove('show');
+                            menu.parentElement.classList.remove('show');
+                        }
+                    });
+
+                    // Toggle current dropdown
+                    parent.classList.toggle('show');
+                    dropdownMenu.classList.toggle('show');
+                });
+            });
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.dropdown')) {
+                    document.querySelectorAll('.dropdown-menu.show').forEach(function(menu) {
+                        menu.classList.remove('show');
+                        menu.parentElement.classList.remove('show');
+                    });
+                }
             });
         });
     </script>
+
+    <!-- DataTables and Export Plugins -->
+    <script src="https://cdn.datatables.net/buttons/2.3.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.2/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.2/js/buttons.print.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.2/js/buttons.colVis.min.js"></script>
+
+    <!-- Thai Font Fixes & DataTables Fixes -->
+    <script src="{{ asset('js/thai-fonts-fix.js') }}"></script>
+    <script src="{{ asset('js/datatables-buttons-fix.js') }}"></script>
+    <script src="{{ asset('js/fixes-bundle.js') }}"></script>
+
+    @yield('scripts')
 </body>
 </html>

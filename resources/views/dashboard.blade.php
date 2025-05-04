@@ -9,12 +9,6 @@
         padding: 1rem 0;
     }
 
-    /* Container padding fix */
-    .container.dashboard-container {
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-    }
-
     .welcome-header {
         background: linear-gradient(135deg, #3498db, #2ecc71);
         color: white;
@@ -177,36 +171,16 @@
             display: none;
         }
     }
-
-    /* Fix for stats row margins to match other elements */
-    .mobile-stats .stats-row {
-        margin-left: 15px !important;
-        margin-right: 15px !important;
-        width: calc(100% - 30px) !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-    }
-
-    /* Ensure columns are equal width */
-    .mobile-stats .stat-col {
-        flex: 1 1 0 !important;
-    }
-
-    /* Mobile-stats container fix */
-    .mobile-stats {
-        padding: 0 !important;
-        margin: 0 !important;
-    }
 </style>
 @endsection
 
 @section('content')
-<div class="container dashboard-container">
+<div class="container"></div>
     <!-- Welcome Header -->
     <div class="welcome-header">
-        <h2>สวัสดี, สมศักดิ์</h2>
+        <h2>สวัสดี, {{ Auth::user()->firstname }}</h2>
         <p class="welcome-text">ยินดีต้อนรับกลับมาที่ GoFit! เริ่มต้นการวิ่งวันนี้เพื่อสุขภาพที่ดีขึ้น</p>
-        <a href="{{ route('run.index') }}" class="btn btn-light btn-lg px-4 rounded-pill">
+        <a href="{{ route('run.index') }}" class="btn btn-light btn-lg px-5 py-3 shadow-sm" style="font-weight: 600; font-size: 1.1rem; transition: all 0.3s ease; border-radius: 50px;">
             <i class="fas fa-running me-2"></i> เริ่มวิ่งเลย
         </a>
     </div>

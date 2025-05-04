@@ -3,19 +3,19 @@
 @section('title', 'ยืนยันการลบบัญชี')
 
 @section('content')
-<div class="container">
+<div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card gofit-card mb-4">
-                <div class="card-header bg-danger text-white">
-                    <h5 class="mb-0">
+            <div class="card border-0 shadow-sm rounded-3 mb-4">
+                <div class="card-header bg-danger text-white border-0">
+                    <h5 class="mb-0 fw-bold">
                         <i class="fas fa-exclamation-triangle me-2"></i>
                         ยืนยันการลบบัญชี
                     </h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <div class="alert alert-warning mb-4">
-                        <h6 class="alert-heading"><i class="fas fa-exclamation-circle me-2"></i>คำเตือน!</h6>
+                        <h6 class="alert-heading fw-bold"><i class="fas fa-exclamation-circle me-2"></i>คำเตือน!</h6>
                         <p class="mb-0">การลบบัญชีเป็นการกระทำที่ไม่สามารถย้อนกลับได้ และจะส่งผลดังนี้:</p>
                         <ul class="mt-2 mb-0">
                             <li>ข้อมูลส่วนตัวของคุณทั้งหมดจะถูกลบออกจากระบบ</li>
@@ -26,7 +26,7 @@
                         </ul>
                     </div>
 
-                    <h6 class="mb-3">โปรดยืนยันการลบบัญชีของคุณ</h6>
+                    <h6 class="mb-3 fw-bold">โปรดยืนยันการลบบัญชีของคุณ</h6>
 
                     <form method="POST" action="{{ route('profile.delete') }}">
                         @csrf
@@ -64,6 +64,26 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('styles')
+<style>
+    /* Card styling */
+    .card {
+        border-radius: 0.75rem;
+    }
+
+    /* Light border color */
+    .border {
+        border-color: rgba(0,0,0,0.08) !important;
+    }
+
+    /* Card header styling */
+    .card-header {
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+        padding: 1rem 1.25rem;
+    }
+</style>
 @endsection
 
 @section('scripts')
