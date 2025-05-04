@@ -214,7 +214,7 @@
                 </div>
                 <div class="card-body pb-2">
                     @if($event->event_image)
-                        <img src="{{ asset('storage/' . $event->event_image) }}" alt="{{ $event->event_name }}" class="event-image mb-4 w-100" onerror="this.src='{{ asset('storage/events/default-event.png') }}';">
+                        <img src="{{ asset('storage/' . $event->event_image) }}" alt="{{ $event->event_name }}" class="event-image mb-4 w-100" onerror="this.src='https://via.placeholder.com/120x80?text=GoFit+Event';">
                     @else
                         <div class="bg-light d-flex justify-content-center align-items-center mb-4" style="height: 200px; border-radius: 0.5rem;">
                             <i class="fas fa-image fa-3x text-secondary"></i>

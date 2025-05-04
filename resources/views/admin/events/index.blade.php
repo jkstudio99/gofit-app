@@ -361,7 +361,7 @@
                                 <img src="{{ asset('storage/' . ($event->event_image ?? 'events/default-event.png')) }}"
                                      alt="{{ $event->event_name }}"
                                      class="event-image"
-                                     onerror="this.src='{{ asset('storage/events/default-event.png') }}';">
+                                     onerror="this.src='https://via.placeholder.com/120x80?text=GoFit+Event';">
                             </td>
                             <td>
                                 <div class="fw-bold">{{ Str::limit($event->event_name, 40) }}</div>

@@ -5,7 +5,9 @@
     <div class="auth-form-side">
         <div class="auth-form-container">
             <div class="auth-logo">
-                <img src="{{ asset('images/gofit-logo-text-black.svg') }}" alt="GoFit Logo" style="height: 2.5rem;">
+                <a href="{{ url('/') }}">
+                    <img src="{{ asset('images/gofit-logo-text-black.svg') }}" alt="GoFit Logo" style="height: 2.5rem;">
+                </a>
             </div>
 
             <h1 class="auth-title">{{ __('เข้าสู่ระบบ') }}</h1>

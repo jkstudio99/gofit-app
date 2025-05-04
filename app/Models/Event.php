@@ -216,7 +216,7 @@ class Event extends Model
             return $this->attributes['image_url'];
         }
 
-        return 'events/default-event.png';
+        return 'https://via.placeholder.com/300x200?text=GoFit+Event';
     }
 
     /**

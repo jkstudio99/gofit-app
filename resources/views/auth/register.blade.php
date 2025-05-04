@@ -5,6 +5,7 @@
     <div class="auth-form-side">
         <div class="auth-form-container">
             <div class="auth-logo">
+                <a href="{{ url('/') }}">
                 <img src="{{ asset('images/gofit-logo-text-black.svg') }}" alt="GoFit Logo" style="height: 2.5rem;">
             </div>
 
