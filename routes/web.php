@@ -120,7 +120,7 @@ Route::middleware(['auth'])->group(function () {
 // Route สำหรับ Admin
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // หน้าแดชบอร์ด
-    Route::get('/', [AdminController::class, 'index'])->name('dashboard');
+    Route::get('/', [AdminController::class, 'index'])->name('home');
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
 
     // Users management
