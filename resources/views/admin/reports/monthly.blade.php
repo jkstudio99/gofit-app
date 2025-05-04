@@ -20,23 +20,23 @@
         <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
             <h5 class="m-0 fw-bold">รายงานประจำเดือน {{ Carbon\Carbon::createFromDate($currentYear, $currentMonth, 1)->locale('th')->translatedFormat('F Y') }}</h5>
             <div>
-                <form action="{{ route('admin.reports.monthly') }}" method="GET" class="d-flex">
-                    <select name="month" class="form-select form-select-sm me-2">
+                <form action="{{ route('admin.reports.monthly') }}" method="GET" class="d-flex align-items-center">
+                    <select name="month" class="form-select form-select-md me-2" style="min-width: 120px;">
                         @for($m = 1; $m <= 12; $m++)
                             <option value="{{ $m }}" {{ $currentMonth == $m ? 'selected' : '' }}>
                                 {{ Carbon\Carbon::createFromDate($currentYear, $m, 1)->locale('th')->translatedFormat('F') }}
                             </option>
                         @endfor
                     </select>
-                    <select name="year" class="form-select form-select-sm me-2">
+                    <select name="year" class="form-select form-select-md me-2" style="min-width: 100px;">
                         @for($y = date('Y'); $y >= date('Y') - 5; $y--)
                             <option value="{{ $y }}" {{ $currentYear == $y ? 'selected' : '' }}>
                                 {{ $y + 543 }}
                             </option>
                         @endfor
                     </select>
-                    <button type="submit" class="btn btn-sm btn-primary">
-                        <i class="fas fa-search me-1"></i> ค้นหา
+                    <button type="submit" class="d-flex align-items-center btn btn-md btn-primary">
+                        <i class="fas fa-search me-2"></i> ค้นหา
                     </button>
                 </form>
             </div>
@@ -154,18 +154,13 @@
                         </table>
                     </div>
 
-                    <div class="mt-4">
-                        <div class="d-flex justify-content-center gap-2">
-                            <button id="export-excel" class="btn btn-success">
-                                <i class="fas fa-file-excel me-1"></i> Excel
+                    <div class="d-flex justify-content-center mt-4">
+                        <button id="export-excel" class="btn btn-primary mx-2">
+                            <i class="fas fa-file-excel me-2"></i> ส่งออก Excel
                             </button>
-                            <button id="export-pdf" class="btn btn-danger">
-                                <i class="fas fa-file-pdf me-1"></i> PDF
+                        <button id="export-csv" class="btn btn-primary mx-2">
+                            <i class="fas fa-file-csv me-2"></i> ส่งออก CSV
                             </button>
-                            <button id="export-csv" class="btn btn-primary">
-                                <i class="fas fa-file-csv me-1"></i> CSV
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -180,27 +175,32 @@
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/table-to-json@1.0.0/lib/jquery.tabletojson.min.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // สร้างข้อมูลสำหรับกราฟแสดงกิจกรรมรายวัน
         const daysInMonth = new Date({{ $currentYear }}, {{ $currentMonth }}, 0).getDate();
-        const dailyData = Array(daysInMonth).fill(0); // สร้างอาร์เรย์ตามจำนวนวันในเดือน
 
-        // สมมติข้อมูลตัวอย่าง (ในการใช้งานจริงควรส่งข้อมูลจาก Controller)
         @php
-            // สุ่มข้อมูลตัวอย่างสำหรับกราฟ
+            // ดึงข้อมูลจริงจากฐานข้อมูลแทนการสุ่ม
             $dailyActivities = [];
             $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $currentMonth, $currentYear);
+
+            // สร้าง array เริ่มต้นด้วย 0 สำหรับทุกวันในเดือน
             for ($i = 1; $i <= $daysInMonth; $i++) {
-                $dailyActivities[] = rand(0, 15);
+                $dailyActivities[$i] = 0;
+            }
+
+            // สมมติว่ามีตัวแปร $activities ที่มาจาก Controller ซึ่งเก็บข้อมูลกิจกรรมตามวันที่
+            if (isset($dailyRunData) && is_array($dailyRunData)) {
+                foreach ($dailyRunData as $day => $count) {
+                    $dailyActivities[$day] = $count;
+                }
             }
         @endphp
 
-        const dailyActivitiesData = @json($dailyActivities);
+        const dailyActivitiesData = @json(array_values($dailyActivities));
 
         // สร้างรายการวันที่
         const days = [];
@@ -226,7 +226,8 @@
                     borderRadius: 3,
                     dataLabels: {
                         position: 'top'
-                    }
+                    },
+                    columnWidth: '70%'
                 }
             },
             dataLabels: {
@@ -242,6 +243,13 @@
             yaxis: {
                 title: {
                     text: 'จำนวนกิจกรรม'
+                },
+                min: 0,
+                forceNiceScale: true,
+                labels: {
+                    formatter: function(val) {
+                        return Math.floor(val);
+                    }
                 }
             },
             tooltip: {
@@ -259,11 +267,6 @@
         // Export เป็น Excel
         $('#export-excel').click(function() {
             exportTableToExcel('report-table', 'รายงานประจำเดือน_{{ Carbon\Carbon::createFromDate($currentYear, $currentMonth, 1)->locale("th")->translatedFormat("F_Y") }}');
-        });
-
-        // Export เป็น PDF
-        $('#export-pdf').click(function() {
-            exportTableToPDF('report-table', 'รายงานประจำเดือน_{{ Carbon\Carbon::createFromDate($currentYear, $currentMonth, 1)->locale("th")->translatedFormat("F_Y") }}');
         });
 
         // Export เป็น CSV
@@ -287,77 +290,6 @@
 
             // คลิกเพื่อดาวน์โหลด
             downloadLink.click();
-        }
-
-        // ฟังก์ชันสำหรับ Export PDF
-        function exportTableToPDF(tableID, filename = '') {
-            const table = document.getElementById(tableID);
-            const data = [];
-
-            // สร้างข้อมูลตาราง
-            const rows = table.getElementsByTagName('tr');
-            for (let i = 0; i < rows.length; i++) {
-                const row = [];
-                const cells = rows[i].getElementsByTagName('td');
-                const headers = rows[i].getElementsByTagName('th');
-
-                // อ่านข้อมูลจาก th
-                for (let j = 0; j < headers.length; j++) {
-                    row.push(headers[j].innerText);
-                }
-
-                // อ่านข้อมูลจาก td
-                for (let j = 0; j < cells.length; j++) {
-                    row.push(cells[j].innerText);
-                }
-
-                data.push(row);
-            }
-
-            // สร้าง Document
-            const docDefinition = {
-                content: [
-                    { text: 'รายงานประจำเดือน {{ Carbon\Carbon::createFromDate($currentYear, $currentMonth, 1)->locale("th")->translatedFormat("F Y") }}', style: 'header' },
-                    { text: 'GoFit Application', style: 'subheader' },
-                    {
-                        style: 'tableExample',
-                        table: {
-                            body: data
-                        }
-                    }
-                ],
-                styles: {
-                    header: {
-                        fontSize: 18,
-                        bold: true,
-                        margin: [0, 0, 0, 10]
-                    },
-                    subheader: {
-                        fontSize: 14,
-                        bold: true,
-                        margin: [0, 10, 0, 5]
-                    },
-                    tableExample: {
-                        margin: [0, 5, 0, 15]
-                    }
-                },
-                defaultStyle: {
-                    fontSize: 12
-                },
-                customize: function(doc) {
-                    doc.styles.tableHeader = {
-                        fontSize: 14,
-                        bold: true,
-                        alignment: 'center'
-                    };
-
-                    // กำหนดขอบกระดาษ
-                    doc.pageMargins = [20, 20, 20, 20];
-                }
-            };
-
-            // ดาวน์โหลด PDF
-            pdfMake.createPdf(docDefinition).download(filename + '.pdf');
         }
 
         // ฟังก์ชันสำหรับ Export CSV

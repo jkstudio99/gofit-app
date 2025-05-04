@@ -117,7 +117,7 @@
 
     .history-card {
         border-radius: 10px;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
         transition: all 0.2s ease;
     }
 
@@ -192,6 +192,59 @@
         padding: 0.5rem 1rem;
         font-weight: 500;
     }
+
+    /* Mobile responsiveness */
+    @media (max-width: 767.98px) {
+        .table-responsive {
+            border: 0;
+        }
+
+        .badge-stat-card .card-body {
+            padding: 0.75rem;
+        }
+
+        .badge-stat-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 16px;
+        }
+
+        .medal-count {
+            font-size: 0.875rem;
+            padding: 0.35rem 0.75rem;
+        }
+
+        .card-header {
+            padding: 0.75rem 1rem;
+        }
+
+        .badge-image {
+            max-width: 50px;
+        }
+
+        .table thead th,
+        .table tbody td {
+            padding: 0.5rem 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        h2.mb-0 {
+            font-size: 1.5rem;
+        }
+
+        h4.mb-0 {
+            font-size: 1.25rem;
+        }
+
+        h6.text-muted {
+            font-size: 0.8rem;
+        }
+
+        .btn-action {
+            width: 30px;
+            height: 30px;
+        }
+    }
 </style>
 @endsection
 
@@ -203,14 +256,11 @@
             <a href="{{ route('admin.badges.index') }}" class="btn btn-outline-secondary me-2">
                 <i class="fas fa-arrow-left me-1"></i> กลับไปยังรายการ
             </a>
-            <a href="{{ route('admin.badges.statistics') }}" class="btn btn-info" style="color: white;">
-                <i class="fas fa-chart-bar me-1"></i> ดูสถิติ
-            </a>
         </div>
     </div>
 
     <!-- Stats Cards -->
-    <div class="row mb-4">
+    <div class="row mb-2">
         <div class="col-md-3 col-sm-6 mb-3">
             <div class="card h-100 shadow-sm border-0 badge-stat-card">
                 <div class="card-body d-flex align-items-center">
@@ -219,7 +269,7 @@
                     </div>
                     <div>
                         <h6 class="text-muted mb-1">จำนวนเหรียญทั้งหมด</h6>
-                        <h4 class="mb-0">{{ $totalBadges ?? 0 }}</h4>
+                        <h4 class="mb-0">{{ number_format($totalBadges) }}</h4>
                     </div>
                 </div>
             </div>
@@ -232,7 +282,7 @@
                     </div>
                     <div>
                         <h6 class="text-muted mb-1">ผู้ได้รับเหรียญ</h6>
-                        <h4 class="mb-0">{{ $uniqueUsers ?? 0 }}</h4>
+                        <h4 class="mb-0">{{ number_format($uniqueUsers) }}</h4>
                     </div>
                 </div>
             </div>
@@ -245,7 +295,7 @@
                     </div>
                     <div>
                         <h6 class="text-muted mb-1">ได้รับเดือนนี้</h6>
-                        <h4 class="mb-0">{{ $monthlyBadges ?? 0 }}</h4>
+                        <h4 class="mb-0">{{ number_format($monthlyBadges) }}</h4>
                     </div>
                 </div>
             </div>
@@ -258,7 +308,7 @@
                     </div>
                     <div>
                         <h6 class="text-muted mb-1">คะแนนที่ได้รับรวม</h6>
-                        <h4 class="mb-0">{{ $totalPoints ?? 0 }}</h4>
+                        <h4 class="mb-0">{{ number_format($totalPoints) }}</h4>
                     </div>
                 </div>
             </div>
@@ -268,20 +318,20 @@
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="card shadow-sm filter-section">
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                     <h5 class="mb-0">
                         <button class="btn btn-link p-0 text-decoration-none text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
                             <i class="fas fa-filter me-2 text-primary"></i> ตัวกรอง <i class="fas fa-chevron-down ms-2 small"></i>
                         </button>
                     </h5>
-                    <div class="medal-count">
+                    <div class="medal-count mt-2 mt-md-0">
                         <i class="fas fa-medal text-primary me-1"></i> ทั้งหมด: {{ $badgeHistory->total() ?? 0 }} รายการ
                     </div>
                 </div>
                 <div class="collapse show" id="filterCollapse">
                     <div class="card-body pt-3">
                         <form action="{{ route('admin.badges.history') }}" method="GET" class="row g-3">
-                            <div class="col-md-3">
+                            <div class="col-md-3 col-sm-6">
                                 <label for="user_id" class="form-label">ผู้ใช้</label>
                                 <select name="user_id" id="user_id" class="form-select">
                                     <option value="">-- ทั้งหมด --</option>
@@ -293,7 +343,7 @@
                                 </select>
                             </div>
 
-                            <div class="col-md-3">
+                            <div class="col-md-3 col-sm-6">
                                 <label for="badge_type" class="form-label">ประเภทเหรียญ</label>
                                 <select name="badge_type" id="badge_type" class="form-select">
                                     <option value="">-- ทั้งหมด --</option>
@@ -317,17 +367,17 @@
                                 </select>
                             </div>
 
-                            <div class="col-md-2">
+                            <div class="col-md-2 col-sm-6">
                                 <label for="date_start" class="form-label">วันที่เริ่มต้น</label>
                                 <input type="date" name="date_start" id="date_start" class="form-control" value="{{ request('date_start') }}">
                             </div>
 
-                            <div class="col-md-2">
+                            <div class="col-md-2 col-sm-6">
                                 <label for="date_end" class="form-label">วันที่สิ้นสุด</label>
                                 <input type="date" name="date_end" id="date_end" class="form-control" value="{{ request('date_end') }}">
                             </div>
 
-                            <div class="col-md-2 d-flex align-items-end">
+                            <div class="col-md-2 col-12 d-flex align-items-end">
                                 <div class="d-flex gap-2 w-100">
                                     <button type="submit" class="btn btn-primary flex-grow-1">
                                         <i class="fas fa-search me-1"></i> กรอง
@@ -358,12 +408,12 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead>
                         <tr>
-                            <th width="5%" class="text-center">ลำดับ</th>
+                            <th width="5%" class="text-center d-none d-md-table-cell">ลำดับ</th>
                             <th width="15%">ผู้ใช้</th>
                             <th width="10%" class="text-center">เหรียญตรา</th>
-                            <th width="25%">รายละเอียด</th>
-                            <th width="15%">ประเภท</th>
-                            <th width="10%" class="text-center">คะแนนที่ได้</th>
+                            <th width="25%" class="d-none d-md-table-cell">รายละเอียด</th>
+                            <th width="15%" class="d-none d-lg-table-cell">ประเภท</th>
+                            <th width="10%" class="text-center">คะแนน</th>
                             <th width="10%">วันที่ได้รับ</th>
                             <th width="10%" class="text-center">จัดการ</th>
                         </tr>
@@ -382,10 +432,10 @@
                         @else
                             @foreach($badgeHistory as $index => $item)
                                 <tr>
-                                    <td class="text-center">{{ $badgeHistory->firstItem() + $index }}</td>
+                                    <td class="text-center d-none d-md-table-cell">{{ $badgeHistory->firstItem() + $index }}</td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <div class="flex-shrink-0 me-2">
+                                            <div class="flex-shrink-0 me-2 d-none d-sm-block">
                                                 @if(isset($item->profile_image))
                                                     <img src="{{ asset('profile_images/' . $item->profile_image) }}" class="rounded-circle" width="40" height="40" alt="Profile" style="object-fit: cover;">
                                                 @else
@@ -396,7 +446,7 @@
                                             </div>
                                             <div>
                                                 <span class="fw-bold user-link">{{ $item->username }}</span>
-                                                <div class="small text-muted">{{ $item->firstname ?? '' }} {{ $item->lastname ?? '' }}</div>
+                                                <div class="small text-muted d-none d-sm-block">{{ $item->firstname ?? '' }} {{ $item->lastname ?? '' }}</div>
                                             </div>
                                         </div>
                                     </td>
@@ -405,11 +455,11 @@
                                         <img src="{{ asset('storage/' . $item->badge_image) }}" alt="{{ $item->badge_name }}" class="badge-image" width="60">
                                         </a>
                                     </td>
-                                    <td>
+                                    <td class="d-none d-md-table-cell">
                                         <div class="fw-bold">{{ $item->badge_name }}</div>
                                         <div class="small text-muted">{{ Str::limit($item->badge_desc, 60) }}</div>
                                     </td>
-                                    <td>
+                                    <td class="d-none d-lg-table-cell">
                                         @php
                                             $typeIcons = [
                                                 'distance' => 'fa-route',
@@ -460,7 +510,7 @@
                                     </td>
                                     <td>
                                         {{ \Carbon\Carbon::parse($item->earned_at)->format('d/m/Y') }}
-                                        <div class="small text-muted">{{ \Carbon\Carbon::parse($item->earned_at)->format('H:i:s') }}</div>
+                                        <div class="small text-muted d-none d-md-block">{{ \Carbon\Carbon::parse($item->earned_at)->format('H:i:s') }}</div>
                                     </td>
                                     <td class="text-center">
                                         <a href="{{ route('admin.badges.show', $item->badge_id) }}" class="btn btn-sm btn-info btn-action mb-1" title="ดูรายละเอียดเหรียญตรา">
@@ -491,20 +541,57 @@
         // เพิ่ม Select2 สำหรับตัวกรองผู้ใช้
         $('#user_id').select2({
             placeholder: "-- เลือกผู้ใช้ --",
-            allowClear: true
+            allowClear: true,
+            width: '100%' // เพิ่มความเต็มหน้าจอขนาดเล็ก
         });
 
         // เพิ่ม Select2 สำหรับตัวกรองประเภทเหรียญ
         $('#badge_type').select2({
             placeholder: "-- เลือกประเภท --",
-            allowClear: true
+            allowClear: true,
+            width: '100%' // เพิ่มความเต็มหน้าจอขนาดเล็ก
         });
 
         // Initialize tooltips
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
+            return new bootstrap.Tooltip(tooltipTriggerEl);
         });
+
+        // ปรับขนาดเมื่อมีการเปลี่ยนขนาดหน้าจอ
+        $(window).resize(function() {
+            handleResponsiveElements();
+        });
+
+        // เรียกใช้ฟังก์ชันครั้งแรก
+        handleResponsiveElements();
+
+        // ฟังก์ชันปรับแต่งองค์ประกอบตาม responsive
+        function handleResponsiveElements() {
+            // ปรับความกว้างของ Select2 ให้เต็มพื้นที่
+            setTimeout(function() {
+                $('#user_id').select2({
+                    width: '100%',
+                    dropdownAutoWidth: true
+                });
+
+                $('#badge_type').select2({
+                    width: '100%',
+                    dropdownAutoWidth: true
+                });
+            }, 100);
+
+            // ตรวจสอบขนาดหน้าจอและซ่อน/แสดงองค์ประกอบให้เหมาะสม
+            if (window.innerWidth < 576) {
+                // ปรับสำหรับหน้าจอโทรศัพท์
+                $('.badge-stat-card').addClass('mb-2');
+                $('.btn-action').addClass('btn-sm').css('width', '28px').css('height', '28px');
+            } else {
+                // ปรับสำหรับหน้าจอใหญ่
+                $('.badge-stat-card').removeClass('mb-2');
+                $('.btn-action').removeClass('btn-sm').css('width', '').css('height', '');
+            }
+        }
     });
 </script>
 @endsection

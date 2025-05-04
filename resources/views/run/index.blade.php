@@ -108,7 +108,7 @@
                                 </button>
                             </div>
                             <div class="col">
-                                <button id="stopRunBtn" class="btn btn-danger btn-lg w-100">
+                                <button id="stopRunBtn" class="btn btn-danger text-white btn-lg w-100">
                                     <i class="fas fa-stop-circle me-2"></i>จบการวิ่ง
                                 </button>
                             </div>
@@ -888,6 +888,75 @@
         console.log('ยกเลิกการวิ่งโดยไม่บันทึก');
     }
 
+    // ฟังก์ชันสำหรับอัปเดตข้อมูลการวิ่งบนหน้าจอ
+    function updateRunStats() {
+        // อัปเดตระยะทาง
+        document.getElementById('distance').textContent = currentDistance.toFixed(2);
+
+        // อัปเดตเวลา
+        const hours = Math.floor(elapsedSeconds / 3600);
+        const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+        const seconds = elapsedSeconds % 60;
+        document.getElementById('time').textContent =
+            String(hours).padStart(2, '0') + ':' +
+            String(minutes).padStart(2, '0') + ':' +
+            String(seconds).padStart(2, '0');
+
+        // อัปเดตความเร็ว
+        document.getElementById('speed').textContent = currentSpeed.toFixed(1);
+
+        // อัปเดตแคลอรี่ - แสดงเป็นจำนวนเต็มเสมอ
+        document.getElementById('calories').textContent = Math.round(totalCalories);
+
+        // แสดงการเปลี่ยนแปลงด้วยอนิเมชั่น
+        animateCalorieChange();
+    }
+
+    // ฟังก์ชันแสดงอนิเมชั่นเมื่อแคลอรี่เปลี่ยนแปลง
+    function animateCalorieChange() {
+        // เคลียร์ timeout เดิมถ้ามี
+        if (calorieAnimationTimeout) {
+            clearTimeout(calorieAnimationTimeout);
+        }
+
+        // แสดงอนิเมชั่นการเพิ่มของแคลอรี่
+        const calorieAnimation = document.getElementById('calorieAnimation');
+        if (calorieAnimation) {
+            const height = Math.min(80, totalCalories / 5); // สูงสุด 80%
+            calorieAnimation.style.height = height + '%';
+
+            // รีเซ็ตอนิเมชั่นหลังจาก 1.5 วินาที
+            calorieAnimationTimeout = setTimeout(() => {
+                calorieAnimation.style.height = '0%';
+            }, 1500);
+        }
+    }
+
+    // ฟังก์ชันสำหรับเริ่มจับเวลา
+    function startTimer() {
+        // หยุดเวลาเดิม (ถ้ามี)
+        if (timer) clearInterval(timer);
+
+        timer = setInterval(function() {
+            elapsedSeconds++;
+
+            // คำนวณระยะทางและแคลอรี่ถ้าอยู่ในโหมดจำลอง
+            if (useSimulation && !isPaused) {
+                // คำนวณระยะทางตามความเร็วที่เลือก (km/h)
+                const hoursPassed = elapsedSeconds / 3600;
+                currentDistance = selectedSpeed * hoursPassed;
+
+                // คำนวณแคลอรี่เผาผลาญ (ประมาณการณ์)
+                // ใช้สูตร: แคลอรี่ = น้ำหนัก (kg) * ระยะทาง (km) * ค่าคงที่
+                // ค่าคงที่ประมาณ 1.036 สำหรับการวิ่ง
+                totalCalories = userWeight * currentDistance * 1.036;
+            }
+
+            // อัปเดตค่าบนหน้าจอ
+            updateRunStats();
+        }, 1000);
+    }
+
     // ฟังก์ชันสำหรับเริ่มการวิ่ง
     function startRun() {
         if (isRunning && !isPaused) return;
@@ -1310,13 +1379,13 @@
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
             body: JSON.stringify({
-                    activity_id: runId,
+                activity_id: runId,
                 route_data: routeDataJSON,
-                distance: currentDistance,
+                distance: parseFloat(currentDistance.toFixed(2)),
                 duration: elapsedSeconds,
-                calories: totalCalories,
-                average_speed: currentSpeed,
-                    is_test: useSimulation
+                calories: Math.round(totalCalories),
+                average_speed: parseFloat(currentSpeed.toFixed(1)),
+                is_test: useSimulation
             })
         })
         .then(response => {
@@ -1439,7 +1508,8 @@
             String(minutes).padStart(2, '0') + ':' +
             String(seconds).padStart(2, '0');
 
-        document.getElementById('summaryCalories').textContent = run.calories_burned + ' kcal';
+        // แก้ไขการแสดงค่าแคลอรี่ - ปัดเป็นจำนวนเต็ม
+        document.getElementById('summaryCalories').textContent = Math.round(parseFloat(run.calories_burned) || 0) + ' kcal';
 
         // ตรวจสอบว่าปุ่มบันทึกมองเห็นได้
         document.getElementById('saveActivityBtn').style.display = 'block';
@@ -1581,8 +1651,8 @@
             body: JSON.stringify({
                 distance: currentDistance,
                 duration: elapsedSeconds,
-                calories_burned: totalCalories,
-                average_speed: currentSpeed,
+                calories_burned: Math.round(totalCalories),
+                average_speed: parseFloat(currentSpeed.toFixed(1)),
                 route_data: routeDataJSON,
                 is_test: useSimulation
             })
@@ -1691,6 +1761,240 @@
             console.error('Error checking for active activities:', error);
         });
     }
+
+    // ฟังก์ชันสำหรับเริ่มการติดตาม GPS
+    function startLocationTracking() {
+        // หยุดการติดตามเดิมก่อน (ถ้ามี)
+        stopLocationTracking();
+
+        // เริ่มติดตามตำแหน่งใหม่
+        if (navigator.geolocation) {
+            watchPositionId = navigator.geolocation.watchPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    // อัปเดตตำแหน่งบนแผนที่
+                    updateMap(lat, lng);
+
+                    // เพิ่มจุดไปยังเส้นทาง
+                    if (routePoints.length === 0) {
+                        // จุดแรก
+                        addPointToRoute(lat, lng);
+                    } else {
+                        // คำนวณระยะทางจากจุดก่อนหน้า
+                        const lastPoint = routePoints[routePoints.length - 1];
+                        const distanceFromLast = calculateDistance(
+                            lastPoint[0], lastPoint[1], lat, lng
+                        );
+
+                        // เพิ่มจุดใหม่เมื่อเคลื่อนที่ได้ระยะทางอย่างน้อย 5 เมตร
+                        if (distanceFromLast >= 0.005) {
+                            addPointToRoute(lat, lng);
+
+                            // เพิ่มระยะทางอย่างสม่ำเสมอ - ไม่ให้มีการลดลง
+                            currentDistance += distanceFromLast;
+
+                            // คำนวณความเร็วปัจจุบัน (km/h)
+                            if (position.coords.speed && position.coords.speed > 0) {
+                                // ถ้า API ให้ข้อมูลความเร็ว
+                                currentSpeed = position.coords.speed * 3.6; // แปลงจาก m/s เป็น km/h
+                            } else {
+                                // คำนวณความเร็วจากระยะทางและเวลา
+                                const timeDiff = elapsedSeconds > 0 ? elapsedSeconds : 1;
+                                currentSpeed = (currentDistance / timeDiff) * 3600;
+                            }
+
+                            // ประมาณแคลอรี่ที่เผาผลาญ - คำนวณจากระยะทางรวมเท่านั้น ไม่มีการลดลง
+                            totalCalories = userWeight * currentDistance * 1.036;
+
+                            // อัปเดตค่าบนหน้าจอ
+                            updateRunStats();
+
+                            // อัปเดตข้อมูลบน server (เป็นระยะๆ)
+                            updateServerData();
+                        }
+                    }
+                },
+                function(error) {
+                    console.error("Error tracking position:", error);
+
+                    // ถ้าเกิดข้อผิดพลาด ให้เปลี่ยนเป็นโหมดจำลอง
+                    if (!useSimulation) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'ไม่สามารถติดตามตำแหน่งได้',
+                            text: 'ระบบจะเปลี่ยนเป็นโหมดจำลองแทน',
+                            timer: 3000,
+                            timerProgressBar: true,
+                            showConfirmButton: false
+                        });
+
+                        // เปลี่ยนเป็นโหมดจำลอง
+                        useSimulation = true;
+                        document.getElementById('toggleModeBtn').setAttribute('data-mode', 'simulation');
+                        document.getElementById('toggleModeText').textContent = 'ใช้ GPS จริง';
+                        document.getElementById('simulationBadge').textContent = 'โหมดจำลอง';
+                        document.getElementById('simulationBadge').className = 'badge bg-info ms-2';
+                        document.getElementById('simulationAlert').style.display = 'block';
+                        document.getElementById('speedSelectorContainer').style.display = 'block';
+
+                        // เริ่มการจำลอง
+                        simulateRunning();
+                    }
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        } else {
+            // เบราว์เซอร์ไม่รองรับ geolocation
+            showAlert('warning', 'ไม่รองรับการระบุตำแหน่ง', 'เบราว์เซอร์ของคุณไม่รองรับการติดตาม GPS');
+
+            // เปลี่ยนเป็นโหมดจำลอง
+            useSimulation = true;
+            simulateRunning();
+        }
+    }
+
+    // ฟังก์ชันสำหรับหยุดการติดตาม GPS
+    function stopLocationTracking() {
+        if (watchPositionId !== null) {
+            navigator.geolocation.clearWatch(watchPositionId);
+            watchPositionId = null;
+        }
+    }
+
+    // ฟังก์ชันจำลองการวิ่ง
+    function simulateRunning() {
+        // ยกเลิกการจำลองที่กำลังทำงานอยู่ (ถ้ามี)
+        if (simulationInterval) {
+            clearInterval(simulationInterval);
+        }
+
+        // ถ้าไม่ได้กำลังวิ่งหรือกำลังหยุดชั่วคราว ไม่ต้องเริ่มจำลอง
+        if (!isRunning || isPaused) return;
+
+        // ตำแหน่งเริ่มต้นคือตำแหน่งปัจจุบันหรือตำแหน่งเริ่มต้น
+        let currentLat = defaultPosition.lat;
+        let currentLng = defaultPosition.lng;
+
+        // ถ้ามีตำแหน่งปัจจุบันบนแผนที่แล้ว ให้ใช้ตำแหน่งนั้น
+        if (currentPositionMarker) {
+            const pos = currentPositionMarker.getLatLng();
+            currentLat = pos.lat;
+            currentLng = pos.lng;
+        }
+
+        // ถ้ายังไม่มีจุดในเส้นทาง ให้เพิ่มจุดเริ่มต้น
+        if (routePoints.length === 0) {
+            addPointToRoute(currentLat, currentLng);
+        }
+
+        // สร้างทิศทางแบบสุ่มเริ่มต้น (ในรูปเรเดียน)
+        let direction = Math.random() * Math.PI * 2;
+
+        // จำนวนครั้งที่จำลองการวิ่ง (เพื่อใช้ในการคำนวณระยะทางที่ถูกต้อง)
+        let simulationCount = 0;
+
+        // เริ่มการจำลองการวิ่ง - อัปเดตตำแหน่งทุก 2 วินาที
+        simulationInterval = setInterval(() => {
+            simulationCount++;
+
+            // คำนวณความเร็วในหน่วย องศาละติจูด/ลองจิจูดต่อการอัปเดต
+            // ความเร็ว km/h แปลงเป็นระยะทางต่อช่วงเวลาอัปเดต
+            const speedPerUpdate = selectedSpeed / 3600 * 2; // ความเร็วต่อ 2 วินาที
+
+            // แปลงความเร็วเป็นระยะต่อการอัปเดต (ประมาณการณ์)
+            // 1 ละติจูด = ประมาณ 110 กม., 1 ลองจิจูด = ประมาณ 111 กม. * cos(ละติจูด)
+            const latDistance = speedPerUpdate / 110;
+            const lngDistance = speedPerUpdate / (111 * Math.cos(currentLat * Math.PI / 180));
+
+            // เปลี่ยนทิศทางบ้างเล็กน้อยเพื่อให้เส้นทางดูเป็นธรรมชาติ
+            direction += (Math.random() - 0.5) * 0.5;
+
+            // คำนวณตำแหน่งใหม่
+            currentLat += latDistance * Math.sin(direction);
+            currentLng += lngDistance * Math.cos(direction);
+
+            // อัปเดตตำแหน่งบนแผนที่
+            updateMap(currentLat, currentLng);
+
+            // เพิ่มจุดไปยังเส้นทาง
+            addPointToRoute(currentLat, currentLng);
+
+            // คำนวณระยะทางโดยตรงจากเวลาและความเร็ว - ไม่พึ่งพาการคำนวณจาก GPS
+            // ทำให้ค่าเพิ่มขึ้นอย่างสม่ำเสมอ
+            currentDistance = (selectedSpeed * elapsedSeconds) / 3600;
+
+            // ใช้ความเร็วที่เลือกเป็นความเร็วปัจจุบัน
+            currentSpeed = selectedSpeed;
+
+            // คำนวณแคลอรี่ที่เผาผลาญตามระยะทางที่สะสมไว้ - ทำให้เพิ่มขึ้นอย่างสม่ำเสมอ
+            totalCalories = userWeight * currentDistance * 1.036;
+
+            // อัปเดตค่าบนหน้าจอ
+            updateRunStats();
+
+            // อัปเดตข้อมูลบน server (เป็นระยะๆ)
+            updateServerData();
+        }, 2000);
+    }
+
+    // ฟังก์ชันคำนวณระยะทางระหว่างจุด (Haversine formula)
+    function calculateDistance(lat1, lng1, lat2, lng2) {
+        const R = 6371; // รัศมีของโลกในหน่วย km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLng = (lng2 - lng1) * Math.PI / 180;
+        const a =
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng/2) * Math.sin(dLng/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const distance = R * c; // ระยะทางในหน่วย km
+        return distance;
+    }
+
+    // ฟังก์ชันอัปเดตข้อมูลไปยัง server
+    function updateServerData() {
+        // อัปเดตข้อมูลทุก 10 วินาที (หรือตามความเหมาะสม)
+        if (!runId || !isRunning || isPaused || elapsedSeconds % 10 !== 0) return;
+
+        try {
+            fetch('{{ url("/run/update") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    run_id: runId,
+                    distance: parseFloat(currentDistance.toFixed(2)),
+                    duration: elapsedSeconds,
+                    calories: Math.round(totalCalories),
+                    average_speed: parseFloat(currentSpeed.toFixed(1))
+                })
+            }).catch(error => {
+                console.error('Error updating run data:', error);
+            });
+        } catch (error) {
+            console.error('Exception during update request:', error);
+        }
+    }
+
+    // ฟังก์ชันแสดง alert ด้วย SweetAlert2
+    function showAlert(icon, title, text) {
+        Swal.fire({
+            icon: icon,
+            title: title,
+            text: text,
+            confirmButtonColor: '#2ecc71'
+        });
+    }
+
+    // ฟังก์ชันสำหรับตรวจสอบกิจกรรมที่ยังไม่เสร็จสิ้น
 </script>
 @endsection
 

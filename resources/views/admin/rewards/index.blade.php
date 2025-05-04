@@ -91,9 +91,6 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0">จัดการรางวัล</h1>
         <div class="d-flex gap-2">
-            <a href="{{ route('admin.rewards.statistics') }}" class="btn btn-outline-primary me-2">
-                <i class="fas fa-chart-bar me-1"></i>สถิติรางวัล
-            </a>
             <a href="{{ route('admin.rewards.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus me-2"></i>เพิ่มรางวัลใหม่
             </a>
@@ -250,7 +247,7 @@
                                         <i class="fas fa-check-circle me-1"></i> เปิดใช้งาน
                                     </span>
                                 @else
-                                    <span class="badge bg-secondary px-3 py-2">
+                                    <span class="badge bg-danger px-3 py-2">
                                         <i class="fas fa-ban me-1"></i> ปิดใช้งาน
                                     </span>
                                 @endif
@@ -259,11 +256,11 @@
                             <div class="reward-stock">
                                 @if($reward->quantity > 10)
                                     <span class="badge bg-success px-3 py-2">
-                                        <i class="fas fa-cubes me-1"></i> เหลือ {{ $reward->quantity }} ชิ้น
+                                        <i class="fas fa-cubes me-1"></i> คงเหลือ {{ $reward->quantity }}
                             </span>
                             @elseif($reward->quantity > 0)
                                     <span class="badge bg-warning text-dark px-3 py-2">
-                                        <i class="fas fa-exclamation-triangle me-1"></i> เหลือน้อย {{ $reward->quantity }} ชิ้น
+                                        <i class="fas fa-exclamation-triangle me-1"></i> เหลือน้อย {{ $reward->quantity }}
                                     </span>
                             @else
                                     <span class="badge bg-danger px-3 py-2">
@@ -274,42 +271,39 @@
 
                             <div class="reward-img-container">
                                 @if($reward->image_path)
-                                    <img src="{{ asset('storage/' . $reward->image_path) }}" alt="{{ $reward->name }}" class="reward-img">
+                                    <img src="{{ asset('storage/' . $reward->image_path) }}" class="reward-img" alt="{{ $reward->name }}">
                                 @else
-                                    @if(strpos(strtolower($reward->name), 'bottle') !== false || strpos(strtolower($reward->name), 'ขวดน้ำ') !== false)
-                                        <img src="{{ asset('images/rewards/bottle.png') }}" alt="{{ $reward->name }}" class="reward-img">
-                                    @elseif(strpos(strtolower($reward->name), 'cap') !== false || strpos(strtolower($reward->name), 'หมวก') !== false)
-                                        <img src="{{ asset('images/rewards/cap.png') }}" alt="{{ $reward->name }}" class="reward-img">
-                                    @elseif(strpos(strtolower($reward->name), 'shirt') !== false || strpos(strtolower($reward->name), 'เสื้อ') !== false)
-                                        <img src="{{ asset('images/rewards/tshirt.png') }}" alt="{{ $reward->name }}" class="reward-img">
-                            @else
-                                        <img src="{{ asset('images/rewards/gift.png') }}" alt="{{ $reward->name }}" class="reward-img">
-                                    @endif
+                                    <div class="text-center text-muted">
+                                        <i class="fas fa-gift fa-3x"></i>
+                                        <p class="small mt-2">ไม่มีรูปภาพ</p>
+                                    </div>
                             @endif
                             </div>
 
-                            <div class="card-body text-center">
+                            <div class="card-body">
                                 <h5 class="card-title">{{ $reward->name }}</h5>
-                                <p class="card-text text-muted small">{{ Str::limit($reward->description, 100) }}</p>
-
-                                <div class="mt-3">
+                                <p class="card-text small text-muted">{{ Str::limit($reward->description, 100) }}</p>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
                                     <span class="badge bg-warning text-dark px-3 py-2">
                                         <i class="fas fa-coins me-1"></i> {{ number_format($reward->points_required) }} คะแนน
                                     </span>
                                 </div>
                             </div>
 
-                            <div class="card-footer bg-white py-3 border-top-0">
+                            <div class="card-footer bg-white py-2">
                                 <div class="d-flex justify-content-center">
-                                    <a href="{{ route('admin.rewards.show', $reward->reward_id) }}" class="btn btn-sm btn-info reward-action-btn me-2" title="ดูรายละเอียด">
+                                    <a href="{{ route('admin.rewards.show', $reward) }}" class="btn btn-sm btn-info text-white reward-action-btn me-2" title="ดูรายละเอียด">
                                         <i class="fas fa-eye"></i>
                                 </a>
-                                    <a href="{{ route('admin.rewards.edit', $reward->reward_id) }}" class="btn btn-sm btn-warning reward-action-btn me-2" title="แก้ไข">
+
+                                    <a href="{{ route('admin.rewards.edit', $reward) }}" class="btn btn-sm btn-warning reward-action-btn me-2" title="แก้ไข">
                                         <i class="fas fa-edit"></i>
                                     </a>
+
                                     <button type="button" class="btn btn-sm btn-danger reward-action-btn delete-reward"
-                                            title="ลบ" data-reward-id="{{ $reward->reward_id }}"
-                                            data-reward-name="{{ $reward->name }}">
+                                            data-reward-id="{{ $reward->reward_id }}"
+                                            data-reward-name="{{ $reward->name }}"
+                                            title="ลบ">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -318,17 +312,12 @@
                     </div>
                     @endforeach
                             </div>
-                    @endif
-        </div>
 
-        <div class="card-footer bg-white py-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="text-muted">
-                    แสดง {{ $rewards->firstItem() ?? 0 }} ถึง {{ $rewards->lastItem() ?? 0 }} จาก {{ $rewards->total() ?? 0 }} รายการ
-                </div>
-                <div class="pagination-container">
-                    {{ $rewards->appends(request()->query())->links('pagination::bootstrap-4') }}
-                </div>
+                <!-- Pagination links -->
+                <div class="d-flex justify-content-center mt-4">
+                    {{ $rewards->links() }}
+                            </div>
+                    @endif
             </div>
         </div>
     </div>
@@ -339,68 +328,28 @@
 <!-- SweetAlert2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 <script>
-    // กำหนดค่าเริ่มต้นสำหรับ SweetAlert2 ทั้งหมด
-    window.addEventListener('load', function() {
-        Swal.mixin({
-            customClass: {
-                confirmButton: 'swal-confirm-btn',
-                cancelButton: 'swal-cancel-btn',
-            }
-        });
-
-        // กำหนดสี CSS สำหรับปุ่ม SweetAlert
-        const style = document.createElement('style');
-        style.innerHTML = `
-            .swal2-confirm.swal-confirm-btn {
-                background-color: #2DC679 !important;
-                border-color: #2DC679 !important;
-                box-shadow: none !important;
-                margin-right: 10px;
-            }
-            .swal2-confirm:focus {
-                box-shadow: 0 0 0 3px rgba(45, 198, 121, 0.3) !important;
-            }
-            .swal2-actions {
-                justify-content: center !important;
-                gap: 10px;
-        }
-        `;
-        document.head.appendChild(style);
-    });
-
     document.addEventListener('DOMContentLoaded', function() {
-        // Delete confirmation with SweetAlert2
+        // Setup direct SweetAlert delete confirmation without using Bootstrap modal
         const deleteButtons = document.querySelectorAll('.delete-reward');
 
         deleteButtons.forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
                 const rewardId = this.getAttribute('data-reward-id');
                 const rewardName = this.getAttribute('data-reward-name');
 
                 Swal.fire({
-                    title: `ลบรางวัล "${rewardName}"?`,
-                    html: `
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            คำเตือน: การลบรางวัลไม่สามารถกู้คืนได้
-                        </div>
-                        <p class="mt-3">คุณแน่ใจหรือไม่ที่จะลบรางวัลนี้?</p>
-                    `,
+                    title: 'ยืนยันการลบรางวัล?',
+                    html: `คุณต้องการลบรางวัล <strong>${rewardName}</strong> ใช่หรือไม่?<br><span class="text-danger">การดำเนินการนี้ไม่สามารถเรียกคืนได้ และจะลบรางวัลนี้ออกจากระบบอย่างถาวร</span>`,
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#2DC679', // GoFit primary color
+                    confirmButtonColor: '#dc3545',
                     cancelButtonColor: '#6c757d',
-                    confirmButtonText: '<i class="fas fa-trash me-1"></i> ลบรางวัล',
-                    cancelButtonText: 'ยกเลิก',
-                    buttonsStyling: true,
-                    reverseButtons: false,
-                    customClass: {
-                        confirmButton: 'swal-confirm-btn',
-                        actions: 'justify-content-center gap-2'
-                    }
+                    confirmButtonText: 'ใช่, ลบรางวัล!',
+                    cancelButtonText: 'ยกเลิก'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // สร้าง form สำหรับ submit การลบ
+                        // Create and submit the form
                         const form = document.createElement('form');
                         form.method = 'POST';
                         form.action = `/admin/rewards/${rewardId}`;
@@ -410,19 +359,38 @@
                         csrfToken.name = '_token';
                         csrfToken.value = '{{ csrf_token() }}';
 
-                        const methodField = document.createElement('input');
-                        methodField.type = 'hidden';
-                        methodField.name = '_method';
-                        methodField.value = 'DELETE';
+                        const method = document.createElement('input');
+                        method.type = 'hidden';
+                        method.name = '_method';
+                        method.value = 'DELETE';
 
                         form.appendChild(csrfToken);
-                        form.appendChild(methodField);
+                        form.appendChild(method);
                         document.body.appendChild(form);
                         form.submit();
                     }
                 });
             });
             });
+
+        // Display alerts for success/error messages
+        @if(session('success'))
+                Swal.fire({
+                icon: 'success',
+                title: 'สำเร็จ!',
+                text: "{{ session('success') }}",
+                confirmButtonColor: '#2DC679'
+            });
+        @endif
+
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด!',
+                text: "{{ session('error') }}",
+                confirmButtonColor: '#dc3545'
+            });
+        @endif
         });
     </script>
 @endsection

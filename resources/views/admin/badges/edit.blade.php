@@ -180,6 +180,35 @@
 
         badgeImageInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
+                const file = this.files[0];
+
+                // ตรวจสอบขนาดไฟล์ (ไม่เกิน 2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    Swal.fire({
+                        title: 'ไม่สามารถอัพโหลดได้',
+                        text: 'ขนาดไฟล์ต้องไม่เกิน 2MB',
+                        icon: 'error',
+                        confirmButtonColor: '#dc3545',
+                        confirmButtonText: 'ตกลง'
+                    });
+                    this.value = ''; // ล้างค่า input
+                    return;
+                }
+
+                // ตรวจสอบประเภทไฟล์
+                const validImageTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
+                if (!validImageTypes.includes(file.type)) {
+                    Swal.fire({
+                        title: 'ไม่สามารถอัพโหลดได้',
+                        text: 'กรุณาเลือกไฟล์รูปภาพเท่านั้น (JPEG, PNG, GIF, WEBP)',
+                        icon: 'error',
+                        confirmButtonColor: '#dc3545',
+                        confirmButtonText: 'ตกลง'
+                    });
+                    this.value = ''; // ล้างค่า input
+                    return;
+                }
+
                 const reader = new FileReader();
 
                 reader.onload = function(e) {
@@ -190,7 +219,7 @@
                     }
                 }
 
-                reader.readAsDataURL(this.files[0]);
+                reader.readAsDataURL(file);
             }
         });
 
@@ -230,7 +259,7 @@
                     break;
                 case 'streak':
                     criteriaUnit.textContent = 'วัน';
-                    criteriaHelp.textContent = 'จำนวนวันติดต่อกันขั้นต่ำในการได้รับเหรียญตรา';
+                    criteriaHelp.textContent = 'จำนวนวันต่อเนื่องขั้นต่ำในการได้รับเหรียญตรา';
                     break;
                 case 'speed':
                     criteriaUnit.textContent = 'กม./ชม.';

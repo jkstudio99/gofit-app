@@ -404,6 +404,33 @@
         $('#thumbnail').change(function() {
             const file = this.files[0];
             if (file) {
+                // ตรวจสอบขนาดไฟล์ (ไม่เกิน 2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    Swal.fire({
+                        title: 'ไม่สามารถอัพโหลดได้',
+                        text: 'ขนาดไฟล์ต้องไม่เกิน 2MB',
+                        icon: 'error',
+                        confirmButtonColor: '#dc3545',
+                        confirmButtonText: 'ตกลง'
+                    });
+                    this.value = ''; // ล้างค่า input
+                    return;
+                }
+
+                // ตรวจสอบประเภทไฟล์
+                const validImageTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
+                if (!validImageTypes.includes(file.type)) {
+                    Swal.fire({
+                        title: 'ไม่สามารถอัพโหลดได้',
+                        text: 'กรุณาเลือกไฟล์รูปภาพเท่านั้น (JPEG, PNG, GIF, WEBP)',
+                        icon: 'error',
+                        confirmButtonColor: '#dc3545',
+                        confirmButtonText: 'ตกลง'
+                    });
+                    this.value = ''; // ล้างค่า input
+                    return;
+                }
+
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     $('#thumbnail-preview').attr('src', e.target.result).removeClass('d-none');

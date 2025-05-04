@@ -145,8 +145,6 @@
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
 
@@ -241,34 +239,6 @@
                     title: 'รายงานผู้ใช้งาน GoFit',
                     exportOptions: {
                         columns: [0, 1, 2, 3, 4, 5]
-                    }
-                },
-                {
-                    extend: 'pdf',
-                    text: '<i class="fas fa-file-pdf me-1"></i> PDF',
-                    className: 'btn btn-sm btn-danger',
-                    title: 'รายงานผู้ใช้งาน GoFit',
-                    exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5]
-                    },
-                    customize: function(doc) {
-                        // ใช้ฟังก์ชันช่วยจัดการฟอนต์
-                        if (typeof window.fixThaiPdf === 'function') {
-                            window.fixThaiPdf(doc);
-                        } else {
-                            // กำหนดฟอนต์เริ่มต้น
-                            doc.defaultStyle = {
-                                fontSize: 12
-                            };
-                            doc.styles.tableHeader = {
-                                fontSize: 14,
-                                bold: true,
-                                alignment: 'center'
-                            };
-                        }
-
-                        // กำหนดขอบกระดาษ
-                        doc.pageMargins = [20, 20, 20, 20];
                     }
                 }
             ]

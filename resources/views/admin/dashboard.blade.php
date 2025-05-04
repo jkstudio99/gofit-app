@@ -5,7 +5,7 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="m-0">แดชบอร์ดผู้ดูแลระบบ</h2>
-        <a href="{{ route('admin.badges.statistics') }}" class="btn btn-primary">
+        <a href="{{ route('admin.reports.index') }}" class="btn btn-primary">
             <i class="fas fa-chart-line me-1"></i> รายงานและสถิติทั้งหมด
         </a>
     </div>

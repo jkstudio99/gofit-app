@@ -190,7 +190,10 @@ class RewardController extends Controller
      */
     public function show(Reward $reward)
     {
-        //
+        // Eager load redeems and users
+        $reward->load(['redeems.user']);
+
+        return view('admin.rewards.show', compact('reward'));
     }
 
     /**

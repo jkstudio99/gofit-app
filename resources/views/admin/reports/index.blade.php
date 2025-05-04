@@ -158,7 +158,7 @@
                                     <p class="text-muted small">ข้อมูลกิจกรรมในแต่ละเดือน</p>
                                     <hr>
                                     <div class="d-grid">
-                                        <button class="btn btn-outline-success" onclick="window.location.href='{{ route('admin.reports.monthly') }}'">
+                                        <button class="btn btn-outline-primary" onclick="window.location.href='{{ route('admin.reports.monthly') }}'">
                                             <i class="fas fa-chart-line me-1"></i> ดูรายงาน
                                         </button>
                                     </div>
@@ -196,7 +196,7 @@
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-md-6">
-                            <p class="mb-0">ส่งออกข้อมูลในรูปแบบ Excel, CSV หรือ PDF สำหรับการวิเคราะห์เพิ่มเติม</p>
+                            <p class="mb-0">ส่งออกข้อมูลในรูปแบบ Excel หรือ CSV สำหรับการวิเคราะห์เพิ่มเติม</p>
                         </div>
                         <div class="col-md-6">
                             <div class="d-flex justify-content-md-end gap-2">
@@ -205,9 +205,6 @@
                                 </button>
                                 <button class="btn btn-sm btn-outline-primary" id="export-csv">
                                     <i class="fas fa-file-csv me-1"></i> CSV
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger" id="export-pdf">
-                                    <i class="fas fa-file-pdf me-1"></i> PDF
                                 </button>
                             </div>
                         </div>
@@ -220,8 +217,6 @@
 
 @section('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -247,10 +242,6 @@
 
         $('#export-csv').click(function() {
             window.location.href = "{{ route('admin.reports.monthly') }}";
-        });
-
-        $('#export-pdf').click(function() {
-            window.location.href = "{{ route('admin.reports.yearly') }}";
         });
     });
 </script>

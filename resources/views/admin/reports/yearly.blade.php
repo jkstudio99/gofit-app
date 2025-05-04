@@ -94,16 +94,13 @@
             <div class="card border-0 shadow-sm rounded-3">
                 <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
                     <h5 class="m-0 fw-bold">สรุปข้อมูลรายเดือน ปี {{ $currentYear + 543 }}</h5>
-                    <div>
-                        <div class="btn-group" role="group">
+                    <div class="d-flex justify-content-end mb-4">
+                        <div class="btn-group">
                             <button id="export-excel" class="btn btn-sm btn-success">
-                                <i class="fas fa-file-excel me-1"></i> Excel
-                            </button>
-                            <button id="export-pdf" class="btn btn-sm btn-danger">
-                                <i class="fas fa-file-pdf me-1"></i> PDF
+                                <i class="fas fa-file-excel me-1"></i> ส่งออก Excel
                             </button>
                             <button id="export-csv" class="btn btn-sm btn-primary">
-                                <i class="fas fa-file-csv me-1"></i> CSV
+                                <i class="fas fa-file-csv me-1"></i> ส่งออก CSV
                             </button>
                         </div>
                     </div>
@@ -330,10 +327,6 @@
             exportTableToExcel('yearly-table', 'รายงานประจำปี_{{ $currentYear + 543 }}');
         });
 
-        $('#export-pdf').click(function() {
-            exportTableToPDF('yearly-table', 'รายงานประจำปี_{{ $currentYear + 543 }}');
-        });
-
         $('#export-csv').click(function() {
             exportTableToCSV('yearly-table', 'รายงานประจำปี_{{ $currentYear + 543 }}');
         });
@@ -351,74 +344,6 @@
             downloadLink.download = filename;
 
             downloadLink.click();
-        }
-
-        function exportTableToPDF(tableID, filename = '') {
-            const table = document.getElementById(tableID);
-            const rows = table.querySelectorAll('table tr');
-
-            const header = [];
-            const headerCells = rows[0].querySelectorAll('th');
-            headerCells.forEach(cell => {
-                header.push(cell.innerText);
-            });
-
-            const body = [];
-            for (let i = 1; i < rows.length; i++) {
-                const rowData = [];
-                const cells = rows[i].querySelectorAll('td');
-                cells.forEach(cell => {
-                    rowData.push(cell.innerText);
-                });
-                body.push(rowData);
-            }
-
-            const docDefinition = {
-                content: [
-                    { text: 'รายงานประจำปี {{ $currentYear + 543 }}', style: 'header' },
-                    { text: 'GoFit Application', style: 'subheader' },
-                    {
-                        style: 'tableExample',
-                        table: {
-                            headerRows: 1,
-                            body: [
-                                header,
-                                ...body
-                            ]
-                        }
-                    }
-                ],
-                styles: {
-                    header: {
-                        fontSize: 18,
-                        bold: true,
-                        margin: [0, 0, 0, 10]
-                    },
-                    subheader: {
-                        fontSize: 14,
-                        bold: true,
-                        margin: [0, 10, 0, 5]
-                    },
-                    tableExample: {
-                        margin: [0, 5, 0, 15]
-                    }
-                },
-                defaultStyle: {
-                    fontSize: 12
-                },
-                customize: function(doc) {
-                    doc.styles.tableHeader = {
-                        fontSize: 14,
-                        bold: true,
-                        alignment: 'center'
-                    };
-
-                    // กำหนดขอบกระดาษ
-                    doc.pageMargins = [20, 20, 20, 20];
-                }
-            };
-
-            pdfMake.createPdf(docDefinition).download(filename + '.pdf');
         }
 
         function exportTableToCSV(tableID, filename = '') {

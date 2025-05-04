@@ -603,7 +603,31 @@ class BadgeController extends Controller
         // ดึงประเภทเหรียญสำหรับตัวกรอง
         $badgeTypes = Badge::select('type')->distinct()->get();
 
-        return view('admin.badges.history', compact('badgeHistory', 'pointsHistory', 'users', 'badgeTypes'));
+        // ---------- คำนวณสถิติจากฐานข้อมูลจริง ----------
+
+        // จำนวนเหรียญทั้งหมดที่ถูกปลดล็อค (จากตาราง tb_user_badge)
+        $totalBadges = UserBadge::count();
+
+        // จำนวนผู้ใช้ที่ได้รับเหรียญ (ไม่ซ้ำ)
+        $uniqueUsers = UserBadge::select('user_id')->distinct()->count();
+
+        // จำนวนเหรียญที่ได้รับในเดือนนี้
+        $currentMonth = now()->startOfMonth();
+        $monthlyBadges = UserBadge::whereDate('earned_at', '>=', $currentMonth)->count();
+
+        // คะแนนที่ได้รับรวมจากเหรียญทั้งหมด
+        $totalPoints = \App\Models\PointHistory::where('source_type', 'badge')->sum('points');
+
+        return view('admin.badges.history', compact(
+            'badgeHistory',
+            'pointsHistory',
+            'users',
+            'badgeTypes',
+            'totalBadges',
+            'uniqueUsers',
+            'monthlyBadges',
+            'totalPoints'
+        ));
     }
 }
 

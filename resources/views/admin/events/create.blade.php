@@ -197,6 +197,7 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 
 <script>
     // ตัวเลือกวันที่และเวลา
@@ -228,9 +229,41 @@
 
     // แสดงตัวอย่างรูปภาพ
     function previewImage(input) {
+        const file = input.files[0];
         const preview = document.getElementById('imagePreview');
 
-        if (input.files && input.files[0]) {
+        if (file) {
+            // ตรวจสอบขนาดไฟล์ (ไม่เกิน 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                Swal.fire({
+                    title: 'ไม่สามารถอัพโหลดได้',
+                    text: 'ขนาดไฟล์ต้องไม่เกิน 2MB',
+                    icon: 'error',
+                    confirmButtonColor: '#dc3545',
+                    confirmButtonText: 'ตกลง'
+                });
+                input.value = ''; // ล้างค่า input
+                preview.src = '';
+                preview.classList.add('d-none');
+                return;
+            }
+
+            // ตรวจสอบประเภทไฟล์
+            const validImageTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
+            if (!validImageTypes.includes(file.type)) {
+                Swal.fire({
+                    title: 'ไม่สามารถอัพโหลดได้',
+                    text: 'กรุณาเลือกไฟล์รูปภาพเท่านั้น (JPEG, PNG, GIF, WEBP)',
+                    icon: 'error',
+                    confirmButtonColor: '#dc3545',
+                    confirmButtonText: 'ตกลง'
+                });
+                input.value = ''; // ล้างค่า input
+                preview.src = '';
+                preview.classList.add('d-none');
+                return;
+            }
+
             const reader = new FileReader();
 
             reader.onload = function(e) {
@@ -238,7 +271,7 @@
                 preview.classList.remove('d-none');
             }
 
-            reader.readAsDataURL(input.files[0]);
+            reader.readAsDataURL(file);
         } else {
             preview.src = '';
             preview.classList.add('d-none');

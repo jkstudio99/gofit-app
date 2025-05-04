@@ -17,9 +17,7 @@
                                 <i class="fas fa-user"></i>
                             </div>
                         @endif
-                        <button class="btn btn-sm btn-primary rounded-circle position-absolute"
-                                id="changeProfileBtn"
-                                style="bottom: 0; right: 0; width: 32px; height: 32px; padding: 0;">
+                        <button type="button" class="profile-upload-icon" id="changeProfileBtn">
                             <i class="fas fa-camera"></i>
                         </button>
                     </div>

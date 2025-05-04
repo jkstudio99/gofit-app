@@ -189,25 +189,13 @@ class User extends Authenticatable
     }
 
     /**
-     * คำนวณคะแนนที่มีอยู่ของผู้ใช้โดยใช้ข้อมูลจากตาราง point_history
-     * คำนวณจาก: คะแนนที่ได้รับทั้งหมด - คะแนนที่ใช้ไปในการแลกรางวัล
+     * Get the available points for this user (current points that can be used)
      *
      * @return int
      */
     public function getAvailablePoints()
     {
-        // คะแนนที่ได้รับทั้งหมดจาก point_history
-        $earnedPoints = DB::table('tb_point_history')
-            ->where('user_id', $this->user_id)
-            ->sum('points');
-
-        // คะแนนที่ใช้ไปในการแลกรางวัล
-        $spentPoints = Redeem::where('user_id', $this->user_id)
-            ->where('status', '!=', 'cancelled')
-            ->join('tb_reward', 'tb_redeem.reward_id', '=', 'tb_reward.reward_id')
-            ->sum('points_required');
-
-        // คำนวณคะแนนที่มีอยู่
-        return max(0, $earnedPoints - $spentPoints);
+        // Get the points from the user's current points value
+        return $this->points ?? 0;
     }
 }

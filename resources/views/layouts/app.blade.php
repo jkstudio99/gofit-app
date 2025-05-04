@@ -38,6 +38,58 @@
             margin: 0;
         }
 
+        /* Profile image upload styling */
+        .profile-upload-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+            margin: 0 auto 20px auto;
+            border: 3px solid #f0f0f0;
+            background-color: #f8f8f8;
+        }
+
+        .profile-upload-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-upload-icon {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background-color: #2ecc71;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50% !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            transition: all 0.2s ease;
+            z-index: 10;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .profile-upload-icon i {
+            font-size: 1.2rem;
+            line-height: 1;
+            display: block;
+            text-align: center;
+            width: 100%;
+        }
+
+        .profile-upload-icon:hover {
+            transform: scale(1.1);
+            background-color: #27ae60;
+        }
+
         /* Brand color variables */
         :root {
             --primary-color: #2ecc71;
@@ -72,7 +124,7 @@
         }
 
         .navbar-brand img {
-            height: 24px;
+            height: 32px !important;
         }
 
         /* Hamburger button styling - smaller for mobile */
@@ -292,17 +344,28 @@
             /* Header optimizations for mobile - much smaller height */
             .navbar {
                 padding: 0 0.8rem;
-                min-height: 40px;
-                height: 40px;
+                min-height: 50px;
+                height: 50px;
+                display: flex;
+                align-items: center;
             }
 
-            /* Smaller logo for mobile */
+            /* Increase logo size for mobile */
             .navbar-brand {
-                height: 40px;
+                height: 50px;
+                display: flex;
+                align-items: center;
+                padding: 8px 0;
             }
 
             .navbar-brand img {
-                height: 24px !important;
+                height: 36px !important; /* Increased from 24px */
+                max-width: none !important;
+            }
+
+            /* Adjust container for better logo positioning */
+            .navbar > .container {
+                padding-left: 0;
             }
 
             /* Smaller hamburger button */
@@ -1075,41 +1138,38 @@
 
         /* Force navbar height but allow for bigger logo */
         .navbar {
-            height: 60px !important;
-            min-height: 60px !important;
-            max-height: 60px !important;
+            height: 80px !important;
+            min-height: 80px !important;
+            max-height: 80px !important;
             overflow: visible !important;
-
         }
 
-        /* Force container height */
-        .gofit-header .container {
-            height: 60px !important;
-            min-height: 60px !important;
-            max-height: 60px !important;
-
-            display: flex !important;
-            align-items: center !important;
-
+        /* User profile image styling */
+        .user-profile-image {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+            border: 1px solid #f0f0f0;
+            background-color: #f8f8f8;
         }
 
-        /* Remove any bottom margin/padding */
-        .navbar, .gofit-header, .gofit-header .container {
-            margin-bottom: 0 !important;
+        .profile-dropdown-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #f0f0f0;
+            background-color: #f8f8f8;
         }
 
-        /* Force navbar-brand height with better logo size */
-        .navbar-brand {
-            height: 60px !important;
-            display: flex !important;
-            align-items: center !important;
-            padding: 0 !important;
-            margin-left: 5px !important;
-        }
-
-        /* Optimize logo size for good visibility */
-        .navbar-brand img {
-            height: 32px !important;
+        /* Mobile sidebar user image */
+        .sidebar-profile-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
         }
 
         /* Improve hamburger button styling */
@@ -1218,6 +1278,37 @@
         }
     </style>
 
+    <!-- User profile image styling -->
+    <style>
+        .user-profile-image {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+            border: 1px solid #f0f0f0;
+            background-color: #f8f8f8;
+        }
+
+        .profile-dropdown-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #f0f0f0;
+            background-color: #f8f8f8;
+        }
+
+        .sidebar-profile-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #f0f0f0;
+            background-color: #f8f8f8;
+        }
+    </style>
+
     @yield('styles')
 </head>
 <body>
@@ -1287,7 +1378,7 @@
                                     <div class="user-info mb-3 pb-3 position-relative border-bottom">
                                         <div class="d-flex align-items-center">
                                             @if(Auth::user()->profile_image)
-                                                <img src="{{ asset('storage/' . Auth::user()->profile_image) }}" alt="Profile" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                                <img src="{{ asset('profile_images/' . Auth::user()->profile_image) }}" alt="Profile" class="sidebar-profile-image me-2">
                                             @else
                                                 <i class="fas fa-user-circle fa-2x me-2 text-muted"></i>
                                             @endif
@@ -1357,7 +1448,7 @@
                                 <li class="nav-item dropdown">
                                     <a id="userDropdown" class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="padding: 0.6rem 1rem; border-radius: 10px; transition: all 0.2s ease;">
                                         @if(Auth::user()->profile_image)
-                                            <img src="{{ asset('storage/' . Auth::user()->profile_image) }}" alt="Profile" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                                            <img src="{{ asset('profile_images/' . Auth::user()->profile_image) }}" alt="Profile" class="user-profile-image me-2">
                                         @else
                                             <i class="fas fa-user-circle me-2" style="font-size: 1.4rem;"></i>
                                         @endif
@@ -1367,7 +1458,7 @@
                                     <div class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown" style="border-radius: 12px; border: none; padding: 0.5rem 0; min-width: 220px;">
                                         <div class="d-flex align-items-center px-3 py-2 border-bottom mb-2">
                                             @if(Auth::user()->profile_image)
-                                                <img src="{{ asset('storage/' . Auth::user()->profile_image) }}" alt="Profile" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                                <img src="{{ asset('profile_images/' . Auth::user()->profile_image) }}" alt="Profile" class="profile-dropdown-image me-2">
                                             @else
                                                 <i class="fas fa-user-circle fa-2x me-2 text-muted"></i>
                                             @endif
@@ -1455,93 +1546,6 @@
     <!-- สคริปต์สำหรับ SweetAlert สำหรับ Session Flash Messages -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Clean up any leftover backdrops or open menus on page load
-            const existingBackdrop = document.querySelector('.modal-backdrop');
-            if (existingBackdrop) existingBackdrop.remove();
-
-            const navbarCollapse = document.querySelector('.navbar-collapse');
-            if (navbarCollapse && navbarCollapse.classList.contains('show')) {
-                navbarCollapse.classList.remove('show');
-            }
-
-            // Improved mobile menu handling
-            const navbarToggler = document.querySelector('.navbar-toggler');
-            const mobileMenu = document.querySelector('.navbar-collapse');
-
-            if (navbarToggler && mobileMenu) {
-                // Track if menu is currently being toggled to prevent multiple clicks
-                let isProcessing = false;
-
-                // Function to close the menu
-                const closeMenu = () => {
-                    if (isProcessing) return;
-                    isProcessing = true;
-
-                    if (mobileMenu.classList.contains('show')) {
-                        // Use Bootstrap API to close the menu
-                        const collapse = bootstrap.Collapse.getInstance(mobileMenu);
-                        if (collapse) {
-                            collapse.hide();
-                        } else {
-                            mobileMenu.classList.remove('show');
-                        }
-                    }
-
-                    setTimeout(() => {
-                        isProcessing = false;
-                    }, 300);
-                };
-
-                // Function to safely open the menu
-                const openMenu = () => {
-                    if (isProcessing) return;
-                    isProcessing = true;
-
-                    setTimeout(() => {
-                        isProcessing = false;
-                    }, 300);
-                };
-
-                // Add click handler to navbar toggler
-                navbarToggler.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (!mobileMenu.classList.contains('show')) {
-                        openMenu();
-                    } else {
-                        closeMenu();
-                    }
-                });
-
-                // Close menu when clicking outside
-                document.addEventListener('click', function(e) {
-                    if (mobileMenu.classList.contains('show') &&
-                        !mobileMenu.contains(e.target) &&
-                        e.target !== navbarToggler &&
-                        !navbarToggler.contains(e.target)) {
-                        closeMenu();
-                    }
-                });
-
-                // Add escape key listener to close menu
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape') {
-                        closeMenu();
-                    }
-                });
-            }
-
-            // Make sure Bootstrap dropdowns work properly
-            var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'))
-            var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
-                return new bootstrap.Dropdown(dropdownToggleEl)
-            });
-
-            // Fix for map container z-index issues
-            const mapElement = document.getElementById('map');
-            if (mapElement) {
-                mapElement.style.zIndex = 1;
-            }
-
             // ถ้ามีข้อความ Success จาก session flash
             @if(session('success'))
                 Swal.fire({
@@ -1613,7 +1617,171 @@
 
     <!-- Scripts -->
     <script src="{{ asset('js/app.js') }}" defer></script>
-    <script src="{{ asset('js/dropdown-fix.js') }}"></script>
-    <script src="{{ asset('mobile-menu-fix.js') }}"></script>
+    <!-- Removing problematic scripts that cause conflicts -->
+    <!-- <script src="{{ asset('js/dropdown-fix.js') }}"></script> -->
+    <!-- <script src="{{ asset('mobile-menu-fix.js') }}"></script> -->
+
+    <!-- New Unified Navigation Fix -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('New Navigation Fix Loaded');
+
+            // Prevent multiple initializations
+            if (window.goFitNavFixApplied) return;
+            window.goFitNavFixApplied = true;
+
+            // Clean up any leftover elements
+            document.querySelectorAll('.modal-backdrop, #mobile-menu-overlay').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+
+            // Get references to navigation elements
+            const navbarToggler = document.querySelector('.navbar-toggler');
+            const navbarCollapse = document.querySelector('.navbar-collapse');
+            const allDropdownToggles = document.querySelectorAll('.dropdown-toggle');
+            const allDropdownMenus = document.querySelectorAll('.dropdown-menu');
+            const closeButton = document.querySelector('.navbar-collapse .btn-close');
+
+            // 1. HAMBURGER MENU TOGGLE
+            if (navbarToggler && navbarCollapse) {
+                // Remove bootstrap data attributes
+                navbarToggler.removeAttribute('data-bs-toggle');
+                navbarToggler.removeAttribute('data-bs-target');
+
+                // Clean slate - remove any existing listeners by cloning
+                const newToggler = navbarToggler.cloneNode(true);
+                navbarToggler.parentNode.replaceChild(newToggler, navbarToggler);
+
+                // Add new toggle behavior
+                newToggler.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (navbarCollapse.classList.contains('show')) {
+                        navbarCollapse.classList.remove('show');
+                        navbarCollapse.style.transform = 'translateX(-100%)';
+                    } else {
+                        navbarCollapse.classList.add('show');
+                        navbarCollapse.style.transform = 'translateX(0)';
+                    }
+                });
+            }
+
+            // 2. CLOSE BUTTON IN MOBILE MENU
+            if (closeButton && navbarCollapse) {
+                // Fresh listener
+                const newCloseBtn = closeButton.cloneNode(true);
+                closeButton.parentNode.replaceChild(newCloseBtn, closeButton);
+
+                newCloseBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    navbarCollapse.classList.remove('show');
+                    navbarCollapse.style.transform = 'translateX(-100%)';
+                });
+            }
+
+            // 3. DROPDOWN MENUS
+            allDropdownToggles.forEach(function(toggle) {
+                // Remove bootstrap data attributes
+                toggle.removeAttribute('data-bs-toggle');
+                toggle.removeAttribute('data-bs-auto-close');
+
+                // Clean slate
+                const newToggle = toggle.cloneNode(true);
+                toggle.parentNode.replaceChild(newToggle, toggle);
+
+                // New toggle behavior
+                newToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const dropdownMenu = this.nextElementSibling;
+                    if (!dropdownMenu || !dropdownMenu.classList.contains('dropdown-menu')) return;
+
+                    // Close all other dropdowns
+                    allDropdownMenus.forEach(function(menu) {
+                        if (menu !== dropdownMenu) {
+                            menu.classList.remove('show');
+                        }
+                    });
+
+                    // Toggle this dropdown
+                    dropdownMenu.classList.toggle('show');
+                });
+            });
+
+            // 4. DROPDOWN MENU ITEMS
+            document.querySelectorAll('.dropdown-item').forEach(function(item) {
+                // Replace with new element to remove old listeners
+                const newItem = item.cloneNode(true);
+                item.parentNode.replaceChild(newItem, item);
+
+                newItem.addEventListener('click', function(e) {
+                    e.stopPropagation();
+
+                    // If it's a link with href, navigate to it
+                    if (this.getAttribute('href') && this.getAttribute('href') !== '#') {
+                        console.log('Navigating to:', this.getAttribute('href'));
+                        window.location.href = this.getAttribute('href');
+                    }
+                });
+            });
+
+            // 5. GLOBAL DOCUMENT CLICK
+            document.addEventListener('click', function(e) {
+                // Close dropdowns when clicking outside
+                if (!e.target.closest('.dropdown')) {
+                    allDropdownMenus.forEach(menu => menu.classList.remove('show'));
+                }
+
+                // Close mobile menu when clicking outside
+                if (navbarCollapse && navbarCollapse.classList.contains('show') &&
+                    !navbarCollapse.contains(e.target) &&
+                    !e.target.classList.contains('navbar-toggler') &&
+                    !e.target.closest('.navbar-toggler')) {
+                    navbarCollapse.classList.remove('show');
+                    navbarCollapse.style.transform = 'translateX(-100%)';
+                }
+            });
+
+            // 6. ESCAPE KEY HANDLER
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    // Close mobile menu
+                    if (navbarCollapse && navbarCollapse.classList.contains('show')) {
+                        navbarCollapse.classList.remove('show');
+                        navbarCollapse.style.transform = 'translateX(-100%)';
+                    }
+
+                    // Close all dropdowns
+                    allDropdownMenus.forEach(menu => menu.classList.remove('show'));
+                }
+            });
+
+            // 7. LINKS IN MOBILE MENU
+            document.querySelectorAll('.navbar-collapse .nav-link:not(.dropdown-toggle)').forEach(function(link) {
+                // Replace to remove old listeners
+                const newLink = link.cloneNode(true);
+                link.parentNode.replaceChild(newLink, link);
+
+                newLink.addEventListener('click', function() {
+                    if (navbarCollapse) {
+                        setTimeout(function() {
+                            navbarCollapse.classList.remove('show');
+                            navbarCollapse.style.transform = 'translateX(-100%)';
+                        }, 100);
+                    }
+                });
+            });
+
+            console.log('Navigation fix applied successfully');
+        });
+    </script>
+
+    <!-- Comprehensive navbar fix -->
+    <script>
+        // Remove this script entirely to avoid conflicts
+    </script>
 </body>
 </html>

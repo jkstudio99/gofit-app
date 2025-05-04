@@ -337,6 +337,11 @@
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="reportsDropdown">
                                     <li>
+                                        <a class="dropdown-item {{ request()->routeIs('admin.reports.index') ? 'active' : '' }}" href="{{ route('admin.reports.index') }}">
+                                            <i class="fas fa-chart-pie me-1"></i> ภาพรวมทั้งหมด
+                                        </a>
+                                    </li>
+                                    <li>
                                         <a class="dropdown-item {{ request()->routeIs('admin.badges.statistics') ? 'active' : '' }}" href="{{ route('admin.badges.statistics') }}">
                                             <i class="fas fa-medal me-1"></i> สถิติเหรียญตรา
                                         </a>
@@ -356,11 +361,7 @@
                                             <i class="fas fa-newspaper me-1"></i> สถิติบทความ
                                         </a>
                                     </li>
-                                    <li>
-                                        <a class="dropdown-item {{ request()->routeIs('admin.reports.index') ? 'active' : '' }}" href="{{ route('admin.reports.index') }}">
-                                            <i class="fas fa-chart-pie me-1"></i> ภาพรวมทั้งหมด
-                                        </a>
-                                    </li>
+
                                 </ul>
                             </li>
 
