@@ -1,66 +1,129 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# <img src="public/images/gofit-logo-text-white.svg" alt="GoFit" height="40" style="background-color: #2DC679; padding: 8px; border-radius: 8px;"> 
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# GoFit - แอปพลิเคชันจัดการกิจกรรมการวิ่งและสุขภาพ
 
-## About Laravel
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Laravel](https://img.shields.io/badge/Laravel-10.x-red)
+![PHP](https://img.shields.io/badge/PHP-8.1-purple)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+GoFit เป็นแพลตฟอร์มการจัดการกิจกรรมการวิ่งและการดูแลสุขภาพที่ครบวงจร ช่วยให้ผู้ใช้สามารถติดตามกิจกรรมการออกกำลังกายประจำวัน สมัครเข้าร่วมกิจกรรมวิ่ง และแชร์ความสำเร็จกับเพื่อนๆ 
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## ✨ คุณสมบัติหลัก
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **ติดตามกิจกรรมการวิ่ง**: บันทึกเส้นทาง ระยะทาง เวลา และแคลอรี่ที่เผาผลาญระหว่างวิ่ง
+- **รายงานสุขภาพ**: สรุปข้อมูลสุขภาพและการออกกำลังกายแบบรายวัน รายสัปดาห์ และรายเดือน
+- **กิจกรรมวิ่ง**: ค้นหาและสมัครเข้าร่วมกิจกรรมวิ่งที่จัดขึ้นในพื้นที่ใกล้เคียง
+- **บทความสุขภาพ**: เข้าถึงบทความและข้อมูลเกี่ยวกับการออกกำลังกายและสุขภาพ
+- **ระบบรางวัล**: รับเหรียญตราและแต้มสะสมเมื่อทำภารกิจสำเร็จ
+- **โซเชียลฟีเจอร์**: แชร์ความสำเร็จกับเพื่อนและสร้างความท้าทายร่วมกัน
 
-## Learning Laravel
+## 🛠️ การติดตั้ง
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### ความต้องการของระบบ
+- PHP 8.1+
+- Composer
+- MySQL หรือ MariaDB
+- Node.js และ NPM
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### ขั้นตอนการติดตั้ง
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+1. **โคลนโปรเจค**
+   ```bash
+   git clone https://github.com/yourusername/gofit-app.git
+   cd gofit-app/gofit
+   ```
 
-## Laravel Sponsors
+2. **ติดตั้ง Dependencies**
+   ```bash
+   composer install
+   npm install
+   ```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+3. **ตั้งค่าไฟล์สภาพแวดล้อม**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-### Premium Partners
+4. **แก้ไขการตั้งค่าฐานข้อมูลใน .env**
+   ```
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=gofit
+   DB_USERNAME=your_username
+   DB_PASSWORD=your_password
+   ```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+5. **รันการ Migration และ Seed ข้อมูล**
+   ```bash
+   php artisan migrate
+   php artisan db:seed
+   ```
 
-## Contributing
+6. **สร้าง Symbolic Link สำหรับ Storage**
+   ```bash
+   php artisan storage:link
+   ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+7. **คอมไพล์ Asset**
+   ```bash
+   npm run dev
+   # หรือ
+   npm run build
+   ```
 
-## Code of Conduct
+8. **เริ่มต้นเซิร์ฟเวอร์**
+   ```bash
+   php artisan serve
+   ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 🚀 การใช้งาน
 
-## Security Vulnerabilities
+1. เข้าสู่ระบบด้วยบัญชีผู้ใช้ที่สร้างขึ้นระหว่างติดตั้ง:
+   - **ผู้ดูแลระบบ**: admin@gofit.com / password
+   - **ผู้ใช้ทั่วไป**: user@gofit.com / password
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+2. สำรวจคุณสมบัติต่างๆ ของแอปพลิเคชัน:
+   - บันทึกกิจกรรมการวิ่ง
+   - ดูข้อมูลสุขภาพ
+   - ลงทะเบียนเข้าร่วมกิจกรรม
+   - อ่านบทความสุขภาพ
 
-## License
+## 📊 โครงสร้างโปรเจค
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```
+gofit/
+├── app/                     # โค้ด PHP หลัก
+│   ├── Http/
+│   │   ├── Controllers/     # Controllers
+│   │   └── Middleware/      # Middleware
+│   └── Models/              # Models
+├── config/                  # ไฟล์การตั้งค่า
+├── database/                # Migrations และ Seeders
+├── public/                  # Assets สาธารณะ
+│   ├── css/
+│   ├── js/
+│   └── images/
+├── resources/               # ทรัพยากรฝั่ง Client
+│   ├── js/
+│   ├── css/
+│   └── views/               # Blade Templates
+└── routes/                  # การกำหนดเส้นทาง
+```
+
+## 👥 ทีมผู้พัฒนา
+
+- นักพัฒนาหลัก - [ชื่อของคุณ](https://github.com/yourusername)
+- ผู้ออกแบบ UI/UX - [ชื่อนักออกแบบ](https://github.com/designerusername)
+
+## 📝 ใบอนุญาต
+
+โครงการนี้เผยแพร่ภายใต้ใบอนุญาต MIT - ดูรายละเอียดเพิ่มเติมได้ที่ [LICENSE](LICENSE)
+
+## 🙏 ขอบคุณ
+
+- [Laravel](https://laravel.com/) - PHP Framework ที่ใช้ในการพัฒนา
+- [Bootstrap](https://getbootstrap.com/) - CSS Framework
+- [Leaflet](https://leafletjs.com/) - JavaScript Library สำหรับแผนที่แบบโต้ตอบ
