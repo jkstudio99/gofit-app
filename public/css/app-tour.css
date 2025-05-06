@@ -1,0 +1,172 @@
+/**
+ * GoFit Tour System Styling
+ * สไตล์สำหรับระบบแนะนำการใช้งานของ GoFit
+ */
+
+/* Tour Step Styling */
+.shepherd-element {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    border: none !important;
+    border-radius: 16px !important;
+    max-width: 400px;
+}
+
+.shepherd-header {
+    background-color: #2ecc71 !important;
+    padding: 1.25rem 1.5rem 1rem !important;
+    border-radius: 16px 16px 0 0 !important;
+}
+
+.shepherd-title {
+    font-weight: 600 !important;
+    font-size: 1.2rem !important;
+    color: white !important;
+}
+
+.shepherd-cancel-icon {
+    color: rgba(255, 255, 255, 0.8) !important;
+    transition: color 0.2s ease;
+    padding: 0.25rem !important;
+    margin-right: 0.5rem !important;
+    margin-top: 0.5rem !important;
+}
+
+.shepherd-cancel-icon:hover {
+    color: white !important;
+}
+
+.shepherd-text {
+    padding: 1.5rem !important;
+    line-height: 1.5 !important;
+    color: #333 !important;
+    font-size: 1rem !important;
+}
+
+.shepherd-footer {
+    padding: 0 1.5rem 1.5rem !important;
+    display: flex !important;
+    justify-content: space-between !important;
+}
+
+.shepherd-button {
+    border-radius: 50px !important;
+    padding: 0.5rem 1.5rem !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+    text-transform: none !important;
+    font-size: 0.95rem !important;
+    margin: 0 0.25rem !important;
+}
+
+/* Primary Buttons (Next, Continue) */
+.shepherd-button:not(.shepherd-button-secondary):not(.shepherd-button-back) {
+    background-color: #2ecc71 !important;
+    border: 1px solid #2ecc71 !important;
+    color: white !important;
+}
+
+.shepherd-button:not(.shepherd-button-secondary):not(.shepherd-button-back):hover {
+    background-color: #27ae60 !important;
+    border-color: #27ae60 !important;
+}
+
+/* Secondary Buttons (Skip) */
+.shepherd-button-secondary {
+    background-color: transparent !important;
+    border: 1px solid #3498db !important;
+    color: #3498db !important;
+}
+
+.shepherd-button-secondary:hover {
+    background-color: rgba(52, 152, 219, 0.1) !important;
+}
+
+/* Back Buttons */
+.shepherd-button-back {
+    background-color: transparent !important;
+    border: 1px solid #95a5a6 !important;
+    color: #95a5a6 !important;
+}
+
+.shepherd-button-back:hover {
+    background-color: rgba(149, 165, 166, 0.1) !important;
+    color: #7f8c8d !important;
+}
+
+/* Overlay */
+.shepherd-modal-overlay-container {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    z-index: 9998 !important;
+}
+
+/* Highlighted Elements */
+.shepherd-highlight {
+    box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.3) !important;
+}
+
+/* Additional highlight class for specific elements */
+.highlight-element {
+    outline: 4px solid rgba(46, 204, 113, 0.5) !important;
+    outline-offset: 5px !important;
+    border-radius: 8px !important;
+    transition: outline 0.3s ease !important;
+    position: relative !important;
+    z-index: 9997 !important;
+}
+
+/* ปุ่มเริ่มทัวร์ */
+#start-tour-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1050;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #2ecc71;
+    color: white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border: none;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+#start-tour-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+#start-tour-btn:active {
+    transform: scale(0.95);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 767.98px) {
+    .shepherd-element {
+        max-width: 90% !important;
+        margin: 0 auto;
+    }
+
+    .shepherd-text {
+        padding: 15px;
+        font-size: 0.9rem;
+    }
+
+    .shepherd-footer {
+        padding: 10px 15px;
+    }
+}
+
+/* ทัวร์ tooltip สำหรับ element ที่ floating ที่มุมจอ */
+.shepherd-element[data-popper-placement="bottom-end"],
+.shepherd-element[data-popper-placement="top-end"] {
+    margin-right: 10px;
+}
+
+.shepherd-element[data-popper-placement="bottom-start"],
+.shepherd-element[data-popper-placement="top-start"] {
+    margin-left: 10px;
+}

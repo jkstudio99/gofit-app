@@ -8,6 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
+use App\Models\OnboardingTour;
 
 class User extends Authenticatable
 {
@@ -197,5 +198,40 @@ class User extends Authenticatable
     {
         // Get the points from the user's current points value
         return $this->points ?? 0;
+    }
+
+    /**
+     * ความสัมพันธ์กับการแนะนำการใช้งาน
+     */
+    public function onboardingTours()
+    {
+        return $this->hasMany(OnboardingTour::class, 'user_id', 'user_id');
+    }
+
+    /**
+     * ตรวจสอบว่าทัวร์ถูกเสร็จสิ้นแล้วหรือไม่
+     */
+    public function hasTourCompleted(string $tourKey): bool
+    {
+        return $this->onboardingTours()
+            ->where('tour_key', $tourKey)
+            ->where('status', 'completed')
+            ->exists();
+    }
+
+    /**
+     * ตรวจสอบว่าควรแสดงทัวร์หรือไม่
+     */
+    public function shouldShowTour(string $tourKey): bool
+    {
+        $tour = $this->onboardingTours()
+            ->where('tour_key', $tourKey)
+            ->first();
+
+        if (!$tour) {
+            return true;
+        }
+
+        return $tour->status === 'pending' || $tour->show_again;
     }
 }

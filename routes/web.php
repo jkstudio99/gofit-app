@@ -300,3 +300,17 @@ Route::group(['prefix' => 'admin/health-articles', 'as' => 'admin.health-article
     Route::delete('/{id}', [App\Http\Controllers\Admin\HealthArticleController::class, 'destroy'])->name('destroy');
     Route::post('/upload-image', [App\Http\Controllers\Admin\HealthArticleController::class, 'uploadImage'])->name('upload-image');
 });
+
+// Routes for Onboarding Tour
+Route::prefix('tour')->middleware(['auth'])->group(function () {
+    Route::get('/status', [App\Http\Controllers\OnboardingController::class, 'checkTourStatus'])
+        ->name('tour.status');
+    Route::post('/update', [App\Http\Controllers\OnboardingController::class, 'updateTourStatus'])
+        ->name('tour.update');
+    Route::post('/reset', [App\Http\Controllers\OnboardingController::class, 'resetAllTours'])
+        ->name('tour.reset');
+    Route::get('/settings', [App\Http\Controllers\OnboardingController::class, 'showTourSettings'])
+        ->name('tour.settings');
+    Route::get('/user-settings', [App\Http\Controllers\OnboardingController::class, 'getUserTourSettings'])
+        ->name('tour.user-settings');
+});

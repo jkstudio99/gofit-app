@@ -210,34 +210,54 @@
                 <div class="row">
                     <div class="col-md-3 mb-3">
                         <label class="form-label">รูปแบบไฟล์</label>
-                        <select class="form-select" name="format" required>
-                            <option value="csv">CSV</option>
-                            <option value="excel">Excel</option>
-                            <option value="json">JSON</option>
-                        </select>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fas fa-file-export"></i></span>
+                            <select class="form-select" name="format" required>
+                                <option value="excel" selected>Excel</option>
+                                <option value="csv">CSV</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <label class="form-label">ผู้ใช้</label>
-                        <select class="form-select" name="user_id">
-                            <option value="">ทั้งหมด</option>
-                            @foreach($users as $user)
-                                <option value="{{ $user->user_id }}">{{ $user->username }}</option>
-                            @endforeach
-                        </select>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fas fa-user"></i></span>
+                            <select class="form-select" name="user_id">
+                                <option value="">ผู้ใช้ทั้งหมด</option>
+                                @foreach($users as $user)
+                                    @if($user->username != 'admin')
+                                        <option value="{{ $user->user_id }}">{{ $user->username }}</option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <label class="form-label">จากวันที่</label>
-                        <input type="date" class="form-control" name="date_from">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fas fa-calendar"></i></span>
+                            <input type="text" class="form-control datepicker-th" name="date_from" id="date_from" autocomplete="off" placeholder="เลือกวันที่">
+                        </div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <label class="form-label">ถึงวันที่</label>
-                        <input type="date" class="form-control" name="date_to">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fas fa-calendar"></i></span>
+                            <input type="text" class="form-control datepicker-th" name="date_to" id="date_to" autocomplete="off" placeholder="เลือกวันที่">
+                        </div>
                     </div>
                 </div>
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-file-export me-2"></i> ส่งออกข้อมูล
-                    </button>
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <div class="d-grid d-md-flex justify-content-md-end">
+                            <button type="reset" class="btn btn-outline-secondary me-2">
+                                <i class="fas fa-redo me-1"></i> รีเซ็ต
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="exportBtn">
+                                <i class="fas fa-file-export me-1"></i> ส่งออกข้อมูล
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </form>
         </div>
@@ -249,9 +269,130 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
 <script src="{{ asset('js/pdfmake-fonts.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/th.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // แปลงวันที่จากรูปแบบ YYYY-MM-DD เป็น dd/mm/yyyy พ.ศ.
+        function getThaiDateFormat(standardDate) {
+            if (!standardDate) return '';
+
+            let date;
+            if (typeof standardDate === 'string') {
+                date = new Date(standardDate);
+            } else {
+                date = standardDate;
+            }
+
+            if (isNaN(date.getTime())) return '';
+
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const thaiYear = date.getFullYear() + 543;
+            return `${day}/${month}/${thaiYear}`;
+        }
+
+        // แปลงวันที่จากรูปแบบ dd/mm/yyyy พ.ศ. เป็น YYYY-MM-DD
+        function getStandardDateFormat(thaiDate) {
+            if (!thaiDate) return '';
+
+            const parts = thaiDate.split('/');
+            if (parts.length !== 3) return '';
+
+            const day = parts[0];
+            const month = parts[1];
+            const thaiYear = parseInt(parts[2]);
+            const standardYear = thaiYear - 543;
+
+            return `${standardYear}-${month}-${day}`;
+        }
+
+        // ตั้งค่าวันที่ในช่องข้อมูลเป็นรูปแบบไทย
+        function setupInitialDate(inputElement, defaultDate) {
+            let dateValue = inputElement.value;
+
+            // ถ้ามีค่าวันที่อยู่แล้ว แปลงเป็นรูปแบบไทย
+            if (dateValue) {
+                inputElement.dataset.standardDate = dateValue;
+                inputElement.value = getThaiDateFormat(dateValue);
+            }
+            // ถ้าไม่มีค่าแต่มี default ให้ใช้ default
+            else if (defaultDate) {
+                inputElement.dataset.standardDate = defaultDate;
+                inputElement.value = getThaiDateFormat(defaultDate);
+            }
+        }
+
+        // ดึงข้อมูลวันที่จากช่องข้อมูล
+        const dateFrom = document.getElementById('date_from');
+        const dateTo = document.getElementById('date_to');
+
+        // เพิ่มข้อมูลวันที่ตั้งต้น (ถ้าต้องการ)
+        const today = new Date();
+        const nintyDaysAgo = new Date();
+        nintyDaysAgo.setDate(today.getDate() - 90);
+
+        // ตั้งค่า flatpickr
+        const datepickerOptions = {
+            dateFormat: 'd/m/Y',
+            locale: 'th',
+            allowInput: true,
+            altInput: false,
+            altFormat: 'd/m/Y',
+            disableMobile: true,
+            yearOffset: 543, // Add 543 years for Buddhist Era
+            onOpen: function(selectedDates, dateStr, instance) {
+                // เมื่อเปิด datepicker ให้แปลงวันที่เป็นรูปแบบสากลเพื่อการคำนวณที่ถูกต้อง
+                const input = instance.input;
+                if (input.value) {
+                    const standardDate = getStandardDateFormat(input.value);
+                    if (standardDate) {
+                        instance.setDate(new Date(standardDate), false);
+                    }
+                }
+            },
+            onChange: function(selectedDates, dateStr, instance) {
+                // เมื่อเลือกวันที่ ให้เก็บวันที่รูปแบบสากลเอาไว้
+                const input = instance.input;
+                if (selectedDates[0]) {
+                    const standardDate = selectedDates[0].toISOString().split('T')[0];
+                    input.dataset.standardDate = standardDate;
+                }
+            },
+            onClose: function(selectedDates, dateStr, instance) {
+                // เมื่อปิด datepicker ให้แปลงวันที่เป็นรูปแบบไทย
+                const input = instance.input;
+                if (selectedDates[0]) {
+                    input.value = getThaiDateFormat(selectedDates[0]);
+                }
+            }
+        };
+
+        // ตั้งค่าเริ่มต้นสำหรับวันที่
+        setupInitialDate(dateFrom, nintyDaysAgo.toISOString().split('T')[0]);
+        setupInitialDate(dateTo, today.toISOString().split('T')[0]);
+
+        // เริ่มใช้งาน datepicker
+        const fromPicker = flatpickr(dateFrom, { ...datepickerOptions });
+        const toPicker = flatpickr(dateTo, { ...datepickerOptions });
+
+        // กรณีรีเซ็ตแบบฟอร์ม ให้กลับมาเป็นรูปแบบไทย
+        document.querySelector('button[type="reset"]').addEventListener('click', function() {
+            setTimeout(function() {
+                setupInitialDate(dateFrom, nintyDaysAgo.toISOString().split('T')[0]);
+                setupInitialDate(dateTo, today.toISOString().split('T')[0]);
+            }, 10);
+        });
+
+        // จัดการการส่งแบบฟอร์ม
+        document.getElementById('exportForm').addEventListener('submit', function(e) {
+            // เปลี่ยนจากรูปแบบไทยเป็นรูปแบบสากลก่อนส่งข้อมูล
+            dateFrom.value = dateFrom.dataset.standardDate || '';
+            dateTo.value = dateTo.dataset.standardDate || '';
+        });
+
         // Weekly Run Chart
         const chartData = @json($lastWeekStats ?? []);
         const labels = chartData.map(item => item.date);

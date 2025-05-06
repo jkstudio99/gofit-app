@@ -27,6 +27,7 @@
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('css/dropdown-fix.css') }}" rel="stylesheet">
     <link href="{{ asset('css/mobile-first.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/app-tour.css') }}" rel="stylesheet">
     <style>
         /* Mobile-first styles */
         body {
@@ -1472,6 +1473,10 @@
                                             <i class="fas fa-user-edit me-2"></i> ข้อมูลส่วนตัว
                                         </a>
 
+                                        <a class="dropdown-item" href="{{ route('tour.settings') }}" style="padding: 0.7rem 1.5rem;">
+                                            <i class="fas fa-info-circle me-2"></i> ตั้งค่าการแนะนำ
+                                        </a>
+
                                         <a class="dropdown-item text-danger" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="padding: 0.7rem 1.5rem;">
                                             <i class="fas fa-sign-out-alt me-2"></i> ออกจากระบบ
                                         </a>
@@ -1783,5 +1788,15 @@
     <script>
         // Remove this script entirely to avoid conflicts
     </script>
+
+    <!-- Tour Button -->
+    @auth
+    <button id="start-tour-btn" class="d-flex align-items-center justify-content-center">
+        <i class="fas fa-question"></i>
+    </button>
+    @endauth
+
+    <!-- Tour Script -->
+    <script src="{{ asset('js/app-tour.js') }}"></script>
 </body>
 </html>

@@ -33,14 +33,14 @@
                                 </a>
                             </li>
                             <li class="list-group-item border-0 px-0 py-2">
-                                <a href="{{ route('admin.run.statistics') }}" class="text-decoration-none d-flex justify-content-between align-items-center">
-                                    <span><i class="fas fa-map-marker-alt me-2 text-success"></i> สถานที่ออกกำลังกาย</span>
+                                <a href="{{ route('admin.run.calendar') }}" class="text-decoration-none d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-calendar-alt me-2 text-success"></i> ปฏิทินการวิ่ง</span>
                                     <i class="fas fa-chevron-right text-muted"></i>
                                 </a>
                             </li>
                             <li class="list-group-item border-0 px-0 py-2">
-                                <a href="{{ route('admin.run.calendar') }}" class="text-decoration-none d-flex justify-content-between align-items-center">
-                                    <span><i class="fas fa-calendar-alt me-2 text-success"></i> ปฏิทินการวิ่ง</span>
+                                <a href="{{ route('admin.run.heatmap') }}" class="text-decoration-none d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-fire me-2 text-success"></i> แผนที่ความร้อนการวิ่ง</span>
                                     <i class="fas fa-chevron-right text-muted"></i>
                                 </a>
                             </li>
@@ -109,14 +109,14 @@
                                 </a>
                             </li>
                             <li class="list-group-item border-0 px-0 py-2">
-                                <a href="{{ route('admin.goals.statistics') }}" class="text-decoration-none d-flex justify-content-between align-items-center">
-                                    <span><i class="fas fa-bullseye me-2 text-info"></i> สถิติเป้าหมายของผู้ใช้</span>
+                                <a href="{{ route('admin.health-articles.comments') }}" class="text-decoration-none d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-comments me-2 text-info"></i> ความคิดเห็นบทความ</span>
                                     <i class="fas fa-chevron-right text-muted"></i>
                                 </a>
                             </li>
                             <li class="list-group-item border-0 px-0 py-2">
-                                <a href="{{ route('admin.events.statistics') }}" class="text-decoration-none d-flex justify-content-between align-items-center">
-                                    <span><i class="fas fa-calendar-check me-2 text-info"></i> สถิติกิจกรรม</span>
+                                <a href="{{ route('admin.health-articles.index') }}" class="text-decoration-none d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-list me-2 text-info"></i> จัดการบทความทั้งหมด</span>
                                     <i class="fas fa-chevron-right text-muted"></i>
                                 </a>
                             </li>

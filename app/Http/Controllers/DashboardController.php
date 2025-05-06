@@ -40,6 +40,19 @@ class DashboardController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
+        // เพิ่มการตรวจสอบผู้ใช้ใหม่
+        $isNewUser = ($user->login_count <= 1);
+
+        // ถ้าเป็นผู้ใช้ใหม่ เพิ่ม login_count
+        if ($isNewUser) {
+            DB::table('tb_user')
+                ->where('user_id', $user->user_id)
+                ->update([
+                    'login_count' => DB::raw('login_count + 1'),
+                    'updated_at' => now()
+                ]);
+        }
+
         // Get user's running stats
         $totalActivities = Activity::where('user_id', $user->user_id)
             ->where('activity_type', 'running')
@@ -112,7 +125,8 @@ class DashboardController extends Controller
             'weeklyCalories',
             'weeklyGoal',
             'weeklyGoalProgress',
-            'weeklyDistanceChart'
+            'weeklyDistanceChart',
+            'isNewUser'
         ));
     }
 

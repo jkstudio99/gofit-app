@@ -378,23 +378,24 @@ class RunStatisticsController extends Controller
     {
         // ตรวจสอบความถูกต้องของข้อมูลนำเข้า
         $request->validate([
-            'format' => 'required|in:csv,excel,json',
+            'format' => 'required|in:csv,excel',
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date',
-            'user_id' => 'nullable|exists:tb_user,user_id'
+            'user_id' => 'nullable'
         ]);
 
         // กำหนดช่วงเวลา
-        $dateFrom = $request->input('date_from') ? Carbon::parse($request->input('date_from'))->startOfDay() : Carbon::now()->subDays(30)->startOfDay();
+        $dateFrom = $request->input('date_from') ? Carbon::parse($request->input('date_from'))->startOfDay() : Carbon::now()->subMonths(3)->startOfDay();
         $dateTo = $request->input('date_to') ? Carbon::parse($request->input('date_to'))->endOfDay() : Carbon::now()->endOfDay();
 
-        // สร้างคิวรี่
-        $query = Run::with('user')
-            ->whereBetween('created_at', [$dateFrom, $dateTo])
-            ->where('is_completed', true);
+        // สร้างคิวรี่พื้นฐาน - แก้ไขให้ดึงข้อมูลเสมอ
+        $query = Run::with('user')->where('is_completed', true);
+
+        // กรองตามวันที่
+        $query->whereBetween('created_at', [$dateFrom, $dateTo]);
 
         // กรองตามผู้ใช้ (ถ้ามี)
-        if ($request->has('user_id')) {
+        if ($request->filled('user_id')) {
             $query->where('user_id', $request->input('user_id'));
         }
 
@@ -405,6 +406,16 @@ class RunStatisticsController extends Controller
         $exportData = [];
 
         foreach ($runs as $run) {
+            // แปลงวันที่เป็นรูปแบบไทย
+            $createdAt = $run->created_at;
+            $thaiCreatedAt = $this->formatThaiDate($createdAt);
+
+            $startTime = $run->start_time ? (is_object($run->start_time) ? $run->start_time : Carbon::parse($run->start_time)) : null;
+            $thaiStartTime = $startTime ? $this->formatThaiDate($startTime) : '';
+
+            $endTime = $run->end_time ? (is_object($run->end_time) ? $run->end_time : Carbon::parse($run->end_time)) : null;
+            $thaiEndTime = $endTime ? $this->formatThaiDate($endTime) : '';
+
             $exportRow = [
                 'run_id' => $run->run_id,
                 'user_id' => $run->user_id,
@@ -414,30 +425,46 @@ class RunStatisticsController extends Controller
                 'duration_formatted' => $this->formatDurationTime($run->duration),
                 'average_speed' => $run->average_speed,
                 'calories_burned' => $run->calories_burned,
-                'start_time' => $run->start_time ? $run->start_time->format('Y-m-d H:i:s') : null,
-                'end_time' => $run->end_time ? $run->end_time->format('Y-m-d H:i:s') : null,
-                'created_at' => $run->created_at->format('Y-m-d H:i:s')
+                'start_time' => $thaiStartTime,
+                'end_time' => $thaiEndTime,
+                'created_at' => $thaiCreatedAt
             ];
 
             $exportData[] = $exportRow;
         }
 
-        // Get all users for export form
-        $users = User::select('user_id', 'username')->orderBy('username')->get();
-
         // ส่งออกตามรูปแบบที่กำหนด
-        $format = $request->input('format');
+        $format = $request->input('format', 'excel');
 
         switch ($format) {
             case 'csv':
                 return $this->exportCsv($exportData);
             case 'excel':
                 return $this->exportExcel($exportData);
-            case 'json':
-                return $this->exportJson($exportData);
             default:
-                return response()->json(['error' => 'Unsupported export format'], 400);
+                return $this->exportExcel($exportData); // Default to Excel
         }
+    }
+
+    /**
+     * แปลงวันที่เป็นรูปแบบไทย
+     */
+    private function formatThaiDate($date)
+    {
+        if (!$date) return '';
+
+        $thaiMonths = [
+            1 => 'ม.ค.', 2 => 'ก.พ.', 3 => 'มี.ค.', 4 => 'เม.ย.',
+            5 => 'พ.ค.', 6 => 'มิ.ย.', 7 => 'ก.ค.', 8 => 'ส.ค.',
+            9 => 'ก.ย.', 10 => 'ต.ค.', 11 => 'พ.ย.', 12 => 'ธ.ค.'
+        ];
+
+        $day = $date->format('j');
+        $month = $thaiMonths[$date->format('n')];
+        $year = $date->format('Y') + 543; // แปลงเป็น พ.ศ.
+        $time = $date->format('H:i');
+
+        return "{$day} {$month} {$year} {$time}";
     }
 
     /**
@@ -457,9 +484,26 @@ class RunStatisticsController extends Controller
      */
     private function exportCsv($data)
     {
-        // ตรวจสอบว่ามีข้อมูลหรือไม่
+        // สร้างข้อมูลตัวอย่างถ้าไม่มีข้อมูล
         if (empty($data)) {
-            return response()->json(['error' => 'No data to export'], 404);
+            $currentDate = Carbon::now();
+            $thaiDate = $this->formatThaiDate($currentDate);
+
+            $data = [
+                [
+                    'run_id' => '',
+                    'user_id' => '',
+                    'username' => '',
+                    'distance' => 0,
+                    'duration' => 0,
+                    'duration_formatted' => '00:00:00',
+                    'average_speed' => 0,
+                    'calories_burned' => 0,
+                    'start_time' => '',
+                    'end_time' => '',
+                    'created_at' => $thaiDate
+                ]
+            ];
         }
 
         // สร้างชื่อไฟล์
@@ -467,7 +511,7 @@ class RunStatisticsController extends Controller
 
         // สร้างเซสชันที่กำหนดการตอบกลับ
         $headers = [
-            'Content-Type' => 'text/csv',
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
             'Pragma' => 'no-cache',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
@@ -477,6 +521,8 @@ class RunStatisticsController extends Controller
         // สร้าง callback function เพื่อสร้างเนื้อหา CSV
         $callback = function() use ($data) {
             $file = fopen('php://output', 'w');
+            // Set UTF-8 BOM for Excel to display Thai characters correctly
+            fputs($file, "\xEF\xBB\xBF");
 
             // เขียนหัวตาราง
             fputcsv($file, array_keys($data[0]));
@@ -493,48 +539,71 @@ class RunStatisticsController extends Controller
     }
 
     /**
-     * ส่งออกข้อมูลในรูปแบบ JSON
-     */
-    private function exportJson($data)
-    {
-        // ตรวจสอบว่ามีข้อมูลหรือไม่
-        if (empty($data)) {
-            return response()->json(['error' => 'No data to export'], 404);
-        }
-
-        // สร้างชื่อไฟล์
-        $filename = 'running_data_' . date('Y-m-d_His') . '.json';
-
-        // กำหนดการตอบกลับ
-        $headers = [
-            'Content-Type' => 'application/json',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ];
-
-        // แปลงข้อมูลเป็น JSON
-        $jsonContent = json_encode($data, JSON_PRETTY_PRINT);
-
-        return response($jsonContent, 200, $headers);
-    }
-
-    /**
      * ส่งออกข้อมูลในรูปแบบ Excel
      */
     private function exportExcel($data)
     {
-        // ตรวจสอบว่ามีข้อมูลหรือไม่
+        // สร้างข้อมูลตัวอย่างถ้าไม่มีข้อมูล
         if (empty($data)) {
-            return response()->json(['error' => 'No data to export'], 404);
+            $currentDate = Carbon::now();
+            $thaiDate = $this->formatThaiDate($currentDate);
+
+            $data = [
+                [
+                    'run_id' => '',
+                    'user_id' => '',
+                    'username' => '',
+                    'distance' => 0,
+                    'duration' => 0,
+                    'duration_formatted' => '00:00:00',
+                    'average_speed' => 0,
+                    'calories_burned' => 0,
+                    'start_time' => '',
+                    'end_time' => '',
+                    'created_at' => $thaiDate
+                ]
+            ];
         }
 
         // สร้างชื่อไฟล์
-        $filename = 'running_data_' . date('Y-m-d_His') . '.xlsx';
+        $filename = 'running_data_' . date('Y-m-d_His') . '.xls';
 
-        // เนื่องจากการใช้งาน Excel จำเป็นต้องมีไลบรารีเพิ่มเติม
-        // เช่น PhpSpreadsheet หรือ Laravel Excel
-        // ในตัวอย่างนี้จะสร้างเป็น CSV แทน
+        // สร้าง HTML table ที่ Excel สามารถอ่านได้
+        $html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+        $html .= '<head>';
+        $html .= '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">';
+        $html .= '</head>';
+        $html .= '<body>';
+        $html .= '<table border="1">';
 
-        return $this->exportCsv($data);
+        // สร้างหัวตาราง
+        $html .= '<tr>';
+        foreach (array_keys($data[0]) as $header) {
+            $html .= '<th>' . $header . '</th>';
+        }
+        $html .= '</tr>';
+
+        // สร้างข้อมูลแถว
+        foreach ($data as $row) {
+            $html .= '<tr>';
+            foreach ($row as $value) {
+                $html .= '<td>' . $value . '</td>';
+            }
+            $html .= '</tr>';
+        }
+
+        $html .= '</table>';
+        $html .= '</body>';
+        $html .= '</html>';
+
+        // กำหนด response headers
+        $headers = [
+            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'max-age=0',
+        ];
+
+        return response($html, 200, $headers);
     }
 
     /**
