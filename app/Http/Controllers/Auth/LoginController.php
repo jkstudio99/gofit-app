@@ -68,11 +68,18 @@ class LoginController extends Controller
      */
     protected function sendFailedLoginResponse(Request $request)
     {
+        // ตรวจสอบว่ามี validation error หรือไม่
+        if ($request->has($this->username()) && $request->has('password')) {
+            return redirect()->back()
+                ->withInput($request->only($this->username(), 'remember'))
+                ->withErrors([
+                    $this->username() => 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง',
+                ]);
+        }
+
+        // ถ้าไม่มีข้อมูลที่กรอก ให้แสดง validation error แทน
         return redirect()->back()
-            ->withInput($request->only($this->username(), 'remember'))
-            ->withErrors([
-                $this->username() => 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง',
-            ]);
+            ->withInput($request->only($this->username(), 'remember'));
     }
 
     /**
@@ -85,23 +92,57 @@ class LoginController extends Controller
      */
     protected function validateLogin(Request $request)
     {
-        $request->validate([
-            $this->username() => 'required|string',
-            'password' => 'required|string',
-        ], [
-            $this->username().'.required' => 'กรุณากรอกชื่อผู้ใช้',
-            $this->username().'.string' => 'ชื่อผู้ใช้ต้องเป็นตัวอักษรหรือตัวเลขเท่านั้น',
-            'password.required' => 'กรุณากรอกรหัสผ่าน',
-            'password.string' => 'รหัสผ่านต้องเป็นตัวอักษรเท่านั้น',
-        ]);
+        // หากไม่มีการกรอกข้อมูลหรือข้อมูลว่าง ให้ทำการ validate แบบปกติ
+        // (จะแสดง validation errors กรณีไม่กรอกข้อมูลทั้ง username และ password)
+        if (empty($request->input($this->username())) || empty($request->input('password'))) {
+            $request->validate([
+                $this->username() => 'required|string',
+                'password' => 'required|string',
+            ], [
+                $this->username().'.required' => 'กรุณากรอกชื่อผู้ใช้',
+                $this->username().'.string' => 'ชื่อผู้ใช้ต้องเป็นตัวอักษรหรือตัวเลขเท่านั้น',
+                'password.required' => 'กรุณากรอกรหัสผ่าน',
+                'password.string' => 'รหัสผ่านต้องเป็นตัวอักษรเท่านั้น',
+            ]);
+        } else {
+            // หากมีการกรอกข้อมูลแล้ว ให้ validate แค่รูปแบบข้อมูล
+            $request->validate([
+                $this->username() => 'string',
+                'password' => 'string',
+            ], [
+                $this->username().'.string' => 'ชื่อผู้ใช้ต้องเป็นตัวอักษรหรือตัวเลขเท่านั้น',
+                'password.string' => 'รหัสผ่านต้องเป็นตัวอักษรเท่านั้น',
+            ]);
+        }
     }
 
     public function login(Request $request)
     {
+        Log::info('Login attempt', ['request' => $request->all()]);
+
         try {
             // ตรวจสอบการเชื่อมต่อฐานข้อมูล
             DB::connection()->getPdo();
 
+            // มีการกดปุ่ม Submit แน่นอน แต่อาจไม่มีข้อมูล
+            // ตรวจสอบข้อมูลที่จำเป็น
+            $errors = [];
+            if (empty($request->input($this->username()))) {
+                $errors[$this->username()] = 'กรุณากรอกชื่อผู้ใช้';
+            }
+
+            if (empty($request->input('password'))) {
+                $errors['password'] = 'กรุณากรอกรหัสผ่าน';
+            }
+
+            if (!empty($errors)) {
+                Log::info('Login validation failed', ['errors' => $errors]);
+                return redirect()->back()
+                    ->withInput($request->only($this->username(), 'remember'))
+                    ->withErrors($errors);
+            }
+
+            // ถ้าไม่มี errors จากการตรวจสอบเบื้องต้น ทำการ validate รูปแบบข้อมูล
             $this->validateLogin($request);
 
             // If the class is using the ThrottlesLogins trait, we can automatically throttle
@@ -127,12 +168,14 @@ class LoginController extends Controller
             // user surpasses their maximum number of attempts they will get locked out.
             $this->incrementLoginAttempts($request);
 
+            Log::info('Login credentials incorrect');
             return $this->sendFailedLoginResponse($request);
         } catch (\Exception $e) {
-            // ถ้าเกิดข้อผิดพลาดเกี่ยวกับฐานข้อมูล
+            // ส่ง error ไปที่ 'general' แทน 'email'
+            Log::error('Database connection error', ['exception' => $e->getMessage()]);
             return redirect()->back()
-                ->withInput($request->only('email', 'remember'))
-                ->withErrors(['email' => 'ไม่สามารถเชื่อมต่อกับฐานข้อมูลได้ กรุณาตรวจสอบการตั้งค่า']);
+                ->withInput($request->only('username', 'remember'))
+                ->withErrors(['general' => 'ไม่สามารถเชื่อมต่อกับฐานข้อมูลได้ กรุณาตรวจสอบการตั้งค่า']);
         }
     }
 }

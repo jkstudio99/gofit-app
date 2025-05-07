@@ -54,23 +54,19 @@ class DashboardController extends Controller
         }
 
         // Get user's running stats
-        $totalActivities = Activity::where('user_id', $user->user_id)
-            ->where('activity_type', 'running')
+        $totalActivities = Run::where('user_id', $user->user_id)
             ->count();
 
-        $totalDistance = Activity::where('user_id', $user->user_id)
-            ->where('activity_type', 'running')
+        $totalDistance = Run::where('user_id', $user->user_id)
             ->sum('distance');
 
-        $totalCalories = Activity::where('user_id', $user->user_id)
-            ->where('activity_type', 'running')
+        $totalCalories = Run::where('user_id', $user->user_id)
             ->sum('calories_burned');
 
         // Get recent activities
-        $recentActivities = Activity::where('user_id', $user->user_id)
-            ->where('activity_type', 'running')
+        $recentActivities = Run::where('user_id', $user->user_id)
             ->orderBy('start_time', 'desc')
-            ->take(5)
+            ->take(1)
             ->get();
 
         // Get badges earned
@@ -84,19 +80,46 @@ class DashboardController extends Controller
         $startOfWeek = Carbon::now()->startOfWeek();
         $endOfWeek = Carbon::now()->endOfWeek();
 
-        $weeklyActivities = Activity::where('user_id', $user->user_id)
-            ->where('activity_type', 'running')
+        $weeklyActivities = Run::where('user_id', $user->user_id)
             ->whereBetween('start_time', [$startOfWeek, $endOfWeek])
             ->get();
 
         $weeklyDistance = $weeklyActivities->sum('distance');
         $weeklyCalories = $weeklyActivities->sum('calories_burned');
+        $weeklyRunCount = $weeklyActivities->count();
 
-        // Calculate weekly goal progress (example goal: 20km per week)
-        $weeklyGoal = 20; // km
-        $weeklyGoalProgress = ($weeklyDistance / $weeklyGoal) * 100;
-        if ($weeklyGoalProgress > 100) {
-            $weeklyGoalProgress = 100;
+        // Get user's weekly distance goal from the database
+        $weeklyGoal = 20; // Default fallback value
+        $weeklyGoalObj = null;
+
+        // ดึงเป้าหมายระยะทางรายสัปดาห์ล่าสุด (มีการเรียงลำดับตาม created_at)
+        $weeklyGoalObj = \App\Models\ActivityGoal::where('user_id', $user->user_id)
+            ->where('type', 'distance')
+            ->where('period', 'weekly')
+            ->where('is_completed', false)
+            ->whereDate('end_date', '>=', now())
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if ($weeklyGoalObj) {
+            $weeklyGoal = $weeklyGoalObj->target_value;
+        }
+
+        // ดึงเป้าหมายทั้งหมดที่กำลังดำเนินการของผู้ใช้
+        $activeGoals = \App\Models\ActivityGoal::where('user_id', $user->user_id)
+            ->where('is_completed', false)
+            ->where(function ($query) {
+                $query->whereNull('end_date')
+                    ->orWhere('end_date', '>=', now()->startOfDay());
+            })
+            ->orderBy('created_at', 'desc') // เรียงตามเวลาที่สร้าง (ล่าสุดก่อน)
+            ->take(3) // แสดงแค่ 3 อันล่าสุด
+            ->get();
+
+        // Calculate weekly goal progress
+        $weeklyGoalProgress = 0;
+        if ($weeklyGoal > 0) {
+            $weeklyGoalProgress = min(100, ($weeklyDistance / $weeklyGoal) * 100);
         }
 
         // Generate weekly distance data for chart
@@ -114,6 +137,11 @@ class DashboardController extends Controller
             $weeklyDistanceChart[] = round($dayActivities->sum('distance'), 1);
         }
 
+        // Get count of events the user has registered for
+        $userRegisteredEvents = \App\Models\EventUser::where('user_id', $user->user_id)
+            ->where('status', 'registered')
+            ->count();
+
         // แสดงผลโดยใช้ AdminLTE template
         return view('dashboard', compact(
             'totalActivities',
@@ -126,7 +154,11 @@ class DashboardController extends Controller
             'weeklyGoal',
             'weeklyGoalProgress',
             'weeklyDistanceChart',
-            'isNewUser'
+            'isNewUser',
+            'weeklyGoalObj',
+            'userRegisteredEvents',
+            'activeGoals',
+            'weeklyRunCount'
         ));
     }
 
@@ -341,14 +373,14 @@ class DashboardController extends Controller
 
         // ลบข้อมูลที่เกี่ยวข้อง
         DB::transaction(function () use ($userId) {
-            // ลบข้อมูลกิจกรรม
-            DB::table('tb_activity')->where('user_id', $userId)->delete();
+            // ลบข้อมูลกิจกรรมการวิ่ง
+            DB::table('tb_run')->where('user_id', $userId)->delete();
 
             // ลบข้อมูลการลงทะเบียนกิจกรรม
             DB::table('event_users')->where('user_id', $userId)->delete();
 
             // ลบข้อมูลเป้าหมาย
-            DB::table('activity_goals')->where('user_id', $userId)->delete();
+            DB::table('tb_activity_goals')->where('user_id', $userId)->delete();
 
             // ลบความสัมพันธ์กับเหรียญรางวัล
             DB::table('tb_user_badge')->where('user_id', $userId)->delete();
@@ -376,8 +408,8 @@ class DashboardController extends Controller
         // Get total users
         $totalUsers = User::count();
 
-        // Get total activities
-        $totalActivities = Activity::count();
+        // ใช้จำนวน Run แทน Activity เนื่องจากข้อมูลถูกย้ายไปแล้ว
+        $totalActivities = Run::count();
 
         // Get total runs
         $totalRuns = Run::count();
@@ -393,8 +425,8 @@ class DashboardController extends Controller
             ->whereYear('created_at', date('Y'))
             ->count();
 
-        // Get monthly activities
-        $monthlyActivities = Activity::whereMonth('created_at', date('m'))
+        // ใช้จำนวน Run แทน Activity เนื่องจากข้อมูลถูกย้ายไปแล้ว
+        $monthlyActivities = Run::whereMonth('created_at', date('m'))
             ->whereYear('created_at', date('Y'))
             ->count();
 
@@ -409,15 +441,15 @@ class DashboardController extends Controller
             ->count();
 
         // Get top users
-        $topUsers = User::select('tb_user.*', DB::raw('COUNT(tb_activity.activity_id) as activity_count'))
-            ->leftJoin('tb_activity', 'tb_user.user_id', '=', 'tb_activity.user_id')
+        $topUsers = User::select('tb_user.*', DB::raw('COUNT(tb_run.id) as activity_count'))
+            ->leftJoin('tb_run', 'tb_user.user_id', '=', 'tb_run.user_id')
             ->groupBy('tb_user.user_id')
             ->orderBy('activity_count', 'desc')
             ->take(5)
             ->get();
 
-        // Get latest activities
-        $latestActivities = Activity::with('user')
+        // Get latest activities (ใช้ Run แทน Activity)
+        $latestActivities = Run::with('user')
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
@@ -443,7 +475,9 @@ class DashboardController extends Controller
             $date = Carbon::today()->subDays($i);
             $activityLabels[] = $date->locale('th')->format('D d');
 
-            $activityCount = Activity::whereDate('created_at', $date)->count();
+            // เนื่องจากมีการย้ายจาก tb_activity ไป tb_run
+            // ให้นับกิจกรรม run แทน activity
+            $activityCount = Run::whereDate('created_at', $date)->count();
             $activityData[] = $activityCount;
 
             $runCount = Run::whereDate('created_at', $date)->count();

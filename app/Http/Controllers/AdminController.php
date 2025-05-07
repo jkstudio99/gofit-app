@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Activity;
 use App\Models\Badge;
 use App\Models\Reward;
 use App\Models\Redeem;
@@ -49,11 +48,11 @@ class AdminController extends Controller
                         ->whereYear('created_at', Carbon::now()->year)
                         ->count();
 
-        // จำนวนกิจกรรมทั้งหมด
-        $totalActivities = Activity::count();
+        // จำนวนกิจกรรมทั้งหมด (ใช้ Run แทน Activity)
+        $totalActivities = \App\Models\Run::count();
 
-        // จำนวนกิจกรรมในเดือนนี้
-        $monthlyActivities = Activity::whereMonth('created_at', Carbon::now()->month)
+        // จำนวนกิจกรรมในเดือนนี้ (ใช้ Run แทน Activity)
+        $monthlyActivities = \App\Models\Run::whereMonth('created_at', Carbon::now()->month)
                                     ->whereYear('created_at', Carbon::now()->year)
                                     ->count();
 
@@ -83,15 +82,15 @@ class AdminController extends Controller
                                 ->count();
 
         // ผู้ใช้งานที่มีกิจกรรมมากที่สุด 5 อันดับ
-        $topUsers = User::select('tb_user.user_id', 'tb_user.firstname', 'tb_user.lastname', 'tb_user.username', DB::raw('COUNT(tb_activity.activity_id) as activity_count'))
-                    ->leftJoin('tb_activity', 'tb_user.user_id', '=', 'tb_activity.user_id')
+        $topUsers = User::select('tb_user.user_id', 'tb_user.firstname', 'tb_user.lastname', 'tb_user.username', DB::raw('COUNT(tb_run.run_id) as activity_count'))
+                    ->leftJoin('tb_run', 'tb_user.user_id', '=', 'tb_run.user_id')
                     ->groupBy('tb_user.user_id', 'tb_user.firstname', 'tb_user.lastname', 'tb_user.username')
                     ->orderBy('activity_count', 'desc')
                     ->limit(5)
                     ->get();
 
-        // กิจกรรมล่าสุด 10 รายการ
-        $latestActivities = Activity::with('user')
+        // กิจกรรมล่าสุด 10 รายการ (ใช้ Run แทน Activity)
+        $latestActivities = \App\Models\Run::with('user')
                                 ->orderBy('created_at', 'desc')
                                 ->limit(10)
                                 ->get();
@@ -112,7 +111,7 @@ class AdminController extends Controller
         $startOfWeek = Carbon::now()->startOfWeek();
         $endOfWeek = Carbon::now()->endOfWeek();
 
-        $dailyStats = Activity::select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as count'))
+        $dailyStats = \App\Models\Run::select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as count'))
                         ->whereBetween('created_at', [$startOfWeek, $endOfWeek])
                         ->groupBy('date')
                         ->orderBy('date')
@@ -179,7 +178,7 @@ class AdminController extends Controller
         // นับจำนวนกิจกรรมในแต่ละสัปดาห์
         foreach ($weeks as $index => $week) {
             if ($index < 4) { // จำกัดที่ 4 สัปดาห์
-                $activityCount = Activity::whereBetween('created_at', [$week['start'], $week['end']])
+                $activityCount = \App\Models\Run::whereBetween('created_at', [$week['start'], $week['end']])
                                        ->count();
                 $runCount = \App\Models\Run::whereBetween('created_at', [$week['start'], $week['end']])
                                          ->count();
@@ -197,7 +196,7 @@ class AdminController extends Controller
         for ($i = 0; $i < 12; $i++) {
             $month = (clone $now)->subMonths(11 - $i);
 
-            $activityCount = Activity::whereYear('created_at', $month->year)
+            $activityCount = \App\Models\Run::whereYear('created_at', $month->year)
                                    ->whereMonth('created_at', $month->month)
                                    ->count();
 
@@ -500,7 +499,7 @@ class AdminController extends Controller
      */
     public function userActivities()
     {
-        $activities = Activity::with('user')
+        $activities = \App\Models\Run::with('user')
                         ->orderBy('created_at', 'desc')
                         ->paginate(20);
         return view('admin.activities.index', compact('activities'));

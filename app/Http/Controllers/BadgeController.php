@@ -8,7 +8,7 @@ use App\Models\UserBadge;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
-use App\Models\Activity;
+use App\Models\Run;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
@@ -29,20 +29,17 @@ class BadgeController extends Controller
         }
 
         // Check if user has any activities
-        $hasActivities = \App\Models\Activity::where('user_id', $user->user_id)
-            ->where('activity_type', 'running')
+        $hasActivities = \App\Models\Run::where('user_id', $user->user_id)
             ->where('is_test', false)
             ->exists();
 
         // คำนวณใหม่ทุกครั้ง: รวมระยะทางที่ผู้ใช้วิ่งได้
-        $totalDistance = \App\Models\Activity::where('user_id', $user->user_id)
-            ->where('activity_type', 'running')
+        $totalDistance = \App\Models\Run::where('user_id', $user->user_id)
             ->where('is_test', false)
             ->sum('distance');
 
         // คำนวณใหม่ทุกครั้ง: รวมแคลอรี่ที่ผู้ใช้เผาผลาญได้
-        $totalCalories = \App\Models\Activity::where('user_id', $user->user_id)
-            ->where('activity_type', 'running')
+        $totalCalories = \App\Models\Run::where('user_id', $user->user_id)
             ->where('is_test', false)
             ->sum('calories_burned');
 
@@ -484,13 +481,12 @@ class BadgeController extends Controller
      */
     private function calculateStreak($userId)
     {
-        $activities = Activity::where('user_id', $userId)
-            ->where('activity_type', 'running')
+        $activities = Run::where('user_id', $userId)
             ->where('is_test', false)
-            ->orderBy('activity_date', 'desc')
+            ->orderBy('start_time', 'desc')
             ->get()
             ->groupBy(function($activity) {
-                return date('Y-m-d', strtotime($activity->activity_date));
+                return date('Y-m-d', strtotime($activity->start_time));
             });
 
         if ($activities->isEmpty()) {

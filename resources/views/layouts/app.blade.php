@@ -28,6 +28,8 @@
     <link href="{{ asset('css/dropdown-fix.css') }}" rel="stylesheet">
     <link href="{{ asset('css/mobile-first.css') }}" rel="stylesheet">
     <link href="{{ asset('css/app-tour.css') }}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
         /* Mobile-first styles */
         body {
@@ -1791,9 +1793,7 @@
 
     <!-- Tour Button -->
     @auth
-    <button id="start-tour-btn" class="d-flex align-items-center justify-content-center">
-        <i class="fas fa-question"></i>
-    </button>
+    <!-- Tour script remains but button removed -->
     @endauth
 
     <!-- Tour Script -->

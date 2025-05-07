@@ -66,6 +66,13 @@ class RunController extends Controller
 
         $run = Run::findOrFail($request->run_id);
 
+        // ตรวจสอบความเร็วหรือการเคลื่อนไหวที่ผิดปกติ
+        $movementValidity = $this->validateRunningMovement($request->speed, $request->distance, $request->duration);
+
+        // บันทึกผลการตรวจสอบ
+        $run->movement_validity = $movementValidity['valid'] ? 'valid' : 'suspicious';
+        $run->validity_note = $movementValidity['note'];
+
         // อัปเดตข้อมูลล่าสุด
         $run->distance = $request->distance;
         $run->duration = $request->duration;
@@ -81,7 +88,10 @@ class RunController extends Controller
 
         $run->save();
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+            'movement_validity' => $movementValidity
+        ]);
     }
 
     /**
@@ -118,6 +128,18 @@ class RunController extends Controller
                     'message' => 'ไม่พบข้อมูลการวิ่ง',
                 ], 404);
             }
+
+            // ตรวจสอบความเร็วและการเคลื่อนไหวที่ผิดปกติ
+            $movementValidity = $this->validateRunningMovement(
+                $request->average_speed,
+                $request->distance,
+                $request->duration,
+                $request->route_data
+            );
+
+            // บันทึกผลการตรวจสอบ
+            $run->movement_validity = $movementValidity['valid'] ? 'valid' : 'suspicious';
+            $run->validity_note = $movementValidity['note'];
 
             // ดึงน้ำหนักของผู้ใช้
             $weight = 70; // ใช้ค่าเริ่มต้น 70 กิโลกรัม
@@ -192,7 +214,8 @@ class RunController extends Controller
                 'status' => 'success',
                 'message' => 'บันทึกการวิ่งสำเร็จ',
                 'activity' => $run,
-                'achievements' => $achievements
+                'achievements' => $achievements,
+                'movement_validity' => $movementValidity
             ]);
         } catch (\Exception $e) {
             Log::error('Error in finish method: ' . $e->getMessage());
@@ -315,6 +338,17 @@ class RunController extends Controller
     public function history()
     {
         $userId = Auth::id() ?? 3;
+
+        // Debug: log a sample of route data for one activity
+        $sampleActivity = Run::where('user_id', $userId)
+            ->where('is_completed', true)
+            ->orderBy('start_time', 'desc')
+            ->first();
+
+        if ($sampleActivity) {
+            Log::debug('Sample route data type: ' . gettype($sampleActivity->route_data));
+            Log::debug('Sample route data: ' . json_encode($sampleActivity->route_data));
+        }
 
         // ดึงกิจกรรมทั้งหมดของผู้ใช้ปัจจุบัน (เฉพาะที่เสร็จสมบูรณ์แล้ว)
         $activities = Run::where('user_id', $userId)
@@ -793,6 +827,197 @@ class RunController extends Controller
                 'message' => 'Error: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * ตรวจสอบการเคลื่อนไหวว่าเป็นการวิ่งจริงหรือใช้ยานพาหนะ
+     *
+     * @param float $speed ความเร็วในหน่วย กม./ชม.
+     * @param float $distance ระยะทางในหน่วย กม.
+     * @param int $duration ระยะเวลาในหน่วยวินาที
+     * @param string|null $routeData ข้อมูลเส้นทาง GPS ในรูปแบบ JSON string (optional)
+     * @return array ผลการตรวจสอบความถูกต้อง และคำอธิบาย
+     */
+    private function validateRunningMovement($speed, $distance, $duration, $routeData = null)
+    {
+        // 1. ตรวจสอบความเร็วเฉลี่ย
+        $isSpeedValid = true;
+        $speedNote = "";
+
+        // ความเร็ววิ่งสูงสุดของมนุษย์ปกติ (ไม่ใช่นักกีฬาระดับโลก) ~ 25 กม./ชม.
+        // นักวิ่งระดับโลกอาจวิ่งได้ถึง 36-38 กม./ชม. ในระยะสั้นๆ
+        if ($speed > 25) {
+            $isSpeedValid = false;
+            $speedNote = "ความเร็วสูงเกินกว่าการวิ่งปกติ ({$speed} กม./ชม.)";
+        }
+
+        // 2. ตรวจสอบความสม่ำเสมอ/ความผิดปกติของการเคลื่อนไหว
+        $isMovementValid = true;
+        $movementNote = "";
+
+        // ตรวจสอบความแปรปรวนของความเร็วจากข้อมูล GPS (ถ้ามี)
+        if ($routeData) {
+            try {
+                $routePoints = json_decode($routeData, true);
+
+                // ถ้ามีจุด GPS มากกว่า 10 จุด จึงจะวิเคราะห์ความแปรปรวน
+                if (is_array($routePoints) && count($routePoints) > 10) {
+                    $speedVariations = $this->analyzeSpeedVariation($routePoints);
+
+                    // การวิ่งปกติจะมีความแปรปรวนของความเร็ว แต่ไม่เกิน 200%
+                    if ($speedVariations['max_variation'] > 3.0) {
+                        $isMovementValid = false;
+                        $movementNote = "พบความแปรปรวนของความเร็วที่ผิดปกติ";
+                    }
+
+                    // ตรวจสอบช่วงความเร่งที่ผิดปกติ (การเร่งความเร็วแบบทันทีทันใด)
+                    if ($speedVariations['abnormal_acceleration_count'] > 3) {
+                        $isMovementValid = false;
+                        $movementNote .= " พบการเร่งความเร็วที่ผิดปกติ {$speedVariations['abnormal_acceleration_count']} ครั้ง";
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning("Error analyzing route data: " . $e->getMessage());
+            }
+        }
+
+        // 3. ตรวจสอบระยะเวลาเทียบกับระยะทาง
+        $isTimeDistanceValid = true;
+        $timeDistanceNote = "";
+
+        // คำนวณเวลาต่อกิโลเมตร (นาที/กม.)
+        $minutesPerKm = ($duration / 60) / $distance;
+
+        // เวลาต่อกิโลเมตรที่เร็วเกินไป (น้อยกว่า 2:00 นาที/กม. หรือ 30 กม./ชม.)
+        if ($minutesPerKm < 2.0) {
+            $isTimeDistanceValid = false;
+            $timeDistanceNote = "เวลาต่อกิโลเมตรเร็วเกินไป (" . number_format($minutesPerKm, 2) . " นาที/กม.)";
+        }
+
+        // เวลาต่อกิโลเมตรที่ช้าเกินไป (มากกว่า 15:00 นาที/กม. หรือ 4 กม./ชม.)
+        // แต่นี่อาจเป็นการเดินได้ จึงไม่ถือว่าผิดปกติ
+
+        // ตัดสินผลรวม
+        $isValid = $isSpeedValid && $isMovementValid && $isTimeDistanceValid;
+        $note = trim($speedNote . " " . $movementNote . " " . $timeDistanceNote);
+
+        if ($isValid) {
+            $note = "การวิ่งปกติ";
+        }
+
+        return [
+            'valid' => $isValid,
+            'note' => $note,
+            'details' => [
+                'speed_valid' => $isSpeedValid,
+                'movement_valid' => $isMovementValid,
+                'time_distance_valid' => $isTimeDistanceValid
+            ]
+        ];
+    }
+
+    /**
+     * วิเคราะห์ความแปรปรวนของความเร็วจากข้อมูล GPS
+     *
+     * @param array $routePoints ข้อมูลจุด GPS
+     * @return array ผลการวิเคราะห์ความแปรปรวนของความเร็ว
+     */
+    private function analyzeSpeedVariation($routePoints)
+    {
+        $speeds = [];
+        $speedVariations = [];
+        $abnormalAccelerationCount = 0;
+
+        // คำนวณความเร็วระหว่างจุด
+        for ($i = 1; $i < count($routePoints); $i++) {
+            $currentPoint = $routePoints[$i];
+            $prevPoint = $routePoints[$i-1];
+
+            // ตรวจสอบว่ามีข้อมูลที่จำเป็นครบหรือไม่
+            if (!isset($currentPoint['lat']) || !isset($currentPoint['lng']) ||
+                !isset($prevPoint['lat']) || !isset($prevPoint['lng']) ||
+                !isset($currentPoint['timestamp']) || !isset($prevPoint['timestamp'])) {
+                continue;
+            }
+
+            // คำนวณระยะทางระหว่างจุด (เมตร)
+            $distance = $this->calculateDistance(
+                $prevPoint['lat'], $prevPoint['lng'],
+                $currentPoint['lat'], $currentPoint['lng']
+            );
+
+            // คำนวณเวลาที่ใช้ (วินาที)
+            $timeDiff = strtotime($currentPoint['timestamp']) - strtotime($prevPoint['timestamp']);
+            if ($timeDiff <= 0) continue; // ป้องกันการหารด้วยศูนย์
+
+            // คำนวณความเร็ว (กม./ชม.)
+            $speedKmH = ($distance / 1000) / ($timeDiff / 3600);
+            $speeds[] = $speedKmH;
+
+            // ตรวจสอบการเร่งความเร็ว (เร่งจาก 0 เป็น 15+ กม./ชม. ในเวลาน้อยกว่า 2 วินาที)
+            if ($i > 1) {
+                $prevSpeed = $speeds[count($speeds) - 2];
+                $acceleration = ($speedKmH - $prevSpeed) / ($timeDiff / 3600); // อัตราเร่งในหน่วย กม./ชม./ชม.
+
+                // การเร่งของยานพาหนะมักสูงกว่า 40 กม./ชม./วินาที
+                if ($acceleration > 40 && $speedKmH > 15) {
+                    $abnormalAccelerationCount++;
+                }
+            }
+        }
+
+        // คำนวณค่าสถิติของความเร็ว
+        if (count($speeds) < 2) {
+            return [
+                'max_variation' => 0,
+                'abnormal_acceleration_count' => 0
+            ];
+        }
+
+        $avgSpeed = array_sum($speeds) / count($speeds);
+        $maxSpeed = max($speeds);
+        $minSpeed = min($speeds);
+
+        // คำนวณความแปรปรวนสัมพัทธ์
+        $maxVariation = $avgSpeed > 0 ? ($maxSpeed - $minSpeed) / $avgSpeed : 0;
+
+        return [
+            'max_variation' => $maxVariation,
+            'abnormal_acceleration_count' => $abnormalAccelerationCount,
+            'avg_speed' => $avgSpeed,
+            'max_speed' => $maxSpeed,
+            'min_speed' => $minSpeed
+        ];
+    }
+
+    /**
+     * คำนวณระยะทางระหว่างพิกัด GPS สองจุด (Haversine formula)
+     *
+     * @param float $lat1 ละติจูดของจุดที่ 1
+     * @param float $lon1 ลองจิจูดของจุดที่ 1
+     * @param float $lat2 ละติจูดของจุดที่ 2
+     * @param float $lon2 ลองจิจูดของจุดที่ 2
+     * @return float ระยะทางในหน่วยเมตร
+     */
+    private function calculateDistance($lat1, $lon1, $lat2, $lon2)
+    {
+        // แปลงองศาเป็นเรเดียน
+        $lat1 = deg2rad($lat1);
+        $lon1 = deg2rad($lon1);
+        $lat2 = deg2rad($lat2);
+        $lon2 = deg2rad($lon2);
+
+        // รัศมีของโลก (เมตร)
+        $radius = 6371000;
+
+        // Haversine formula
+        $dlat = $lat2 - $lat1;
+        $dlon = $lon2 - $lon1;
+        $a = sin($dlat/2) * sin($dlat/2) + cos($lat1) * cos($lat2) * sin($dlon/2) * sin($dlon/2);
+        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+        $distance = $radius * $c;
+
+        return $distance;
     }
 }
 

@@ -41,19 +41,6 @@
         right: 10px;
     }
 
-    .status-tab {
-        cursor: pointer;
-        padding: 10px 20px;
-        border-radius: 30px;
-        margin-right: 10px;
-        transition: all 0.2s;
-    }
-
-    .status-tab:hover, .status-tab.active {
-        background-color: #2DC679;
-        color: white;
-    }
-
     .category-badge {
         padding: 6px 12px;
         border-radius: 50px;
@@ -123,12 +110,70 @@
         font-size: 0.875rem;
         font-weight: 500;
     }
+
+    /* Stats Cards Styles */
+    .event-stat-card {
+        transition: all 0.3s ease;
+        border-radius: 12px;
+    }
+
+    .event-stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .event-stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Tab Navigation Styles */
+    .nav-tabs .nav-link {
+        border: none;
+        padding: 0.75rem 1.25rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        color: #6c757d;
+        background-color: #f8f9fa;
+        margin-right: 0.5rem;
+        transition: all 0.2s;
+    }
+
+    .nav-tabs .nav-link:hover {
+        background-color: #e9ecef;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: #fff;
+        background-color: #2DC679;
+    }
+
+    /* Remove the border/line between tabs and content */
+    .nav-tabs {
+        border-bottom: none;
+    }
+
+    .card-body {
+        padding-top: 0;
+    }
+
+    /* Custom styling for cancel button hover state */
+    .btn-outline-danger:hover {
+        color: #fff !important;
+    }
+
+    .btn-outline-danger:hover i {
+        color: #fff !important;
+    }
 </style>
 @endsection
 
 @section('content')
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
         <div>
             <h2 class="mb-0">กิจกรรมของฉัน</h2>
             <p class="text-muted">รายการกิจกรรมที่คุณลงทะเบียนเข้าร่วม</p>
@@ -154,159 +199,620 @@
     </div>
     @endif
 
-    <!-- Status filter -->
-    <div class="mb-4">
-        <ul class="nav">
-            <li class="nav-item">
-                <a class="nav-link status-tab {{ !request('status') || request('status') == 'all' ? 'active bg-primary text-white' : 'bg-light' }}"
-                   href="{{ route('events.my', ['status' => 'all']) }}">
-                    <i class="fas fa-list me-1"></i> ทั้งหมด
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link status-tab {{ request('status') == 'upcoming' ? 'active bg-primary text-white' : 'bg-light' }}"
-                   href="{{ route('events.my', ['status' => 'upcoming']) }}">
-                    <i class="fas fa-hourglass-start me-1"></i> กำลังจะมาถึง
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link status-tab {{ request('status') == 'active' ? 'active bg-primary text-white' : 'bg-light' }}"
-                   href="{{ route('events.my', ['status' => 'active']) }}">
-                    <i class="fas fa-play-circle me-1"></i> กำลังดำเนินการ
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link status-tab {{ request('status') == 'past' ? 'active bg-primary text-white' : 'bg-light' }}"
-                   href="{{ route('events.my', ['status' => 'past']) }}">
-                    <i class="fas fa-history me-1"></i> ที่ผ่านมา
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link status-tab {{ request('status') == 'cancelled' ? 'active bg-primary text-white' : 'bg-light' }}"
-                   href="{{ route('events.my', ['status' => 'cancelled']) }}">
-                    <i class="fas fa-times-circle me-1"></i> ยกเลิกแล้ว
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <!-- Empty state -->
-    @if ($registrations->isEmpty())
-    <div class="empty-state bg-light rounded">
-        <i class="fas fa-calendar-times"></i>
-        <h4>ไม่มีกิจกรรม</h4>
-        <p class="text-muted">
-            คุณยังไม่มีกิจกรรมในสถานะที่เลือก
-        </p>
-        <div class="mt-3">
-            <a href="{{ route('events.index') }}" class="btn btn-primary">
-                <i class="fas fa-search me-1"></i> ค้นหากิจกรรม
-            </a>
-        </div>
-    </div>
-    @else
-
-    <!-- Event Cards -->
-    <div class="row">
-        @foreach ($registrations as $registration)
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card event-card h-100 shadow-sm">
-                <!-- Event Image -->
-                <div class="event-img-container">
-                    <img src="{{ asset('storage/' . ($registration->event->event_image ?? $registration->event->image_url ?? 'events/default.jpg')) }}"
-                         alt="{{ $registration->event->title }}">
-
-                    <!-- Event Badges -->
-                    <div class="event-badges">
-                        <span class="badge category-badge bg-primary">
-                            {{ ucfirst($registration->event->category ?? 'กิจกรรม') }}
-                        </span>
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 shadow-sm border-0 event-stat-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="event-stat-icon bg-primary bg-opacity-10 me-3">
+                        <i class="fas fa-calendar-check text-primary"></i>
                     </div>
-
-                    <!-- Event Status -->
-                    <div class="event-status">
-                        @if ($registration->event->hasEnded())
-                            <span class="badge bg-secondary">สิ้นสุดแล้ว</span>
-                        @elseif ($registration->event->isActive())
-                            <span class="badge bg-success">กำลังดำเนินการ</span>
-                        @else
-                            <span class="badge bg-info">กำลังจะมาถึง</span>
-                        @endif
-                    </div>
-                </div>
-
-                <!-- Card Body -->
-                <div class="card-body">
-                    <!-- Registration Status -->
-                    <div class="mb-3">
-                        @if ($registration->status == 'registered')
-                            <span class="registration-status bg-success bg-opacity-10 text-success">
-                                <i class="fas fa-check-circle me-1"></i> ลงทะเบียนแล้ว
-                            </span>
-                        @elseif ($registration->status == 'cancelled')
-                            <span class="registration-status bg-danger bg-opacity-10 text-danger">
-                                <i class="fas fa-times-circle me-1"></i> ยกเลิกแล้ว
-                            </span>
-                        @elseif ($registration->status == 'attended')
-                            <span class="registration-status bg-primary bg-opacity-10 text-primary">
-                                <i class="fas fa-clipboard-check me-1"></i> เข้าร่วมแล้ว
-                            </span>
-                        @elseif ($registration->status == 'absent')
-                            <span class="registration-status bg-warning bg-opacity-10 text-warning">
-                                <i class="fas fa-user-slash me-1"></i> ไม่ได้เข้าร่วม
-                            </span>
-                        @endif
-                    </div>
-
-                    <!-- Event Title -->
-                    <h5 class="card-title mb-3">{{ $registration->event->title }}</h5>
-
-                    <!-- Event Meta -->
-                    <div class="event-meta">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span>{{ \Carbon\Carbon::parse($registration->event->start_datetime)->locale('th')->translatedFormat('d M Y') }}</span>
-                    </div>
-                    <div class="event-meta">
-                        <i class="fas fa-clock"></i>
-                        <span>{{ \Carbon\Carbon::parse($registration->event->start_datetime)->format('H:i') }} น.</span>
-                    </div>
-                    <div class="event-meta">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span class="text-truncate">{{ $registration->event->location }}</span>
-                    </div>
-
-                    <!-- Registration Date -->
-                    <div class="event-meta mt-2">
-                        <i class="fas fa-calendar-check"></i>
-                        <small class="text-muted">ลงทะเบียนเมื่อ: {{ \Carbon\Carbon::parse($registration->registered_at)->locale('th')->translatedFormat('d M Y') }}</small>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="d-flex gap-2 mt-3">
-                        <a href="{{ route('events.show', $registration->event->event_id) }}" class="btn btn-outline-primary flex-grow-1">
-                            <i class="fas fa-info-circle me-1"></i> รายละเอียด
-                        </a>
-
-                        @if (!$registration->event->hasEnded() && $registration->status == 'registered')
-                            <form action="{{ route('events.cancel', $registration->event->event_id) }}" method="POST" class="flex-grow-1">
-                                @csrf
-                                <button type="submit" class="btn btn-outline-danger w-100"
-                                        onclick="return confirm('คุณแน่ใจที่จะยกเลิกการลงทะเบียนหรือไม่?')">
-                                    <i class="fas fa-times-circle me-1"></i> ยกเลิก
-                                </button>
-                            </form>
-                        @endif
+                    <div>
+                        <h6 class="text-muted mb-1">กิจกรรมทั้งหมด</h6>
+                        <h4 class="mb-0">{{ $registrations->total() }}</h4>
                     </div>
                 </div>
             </div>
         </div>
-        @endforeach
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 shadow-sm border-0 event-stat-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="event-stat-icon bg-success bg-opacity-10 me-3">
+                        <i class="fas fa-play-circle text-success"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">กำลังดำเนินการ</h6>
+                        <h4 class="mb-0">{{ $activeCount ?? 0 }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 shadow-sm border-0 event-stat-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="event-stat-icon bg-warning bg-opacity-10 me-3">
+                        <i class="fas fa-hourglass-start text-warning"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">กำลังจะมาถึง</h6>
+                        <h4 class="mb-0">{{ $upcomingCount ?? 0 }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 shadow-sm border-0 event-stat-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="event-stat-icon bg-info bg-opacity-10 me-3">
+                        <i class="fas fa-medal text-info"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">เสร็จสิ้นแล้ว</h6>
+                        <h4 class="mb-0">{{ $completedCount ?? 0 }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Pagination -->
-    <div class="d-flex justify-content-center mt-4">
-        {{ $registrations->appends(request()->query())->links() }}
+    <!-- Status filters in card with tabs -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body pt-4">
+            <!-- Tab Navigation -->
+            <ul class="nav nav-tabs mb-4" id="eventStatusTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-events" type="button" role="tab" aria-controls="all-events" aria-selected="true">
+                        <i class="fas fa-list me-1"></i> ทั้งหมด
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming-events" type="button" role="tab" aria-controls="upcoming-events" aria-selected="false">
+                        <i class="fas fa-hourglass-start me-1"></i> กำลังจะมาถึง
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="active-tab" data-bs-toggle="tab" data-bs-target="#active-events" type="button" role="tab" aria-controls="active-events" aria-selected="false">
+                        <i class="fas fa-play-circle me-1"></i> กำลังดำเนินการ
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="past-tab" data-bs-toggle="tab" data-bs-target="#past-events" type="button" role="tab" aria-controls="past-events" aria-selected="false">
+                        <i class="fas fa-history me-1"></i> ที่ผ่านมา
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="cancelled-tab" data-bs-toggle="tab" data-bs-target="#cancelled-events" type="button" role="tab" aria-controls="cancelled-events" aria-selected="false">
+                        <i class="fas fa-times-circle me-1"></i> ยกเลิกแล้ว
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Search Bar -->
+            <div class="mb-4">
+                <div class="d-flex">
+                    <div class="input-group">
+                        <input type="text" id="searchInput" class="form-control" placeholder="ค้นหากิจกรรมของฉัน...">
+                        <button class="btn btn-primary" type="button" id="searchButton">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="eventsTabContent">
+                <!-- Tab: ทั้งหมด -->
+                <div class="tab-pane fade show active" id="all-events" role="tabpanel" aria-labelledby="all-tab">
+                    @if ($registrations->isEmpty())
+                    <div class="empty-state bg-light rounded">
+                        <i class="fas fa-calendar-times"></i>
+                        <h4>ไม่มีกิจกรรม</h4>
+                        <p class="text-muted">คุณยังไม่มีกิจกรรมที่ลงทะเบียน</p>
+                    </div>
+                    @else
+                    <div class="row">
+                        @foreach ($registrations as $registration)
+                            @if ($registration->event->hasEnded())
+                                @continue
+                            @endif
+                            <div class="col-lg-4 col-md-6 mb-4 event-card-container">
+                                <div class="card event-card h-100 shadow-sm">
+                                    <!-- Event Image -->
+                                    <div class="event-img-container">
+                                        <img src="{{ asset('storage/' . ($registration->event->event_image ?? $registration->event->image_url ?? 'events/default.jpg')) }}"
+                                             alt="{{ $registration->event->title }}">
+
+                                        <!-- Event Status -->
+                                        <div class="event-status">
+                                            @if ($registration->event->hasEnded())
+                                                <span class="badge bg-secondary">สิ้นสุดแล้ว</span>
+                                            @elseif ($registration->event->isActive())
+                                                <span class="badge bg-success">กำลังดำเนินการ</span>
+                                            @else
+                                                <span class="badge bg-info">กำลังจะมาถึง</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <!-- Card Body -->
+                                    <div class="card-body">
+                                        <!-- Registration Status -->
+                                        <div class="mb-3">
+                                            @if ($registration->status == 'registered')
+                                                <span class="registration-status bg-success bg-opacity-10 text-success">
+                                                    <i class="fas fa-check-circle me-1"></i> ลงทะเบียนแล้ว
+                                                </span>
+                                            @elseif ($registration->status == 'cancelled')
+                                                <span class="registration-status bg-danger bg-opacity-10 text-danger">
+                                                    <i class="fas fa-times-circle me-1"></i> ยกเลิกแล้ว
+                                                </span>
+                                            @elseif ($registration->status == 'attended')
+                                                <span class="registration-status bg-primary bg-opacity-10 text-primary">
+                                                    <i class="fas fa-clipboard-check me-1"></i> เข้าร่วมแล้ว
+                                                </span>
+                                            @elseif ($registration->status == 'absent')
+                                                <span class="registration-status bg-warning bg-opacity-10 text-warning">
+                                                    <i class="fas fa-user-slash me-1"></i> ไม่ได้เข้าร่วม
+                                                </span>
+                                            @endif
+                                        </div>
+
+                                        <!-- Event Title -->
+                                        <h5 class="card-title mb-3">{{ $registration->event->title ?? $registration->event->event_name }}</h5>
+
+                                        <!-- Event Meta -->
+                                        <div class="event-meta">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <span>{{ \Carbon\Carbon::parse($registration->event->start_datetime)->locale('th')->translatedFormat('d M Y') }}</span>
+                                        </div>
+                                        <div class="event-meta">
+                                            <i class="fas fa-clock"></i>
+                                            <span>{{ \Carbon\Carbon::parse($registration->event->start_datetime)->format('H:i') }} น.</span>
+                                        </div>
+                                        <div class="event-meta">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <span class="text-truncate">{{ $registration->event->location }}</span>
+                                        </div>
+
+                                        <!-- Registration Date -->
+                                        <div class="event-meta mt-2">
+                                            <i class="fas fa-calendar-check"></i>
+                                            <small class="text-muted">ลงทะเบียนเมื่อ: {{ \Carbon\Carbon::parse($registration->registered_at)->locale('th')->translatedFormat('d M Y') }}</small>
+                                        </div>
+
+                                        <!-- Actions -->
+                                        <div class="d-flex gap-2 mt-3">
+                                            <a href="{{ route('events.show', $registration->event->event_id) }}" class="btn btn-outline-primary flex-grow-1">
+                                                <i class="fas fa-info-circle me-1"></i> รายละเอียด
+                                            </a>
+
+                                            @if (!$registration->event->hasEnded() && $registration->status == 'registered')
+                                                <form action="{{ route('events.cancel', $registration->event->event_id) }}" method="POST" class="flex-grow-1">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-outline-danger w-100"
+                                                            onclick="return confirm('คุณแน่ใจที่จะยกเลิกการลงทะเบียนหรือไม่?')">
+                                                        <i class="fas fa-times-circle me-1"></i> ยกเลิก
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    @endif
+                </div>
+
+                <!-- Tab: กำลังจะมาถึง -->
+                <div class="tab-pane fade" id="upcoming-events" role="tabpanel" aria-labelledby="upcoming-tab">
+                    @php
+                        $upcomingEvents = $registrations->filter(function($registration) {
+                            return !$registration->event->hasStarted() && !$registration->event->hasEnded() && $registration->status == 'registered';
+                        });
+                    @endphp
+
+                    @if ($upcomingEvents->isEmpty())
+                    <div class="empty-state bg-light rounded">
+                        <i class="fas fa-calendar-times"></i>
+                        <h4>ไม่พบกิจกรรม</h4>
+                        <p class="text-muted">ไม่มีกิจกรรมที่กำลังจะมาถึง</p>
+                    </div>
+                    @else
+                    <div class="row">
+                        @foreach ($upcomingEvents as $registration)
+                            <div class="col-lg-4 col-md-6 mb-4 event-card-container">
+                                <div class="card event-card h-100 shadow-sm">
+                                    <!-- Event Image -->
+                                    <div class="event-img-container">
+                                        <img src="{{ asset('storage/' . ($registration->event->event_image ?? $registration->event->image_url ?? 'events/default.jpg')) }}"
+                                             alt="{{ $registration->event->title }}">
+
+                                        <!-- Event Status -->
+                                        <div class="event-status">
+                                            <span class="badge bg-info">กำลังจะมาถึง</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Card Body -->
+                                    <div class="card-body">
+                                        <!-- Registration Status -->
+                                        <div class="mb-3">
+                                            <span class="registration-status bg-success bg-opacity-10 text-success">
+                                                <i class="fas fa-check-circle me-1"></i> ลงทะเบียนแล้ว
+                                            </span>
+                                        </div>
+
+                                        <!-- Event Title -->
+                                        <h5 class="card-title mb-3">{{ $registration->event->title ?? $registration->event->event_name }}</h5>
+
+                                        <!-- Event Meta -->
+                                        <div class="event-meta">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <span>{{ \Carbon\Carbon::parse($registration->event->start_datetime)->locale('th')->translatedFormat('d M Y') }}</span>
+                                        </div>
+                                        <div class="event-meta">
+                                            <i class="fas fa-clock"></i>
+                                            <span>{{ \Carbon\Carbon::parse($registration->event->start_datetime)->format('H:i') }} น.</span>
+                                        </div>
+                                        <div class="event-meta">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <span class="text-truncate">{{ $registration->event->location }}</span>
+                                        </div>
+
+                                        <!-- Registration Date -->
+                                        <div class="event-meta mt-2">
+                                            <i class="fas fa-calendar-check"></i>
+                                            <small class="text-muted">ลงทะเบียนเมื่อ: {{ \Carbon\Carbon::parse($registration->registered_at)->locale('th')->translatedFormat('d M Y') }}</small>
+                                        </div>
+
+                                        <!-- Actions -->
+                                        <div class="d-flex gap-2 mt-3">
+                                            <a href="{{ route('events.show', $registration->event->event_id) }}" class="btn btn-outline-primary flex-grow-1">
+                                                <i class="fas fa-info-circle me-1"></i> รายละเอียด
+                                            </a>
+
+                                            <form action="{{ route('events.cancel', $registration->event->event_id) }}" method="POST" class="flex-grow-1">
+                                                @csrf
+                                                <button type="submit" class="btn btn-outline-danger w-100"
+                                                        onclick="return confirm('คุณแน่ใจที่จะยกเลิกการลงทะเบียนหรือไม่?')">
+                                                    <i class="fas fa-times-circle me-1"></i> ยกเลิก
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    @endif
+                </div>
+
+                <!-- Tab: กำลังดำเนินการ -->
+                <div class="tab-pane fade" id="active-events" role="tabpanel" aria-labelledby="active-tab">
+                    @php
+                        $activeEvents = $registrations->filter(function($registration) {
+                            return $registration->event->isActive() && $registration->status == 'registered';
+                        });
+                    @endphp
+
+                    @if ($activeEvents->isEmpty())
+                    <div class="empty-state bg-light rounded">
+                        <i class="fas fa-calendar-times"></i>
+                        <h4>ไม่พบกิจกรรม</h4>
+                        <p class="text-muted">ไม่มีกิจกรรมที่กำลังดำเนินการอยู่</p>
+                    </div>
+                    @else
+                    <div class="row">
+                        @foreach ($activeEvents as $registration)
+                            <div class="col-lg-4 col-md-6 mb-4 event-card-container">
+                                <div class="card event-card h-100 shadow-sm">
+                                    <!-- Event Image -->
+                                    <div class="event-img-container">
+                                        <img src="{{ asset('storage/' . ($registration->event->event_image ?? $registration->event->image_url ?? 'events/default.jpg')) }}"
+                                             alt="{{ $registration->event->title }}">
+
+                                        <!-- Event Status -->
+                                        <div class="event-status">
+                                            <span class="badge bg-success">กำลังดำเนินการ</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Card Body -->
+                                    <div class="card-body">
+                                        <!-- Registration Status -->
+                                        <div class="mb-3">
+                                            <span class="registration-status bg-success bg-opacity-10 text-success">
+                                                <i class="fas fa-check-circle me-1"></i> ลงทะเบียนแล้ว
+                                            </span>
+                                        </div>
+
+                                        <!-- Event Title -->
+                                        <h5 class="card-title mb-3">{{ $registration->event->title ?? $registration->event->event_name }}</h5>
+
+                                        <!-- Event Meta -->
+                                        <div class="event-meta">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <span>{{ \Carbon\Carbon::parse($registration->event->start_datetime)->locale('th')->translatedFormat('d M Y') }}</span>
+                                        </div>
+                                        <div class="event-meta">
+                                            <i class="fas fa-clock"></i>
+                                            <span>{{ \Carbon\Carbon::parse($registration->event->start_datetime)->format('H:i') }} น.</span>
+                                        </div>
+                                        <div class="event-meta">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <span class="text-truncate">{{ $registration->event->location }}</span>
+                                        </div>
+
+                                        <!-- Registration Date -->
+                                        <div class="event-meta mt-2">
+                                            <i class="fas fa-calendar-check"></i>
+                                            <small class="text-muted">ลงทะเบียนเมื่อ: {{ \Carbon\Carbon::parse($registration->registered_at)->locale('th')->translatedFormat('d M Y') }}</small>
+                                        </div>
+
+                                        <!-- Actions -->
+                                        <div class="d-flex gap-2 mt-3">
+                                            <a href="{{ route('events.show', $registration->event->event_id) }}" class="btn btn-outline-primary flex-grow-1">
+                                                <i class="fas fa-info-circle me-1"></i> รายละเอียด
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    @endif
+                </div>
+
+                <!-- Tab: ที่ผ่านมา -->
+                <div class="tab-pane fade" id="past-events" role="tabpanel" aria-labelledby="past-tab">
+                    @php
+                        $pastEvents = $registrations->filter(function($registration) {
+                            return $registration->event->hasEnded() && $registration->status == 'registered';
+                        });
+                    @endphp
+
+                    @if ($pastEvents->isEmpty())
+                    <div class="empty-state bg-light rounded">
+                        <i class="fas fa-calendar-times"></i>
+                        <h4>ไม่พบกิจกรรม</h4>
+                        <p class="text-muted">ไม่มีกิจกรรมที่ผ่านมา</p>
+                    </div>
+                    @else
+                    <div class="row">
+                        @foreach ($pastEvents as $registration)
+                            <div class="col-lg-4 col-md-6 mb-4 event-card-container">
+                                <div class="card event-card h-100 shadow-sm">
+                                    <!-- Event Image -->
+                                    <div class="event-img-container">
+                                        <img src="{{ asset('storage/' . ($registration->event->event_image ?? $registration->event->image_url ?? 'events/default.jpg')) }}"
+                                             alt="{{ $registration->event->title }}">
+
+                                        <!-- Event Status -->
+                                        <div class="event-status">
+                                            <span class="badge bg-secondary">สิ้นสุดแล้ว</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Card Body -->
+                                    <div class="card-body">
+                                        <!-- Registration Status -->
+                                        <div class="mb-3">
+                                            <span class="registration-status bg-success bg-opacity-10 text-success">
+                                                <i class="fas fa-check-circle me-1"></i> ลงทะเบียนแล้ว
+                                            </span>
+                                        </div>
+
+                                        <!-- Event Title -->
+                                        <h5 class="card-title mb-3">{{ $registration->event->title ?? $registration->event->event_name }}</h5>
+
+                                        <!-- Event Meta -->
+                                        <div class="event-meta">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <span>{{ \Carbon\Carbon::parse($registration->event->start_datetime)->locale('th')->translatedFormat('d M Y') }}</span>
+                                        </div>
+                                        <div class="event-meta">
+                                            <i class="fas fa-clock"></i>
+                                            <span>{{ \Carbon\Carbon::parse($registration->event->start_datetime)->format('H:i') }} น.</span>
+                                        </div>
+                                        <div class="event-meta">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <span class="text-truncate">{{ $registration->event->location }}</span>
+                                        </div>
+
+                                        <!-- Registration Date -->
+                                        <div class="event-meta mt-2">
+                                            <i class="fas fa-calendar-check"></i>
+                                            <small class="text-muted">ลงทะเบียนเมื่อ: {{ \Carbon\Carbon::parse($registration->registered_at)->locale('th')->translatedFormat('d M Y') }}</small>
+                                        </div>
+
+                                        <!-- Actions -->
+                                        <div class="d-flex gap-2 mt-3">
+                                            <a href="{{ route('events.show', $registration->event->event_id) }}" class="btn btn-outline-primary flex-grow-1">
+                                                <i class="fas fa-info-circle me-1"></i> รายละเอียด
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    @endif
+                </div>
+
+                <!-- Tab: ยกเลิกแล้ว -->
+                <div class="tab-pane fade" id="cancelled-events" role="tabpanel" aria-labelledby="cancelled-tab">
+                    @php
+                        $cancelledEvents = $registrations->filter(function($registration) {
+                            return $registration->status == 'cancelled';
+                        });
+                    @endphp
+
+                    @if ($cancelledEvents->isEmpty())
+                    <div class="empty-state bg-light rounded">
+                        <i class="fas fa-calendar-times"></i>
+                        <h4>ไม่พบกิจกรรม</h4>
+                        <p class="text-muted">ไม่มีกิจกรรมที่ยกเลิกแล้ว</p>
+                    </div>
+                    @else
+                    <div class="row">
+                        @foreach ($cancelledEvents as $registration)
+                            <div class="col-lg-4 col-md-6 mb-4 event-card-container">
+                                <div class="card event-card h-100 shadow-sm">
+                                    <!-- Event Image -->
+                                    <div class="event-img-container">
+                                        <img src="{{ asset('storage/' . ($registration->event->event_image ?? $registration->event->image_url ?? 'events/default.jpg')) }}"
+                                             alt="{{ $registration->event->title }}">
+
+                                        <!-- Event Status -->
+                                        <div class="event-status">
+                                            @if ($registration->event->hasEnded())
+                                                <span class="badge bg-secondary">สิ้นสุดแล้ว</span>
+                                            @elseif ($registration->event->isActive())
+                                                <span class="badge bg-success">กำลังดำเนินการ</span>
+                                            @else
+                                                <span class="badge bg-info">กำลังจะมาถึง</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <!-- Card Body -->
+                                    <div class="card-body">
+                                        <!-- Registration Status -->
+                                        <div class="mb-3">
+                                            <span class="registration-status bg-danger bg-opacity-10 text-danger">
+                                                <i class="fas fa-times-circle me-1"></i> ยกเลิกแล้ว
+                                            </span>
+                                        </div>
+
+                                        <!-- Event Title -->
+                                        <h5 class="card-title mb-3">{{ $registration->event->title ?? $registration->event->event_name }}</h5>
+
+                                        <!-- Event Meta -->
+                                        <div class="event-meta">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <span>{{ \Carbon\Carbon::parse($registration->event->start_datetime)->locale('th')->translatedFormat('d M Y') }}</span>
+                                        </div>
+                                        <div class="event-meta">
+                                            <i class="fas fa-clock"></i>
+                                            <span>{{ \Carbon\Carbon::parse($registration->event->start_datetime)->format('H:i') }} น.</span>
+                                        </div>
+                                        <div class="event-meta">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <span class="text-truncate">{{ $registration->event->location }}</span>
+                                        </div>
+
+                                        <!-- Cancellation Date -->
+                                        <div class="event-meta mt-2">
+                                            <i class="fas fa-times-circle"></i>
+                                            <small class="text-muted">ยกเลิกเมื่อ: {{ \Carbon\Carbon::parse($registration->cancelled_at)->locale('th')->translatedFormat('d M Y') }}</small>
+                                        </div>
+
+                                        <!-- Actions -->
+                                        <div class="d-flex gap-2 mt-3">
+                                            <a href="{{ route('events.show', $registration->event->event_id) }}" class="btn btn-outline-primary flex-grow-1">
+                                                <i class="fas fa-info-circle me-1"></i> รายละเอียด
+                                            </a>
+
+                                            @if (!$registration->event->hasStarted() && !$registration->event->isFull())
+                                                <form action="{{ route('events.register', $registration->event->event_id) }}" method="POST" class="flex-grow-1">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-outline-success w-100">
+                                                        <i class="fas fa-redo me-1"></i> ลงทะเบียนใหม่
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="d-flex justify-content-center mt-4">
+                {{ $registrations->appends(request()->except(['page']))->links() }}
+            </div>
+        </div>
     </div>
-    @endif
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ฟังก์ชั่นค้นหากิจกรรม
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+
+        searchButton.addEventListener('click', function() {
+            performSearch();
+        });
+
+        searchInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        function performSearch() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            let foundEvents = false;
+
+            // ซ่อนทุกการ์ดกิจกรรมก่อน
+            document.querySelectorAll('.event-card-container').forEach(container => {
+                const card = container.querySelector('.event-card');
+                const title = card.querySelector('.card-title').textContent.toLowerCase();
+                const location = card.querySelector('.event-meta:nth-child(3) span').textContent.toLowerCase();
+
+                // แสดงเฉพาะการ์ดที่ตรงกับคำค้นหา
+                if (searchTerm === '' ||
+                    title.includes(searchTerm) ||
+                    location.includes(searchTerm)) {
+                    container.style.display = '';
+                    foundEvents = true;
+                } else {
+                    container.style.display = 'none';
+                }
+            });
+
+            // แสดงข้อความเมื่อไม่พบกิจกรรม
+            document.querySelectorAll('.tab-pane.active .empty-state').forEach(emptyState => {
+                emptyState.style.display = !foundEvents ? '' : 'none';
+            });
+
+            document.querySelectorAll('.tab-pane.active .row').forEach(row => {
+                row.style.display = foundEvents ? '' : 'none';
+            });
+        }
+
+        // เมื่อเปลี่ยนแท็บให้รีเซ็ตการค้นหา
+        const tabEls = document.querySelectorAll('button[data-bs-toggle="tab"]');
+        tabEls.forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function() {
+                searchInput.value = '';
+                document.querySelectorAll('.event-card-container').forEach(card => {
+                    card.style.display = '';
+                });
+
+                // แสดง/ซ่อน empty state ให้ถูกต้อง
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    const hasEvents = pane.querySelector('.row .event-card-container') !== null &&
+                                      pane.querySelector('.row').children.length > 0;
+                    if (pane.classList.contains('active')) {
+                        if (pane.querySelector('.empty-state')) {
+                            pane.querySelector('.empty-state').style.display = hasEvents ? 'none' : '';
+                        }
+                        if (pane.querySelector('.row')) {
+                            pane.querySelector('.row').style.display = hasEvents ? '' : 'none';
+                        }
+                    }
+                });
+            });
+        });
+    });
+</script>
 @endsection

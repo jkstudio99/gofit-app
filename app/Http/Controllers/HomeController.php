@@ -46,7 +46,7 @@ class HomeController extends Controller
         // Get recent activities
         $recentActivities = Activity::where('user_id', $user->user_id)
             ->orderBy('created_at', 'desc')
-            ->take(5)
+            ->take(1)
             ->get();
 
         // Get badges earned
@@ -75,6 +75,11 @@ class HomeController extends Controller
             $weeklyGoalProgress = 100;
         }
 
+        // Get event data
+        $userRegisteredEvents = \App\Models\EventUser::where('user_id', $user->user_id)
+            ->where('status', 'registered')
+            ->count();
+
         return view('home', compact(
             'totalActivities',
             'totalDistance',
@@ -84,7 +89,8 @@ class HomeController extends Controller
             'weeklyDistance',
             'weeklyCalories',
             'weeklyGoal',
-            'weeklyGoalProgress'
+            'weeklyGoalProgress',
+            'userRegisteredEvents'
         ));
     }
 }

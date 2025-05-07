@@ -41,6 +41,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/run/test', [RunController::class, 'test'])->name('run.test');
     Route::post('/run/start', [RunActivityController::class, 'start'])->name('run.start');
     Route::get('/run/check-active', [RunActivityController::class, 'checkActiveActivity'])->name('run.check-active');
+    Route::post('/run/toggle-pause', [RunActivityController::class, 'togglePause'])->name('run.toggle-pause');
+    Route::post('/run/update', [RunActivityController::class, 'update'])->name('run.update');
     Route::get('/run/test-start', function() {
         return response()->json([
             'status' => 'success',

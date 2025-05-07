@@ -14,35 +14,32 @@
             <p class="auth-subtitle">ยินดีต้อนรับกลับ! เข้าสู่ระบบเพื่อดูความก้าวหน้า</p>
 
             <form method="POST" action="{{ route('login') }}" class="needs-validation" novalidate>
-                        @csrf
+                @csrf
 
                 <div class="mb-4">
                     <label for="username" class="form-label fw-medium">{{ __('ชื่อผู้ใช้') }}</label>
                     <div class="input-icon-group">
                         <span class="input-icon"><i class="bx bx-user"></i></span>
-                        <input id="username" type="text" class="form-control form-control-lg @error('username') is-invalid @enderror @error('email') is-invalid @enderror" name="username" value="{{ old('username') }}" required autocomplete="username" autofocus placeholder="ชื่อผู้ใช้ของคุณ">
+                        <input id="username" type="text" class="form-control form-control-lg @error('username') is-invalid @enderror" name="username" value="{{ old('username') }}" autocomplete="username" autofocus placeholder="ชื่อผู้ใช้ของคุณ">
                         @error('username')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback" style="display: block;">{{ $message }}</div>
                         @enderror
-                                @error('email')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
+                    </div>
+                </div>
 
                 <div class="mb-4">
                     <label for="password" class="form-label fw-medium">{{ __('รหัสผ่าน') }}</label>
                     <div class="input-icon-group">
                         <span class="input-icon"><i class="bx bx-lock"></i></span>
-                        <input id="password" type="password" class="form-control form-control-lg @error('password') is-invalid @enderror" name="password" required autocomplete="current-password" placeholder="รหัสผ่านของคุณ">
+                        <input id="password" type="password" class="form-control form-control-lg @error('password') is-invalid @enderror" name="password" autocomplete="current-password" placeholder="รหัสผ่านของคุณ">
                         <button type="button" class="toggle-password" toggle="#password">
                             <i class="bx bx-show"></i>
                         </button>
-                                @error('password')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
+                        @error('password')
+                            <div class="invalid-feedback" style="display: block;">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
 
                 <div class="mb-4">
                     <div class="d-flex justify-content-between align-items-center">

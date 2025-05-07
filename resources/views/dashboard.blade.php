@@ -58,6 +58,65 @@
         box-shadow: 0 12px 22px rgba(0,0,0,0.08);
     }
 
+    /* Goals Section Styling */
+    .goals-section {
+        margin-bottom: 2rem;
+    }
+
+    .section-header {
+        margin-bottom: 1.2rem;
+    }
+
+    .section-header h5 {
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+
+    .section-header h5 i {
+        color: #2ecc71;
+        margin-right: 8px;
+    }
+
+    .view-all-link {
+        color: #2ecc71;
+        font-weight: 500;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+    .view-all-link:hover {
+        text-decoration: underline;
+        color: #27ae60;
+    }
+
+    .goals-section .card {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .goals-section .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+    }
+
+    .goals-section .badge {
+        font-size: 0.75rem;
+        padding: 0.35em 0.7em;
+        font-weight: 500;
+    }
+
+    .goals-section .progress {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .goals-section .progress-bar {
+        border-radius: 10px;
+    }
+
     /* Card styles */
     .gofit-card {
         border-radius: 16px;
@@ -171,6 +230,107 @@
             display: none;
         }
     }
+
+    /* Hide the question mark icon in the fixed position (onboarding help) */
+    .btn-help,
+    .floating-help-btn,
+    .help-button,
+    .question-mark-button,
+    .onboarding-help,
+    .fixed-help-button {
+        display: none !important;
+    }
+
+    /* Hide specific question mark button with fixed position in bottom-right */
+    .btn-floating,
+    .btn-floating.btn-large,
+    .fixed-action-btn,
+    .fixed-help {
+        display: none !important;
+    }
+
+    /* Hide by position */
+    .position-fixed.bottom-0.end-0,
+    [style*="position: fixed"][style*="bottom"][style*="right"],
+    [class*="help"][class*="icon"],
+    [class*="question"][class*="icon"] {
+        display: none !important;
+    }
+
+    .progress-bar-container {
+        margin-top: 10px;
+    }
+
+    .progress-bar-custom {
+        height: 8px;
+        background-color: #f0f0f0;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3498db, #2ecc71);
+        border-radius: 4px;
+        transition: width 0.5s ease;
+    }
+
+    .progress-percentage {
+        font-size: 0.85rem;
+        text-align: right;
+        margin-top: 5px;
+        color: #666;
+    }
+
+    .weekly-details {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 20px;
+        width: 100%;
+    }
+
+    .weekly-detail-item {
+        display: flex;
+        align-items: center;
+        flex: 1;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 12px;
+        margin: 0 5px;
+    }
+
+    .weekly-detail-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+        flex-shrink: 0;
+    }
+
+    .weekly-detail-icon.distance {
+        background-color: rgba(46, 204, 113, 0.1);
+        color: #2ecc71;
+    }
+
+    .weekly-detail-icon.calories {
+        background-color: rgba(255, 94, 87, 0.1);
+        color: #ff5e57;
+    }
+
+    .weekly-detail-label {
+        font-size: 0.85rem;
+        margin-right: 5px;
+        color: #666;
+        white-space: nowrap;
+    }
+
+    .weekly-detail-value {
+        font-weight: 600;
+        white-space: nowrap;
+    }
 </style>
 @endsection
 
@@ -197,7 +357,7 @@
                 <div class="stat-icon">
                     <i class="fas fa-road" style="color: #2ecc71;"></i>
                 </div>
-                <div class="stat-value">16.7</div>
+                <div class="stat-value">{{ number_format($totalDistance, 1) }}</div>
                 <div class="stat-label">กิโลเมตรสะสม</div>
             </div>
         </div>
@@ -207,7 +367,7 @@
                 <div class="stat-icon">
                     <i class="fas fa-fire" style="color: #ff5e57;"></i>
                 </div>
-                <div class="stat-value">1,040</div>
+                <div class="stat-value">{{ number_format($totalCalories) }}</div>
                 <div class="stat-label">แคลอรี่ที่เผาผลาญ</div>
             </div>
         </div>
@@ -215,52 +375,114 @@
         <div style="flex: 1;">
             <div class="stat-card">
                 <div class="stat-icon">
-                    <i class="fas fa-running" style="color: #2ecc71;"></i>
+                    <i class="fas fa-calendar-check" style="color: #2ecc71;"></i>
                 </div>
-                <div class="stat-value">7</div>
-                <div class="stat-label">กิจกรรมทั้งหมด</div>
+                <div class="stat-value">{{ $userRegisteredEvents ?? 0 }}</div>
+                <div class="stat-label">กิจกรรมที่เข้าร่วม</div>
             </div>
         </div>
     </div>
 
     <!-- Weekly Progress -->
     <div class="weekly-progress-section">
-        <div class="section-header">
+        <div class="section-header d-flex justify-content-between align-items-center">
             <h5><i class="fas fa-chart-line"></i> ความคืบหน้ารายสัปดาห์</h5>
+            <a href="{{ route('goals.index') }}" class="view-all-link">จัดการเป้าหมาย <i class="fas fa-chevron-right"></i></a>
         </div>
+
+        @if(isset($activeGoals) && count($activeGoals) > 0)
+            <!-- แสดงเป้าหมายล่าสุด -->
+            @php
+                $latestGoal = $activeGoals->first();
+                $progressPercentage = 0;
+                if ($latestGoal->target_value > 0) {
+                    $progressPercentage = min(100, round(($latestGoal->current_value / $latestGoal->target_value) * 100));
+                }
+            @endphp
 
         <div class="goal-info">
             <div class="d-flex justify-content-between align-items-center mb-2">
-                <div class="goal-label">เป้าหมายรายสัปดาห์</div>
+                    <div class="goal-label">
+                        <span class="fw-bold">{{ $latestGoal->formattedType }}</span>
+                        <span class="badge bg-primary ms-2">{{ $latestGoal->period == 'daily' ? 'รายวัน' :
+                            ($latestGoal->period == 'weekly' ? 'รายสัปดาห์' :
+                            ($latestGoal->period == 'monthly' ? 'รายเดือน' : 'กำหนดเอง')) }}</span>
+                    </div>
                 <div class="goal-target">
-                    <span class="current-value">7.8</span>
-                    <span class="target-value">/ 20 กม.</span>
+                        <span class="current-value">{{ number_format($latestGoal->current_value, 1) }}</span>
+                        <span class="target-value">/ {{ $latestGoal->target_value }}
+                            @if($latestGoal->type == 'distance')
+                                กม.
+                            @elseif($latestGoal->type == 'duration')
+                                นาที
+                            @elseif($latestGoal->type == 'calories')
+                                แคลอรี่
+                            @elseif($latestGoal->type == 'frequency')
+                                ครั้ง
+                            @endif
+                        </span>
                 </div>
             </div>
 
             <div class="progress-bar-container">
                 <div class="progress-bar-custom">
-                    <div class="progress-fill" style="width: 39%"></div>
+                        <div class="progress-fill" style="width: {{ $progressPercentage }}%"></div>
+                    </div>
+                    <div class="progress-percentage">{{ $progressPercentage }}% ของเป้าหมาย</div>
                 </div>
-                <div class="progress-percentage">39% ของเป้าหมาย</div>
+
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <div class="small text-muted">
+                        <i class="fas fa-calendar me-1"></i>
+                        @if($latestGoal->end_date)
+                            สิ้นสุด: {{ $latestGoal->end_date->format('d M Y') }}
+                        @else
+                            ไม่มีกำหนด
+                        @endif
+                    </div>
+                    <a href="{{ route('goals.show', $latestGoal) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye me-1"></i> รายละเอียด
+                    </a>
+                </div>
+            </div>
+        @else
+        <div class="alert alert-info mt-3">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-info-circle fa-2x me-3"></i>
+                <div>
+                    <div class="fw-bold mb-1">ยังไม่มีเป้าหมายรายสัปดาห์</div>
+                    <p class="mb-2">ตั้งเป้าหมายการวิ่งเพื่อติดตามความคืบหน้าของคุณ</p>
+                    <a href="{{ route('goals.create') }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus me-1"></i> ตั้งเป้าหมายใหม่
+                    </a>
+                </div>
             </div>
         </div>
+        @endif
 
         <div class="weekly-details">
-            <div class="weekly-detail-item">
-                <div class="weekly-detail-icon distance">
-                    <i class="fas fa-road"></i>
-                </div>
-                <div class="weekly-detail-label">ระยะทางสัปดาห์นี้:</div>
-                <div class="weekly-detail-value">7.8 กม.</div>
-            </div>
-
             <div class="weekly-detail-item">
                 <div class="weekly-detail-icon calories">
                     <i class="fas fa-fire"></i>
                 </div>
                 <div class="weekly-detail-label">แคลอรี่สัปดาห์นี้:</div>
-                <div class="weekly-detail-value">490 kcal</div>
+                <div class="weekly-detail-value">{{ number_format($weeklyCalories) }} kcal</div>
+            </div>
+
+            <div class="weekly-detail-item">
+                <div class="weekly-detail-icon distance">
+                    <i class="fas fa-road"></i>
+                </div>
+                <div class="weekly-detail-label">ระยะทางสัปดาห์นี้:</div>
+                <div class="weekly-detail-value">{{ number_format($weeklyDistance, 1) }} กม.</div>
+            </div>
+
+            <div class="weekly-detail-item">
+                <div class="weekly-detail-icon" style="background-color: rgba(52, 152, 219, 0.1); color: #3498db;">
+                    <i class="fas fa-running"></i>
+                </div>
+                <div class="weekly-detail-label">กิจกรรมสัปดาห์นี้:</div>
+                <div class="weekly-detail-value">{{ $weeklyRunCount ?? 0 }} ครั้ง</div>
             </div>
         </div>
     </div>
@@ -273,23 +495,43 @@
         </div>
 
         <div class="activities-list">
+            @forelse($recentActivities as $activity)
             <div class="activity-item">
-                <div class="activity-date">03 พ.ค. 2025</div>
+                <div class="activity-date">
+                    @if($activity->start_time instanceof \Carbon\Carbon)
+                        {{ $activity->start_time->format('d M. Y') }}
+                    @else
+                        {{ \Carbon\Carbon::parse($activity->start_time)->format('d M. Y') }}
+                    @endif
+                </div>
                 <div class="activity-details">
                     <div class="activity-stat">
                         <div class="activity-icon distance"><i class="fas fa-road"></i></div>
-                        <div class="activity-value">2.5 กม.</div>
+                        <div class="activity-value">{{ number_format($activity->distance, 1) }} กม.</div>
                     </div>
                     <div class="activity-stat">
                         <div class="activity-icon time"><i class="fas fa-clock"></i></div>
-                        <div class="activity-value">30:25</div>
+                        <div class="activity-value">
+                            @php
+                                $hours = floor($activity->duration / 3600);
+                                $minutes = floor(($activity->duration % 3600) / 60);
+                                $seconds = $activity->duration % 60;
+                                echo sprintf('%02d:%02d', $minutes, $seconds);
+                                if ($hours > 0) echo sprintf('%02d:', $hours);
+                            @endphp
+                        </div>
                     </div>
                     <div class="activity-stat">
                         <div class="activity-icon calories"><i class="fas fa-fire"></i></div>
-                        <div class="activity-value">180 kcal</div>
+                        <div class="activity-value">{{ number_format($activity->calories_burned) }} kcal</div>
                     </div>
                 </div>
             </div>
+            @empty
+            <div class="activity-item text-center py-3">
+                <p class="text-muted">ยังไม่มีกิจกรรมการวิ่ง</p>
+            </div>
+            @endforelse
         </div>
     </div>
 </div>
@@ -358,3 +600,4 @@
     });
 </script>
 @endsection
+

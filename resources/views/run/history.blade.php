@@ -77,14 +77,14 @@
                                 <td>{{ number_format($activity->average_speed, 1) }} กม./ชม.</td>
                                 <td>{{ number_format($activity->calories_burned, 0) }} kcal</td>
                                 <td>
-                                    <a href="{{ route('run.show', ['id' => $activity->run_id]) }}" class="btn btn-sm btn-outline-primary">
+                                    <button class="btn btn-sm btn-outline-primary view-run-details"
+                                        data-id="{{ $activity->run_id }}"
+                                        data-distance="{{ number_format($activity->distance, 2) }}"
+                                        data-time="@if($activity->duration){{ sprintf('%02d:%02d:%02d', floor($activity->duration / 3600), floor(($activity->duration % 3600) / 60), $activity->duration % 60) }}@else 00:00:00 @endif"
+                                        data-calories="{{ number_format($activity->calories_burned, 0) }}"
+                                        data-route="{{ json_encode($activity->route_data) }}">
                                         <i class="fas fa-map-marked-alt"></i>
-                                    </a>
-                                    @if($activity->is_completed)
-                                    <a href="#" class="btn btn-sm btn-outline-success share-run" data-id="{{ $activity->run_id }}">
-                                        <i class="fas fa-share-alt"></i>
-                                    </a>
-                                    @endif
+                                    </button>
                                     <button class="btn btn-sm btn-outline-danger delete-run" data-id="{{ $activity->run_id }}">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -99,7 +99,51 @@
                     </table>
 
                     <div class="p-3">
-                        {{ $activities->links() }}
+                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <div class="text-muted small mb-2">
+                                แสดงผล {{ $activities->firstItem() ?? 0 }} ถึง {{ $activities->lastItem() ?? 0 }} จากทั้งหมด {{ $activities->total() }} รายการ
+                            </div>
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination pagination-sm mb-0">
+                                    {{-- Previous Page Link --}}
+                                    @if ($activities->onFirstPage())
+                                        <li class="page-item disabled">
+                                            <span class="page-link" aria-label="Previous">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </span>
+                                        </li>
+                                    @else
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ $activities->previousPageUrl() }}" aria-label="Previous">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    @endif
+
+                                    {{-- Pagination Elements --}}
+                                    @for ($i = 1; $i <= $activities->lastPage(); $i++)
+                                        <li class="page-item {{ $i == $activities->currentPage() ? 'active' : '' }}">
+                                            <a class="page-link" href="{{ $activities->url($i) }}">{{ $i }}</a>
+                                        </li>
+                                    @endfor
+
+                                    {{-- Next Page Link --}}
+                                    @if ($activities->hasMorePages())
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ $activities->nextPageUrl() }}" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                    @else
+                                        <li class="page-item disabled">
+                                            <span class="page-link" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </span>
+                                        </li>
+                                    @endif
+                                </ul>
+                            </nav>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -171,6 +215,34 @@
         width: 100%;
         border-radius: var(--radius-md);
         z-index: 1;
+        overflow: hidden;
+    }
+
+    .btn-outline-danger:hover i {
+        color: white;
+    }
+
+    /* Pagination styling */
+    .pagination {
+        margin-bottom: 0;
+    }
+
+    .page-item.active .page-link {
+        background-color: #4CAF50;
+        border-color: #4CAF50;
+    }
+
+    .page-link {
+        color: #4CAF50;
+    }
+
+    .page-link:hover {
+        color: #2E7D32;
+        background-color: #e9f2ef;
+    }
+
+    .page-link:focus {
+        box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
     }
 </style>
 @endsection
@@ -183,11 +255,32 @@
     crossorigin=""></script>
 <script>
     let summaryMap;
+    let currentRouteData = null;
 
-    // เพิ่มฟังก์ชันสำหรับแสดงแผนที่จากประวัติการวิ่ง
+    // ตำแหน่งเริ่มต้น (กรุงเทพฯ)
+    const defaultPosition = {
+        lat: 13.736717,
+        lng: 100.523186
+    };
+
+    // เพิ่มฟังก์ชันสำหรับแสดงข้อมูลการวิ่ง
     document.addEventListener('DOMContentLoaded', function() {
-        // ดักจับการคลิกปุ่มแสดงแผนที่
-        document.querySelectorAll('.show-run-map').forEach(button => {
+        const summaryModal = document.getElementById('activitySummaryModal');
+
+        // เพิ่ม event listener เมื่อ modal แสดง
+        summaryModal.addEventListener('shown.bs.modal', function () {
+            console.log('Modal shown, rendering map');
+            setTimeout(() => {
+                if (summaryMap) {
+                    summaryMap.remove();
+                    summaryMap = null;
+                }
+                initSummaryMap(currentRouteData);
+            }, 300);
+        });
+
+        // ดักจับการคลิกปุ่มแสดงรายละเอียด
+        document.querySelectorAll('.view-run-details').forEach(button => {
             button.addEventListener('click', function(e) {
                 e.preventDefault();
 
@@ -197,26 +290,17 @@
                 const time = this.getAttribute('data-time');
                 const calories = this.getAttribute('data-calories');
 
-                try {
-                    // แปลงข้อมูลเส้นทางจาก JSON string เป็น array
-                    const routeCoords = JSON.parse(routeData || '[]');
+                // กำหนดค่าตัวแปร global เพื่อใช้ในเหตุการณ์ shown.bs.modal
+                currentRouteData = routeData;
 
-                    // แสดงข้อมูลสรุป
-                    document.getElementById('summaryDistance').innerText = distance + " กม.";
-                    document.getElementById('summaryTime').innerText = time;
-                    document.getElementById('summaryCalories').innerText = calories + " kcal";
+                // แสดงข้อมูลสรุป
+                document.getElementById('summaryDistance').innerText = distance + " กม.";
+                document.getElementById('summaryTime').innerText = time;
+                document.getElementById('summaryCalories').innerText = calories + " kcal";
 
-                    // สร้างแผนที่ด้วย Leaflet
-                    initSummaryMap(routeCoords);
-
-                    // แสดง modal
-                    const summaryModal = new bootstrap.Modal(document.getElementById('activitySummaryModal'));
-                    summaryModal.show();
-
-                } catch (e) {
-                    console.error("เกิดข้อผิดพลาดในการแสดงข้อมูลเส้นทาง:", e);
-                    alert("ไม่สามารถแสดงข้อมูลเส้นทางได้");
-                }
+                // แสดง modal
+                const modal = new bootstrap.Modal(document.getElementById('activitySummaryModal'));
+                modal.show();
             });
         });
 
@@ -280,78 +364,120 @@
                 });
             });
         });
+
+        // แก้ไขการทำงานของ pagination ให้มี event listener
+        document.querySelectorAll('.pagination .page-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = this.href;
+            });
+        });
     });
 
-    function initSummaryMap(routeCoords) {
+    function initSummaryMap(routeData) {
+        console.log('Initializing summary map');
+
         // ลบแผนที่เก่าถ้ามี
         if (summaryMap) {
             summaryMap.remove();
+            summaryMap = null;
         }
 
-        // สร้างแผนที่ใหม่ด้วย Leaflet
-        summaryMap = L.map('summaryMap').setView([13.7563, 100.5018], 13); // กรุงเทพฯ (ค่าเริ่มต้น)
+        try {
+            // สร้างแผนที่ใหม่
+            summaryMap = L.map('summaryMap').setView([defaultPosition.lat, defaultPosition.lng], 13);
 
-        // เพิ่ม OpenStreetMap tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 19
-        }).addTo(summaryMap);
-
-        // สร้างเส้นทางหากมีข้อมูล
-        if (routeCoords && routeCoords.length > 0) {
-            // จัดการกับรูปแบบข้อมูลที่อาจแตกต่างกัน
-            let latLngs;
-            if (typeof routeCoords[0] === 'object' && routeCoords[0].lat !== undefined) {
-                // แปลงรูปแบบข้อมูลสำหรับ Leaflet (Leaflet ใช้ [lat, lng])
-                latLngs = routeCoords.map(coord => [coord.lat, coord.lng]);
-            } else if (Array.isArray(routeCoords[0]) && routeCoords[0].length === 2) {
-                latLngs = routeCoords;
-            } else {
-                // ถ้ารูปแบบไม่ตรง
-                latLngs = [[13.7563, 100.5018]]; // ใช้ตำแหน่งเริ่มต้น
-            }
-
-            // สร้างเส้นทาง
-            const polyline = L.polyline(latLngs, {
-                color: '#4CAF50',
-                weight: 4,
-                opacity: 1
+            // เพิ่ม tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
             }).addTo(summaryMap);
 
-            // เพิ่มมาร์คเกอร์จุดเริ่มต้นและจุดสิ้นสุด
-            if (latLngs.length > 0) {
-                L.marker(latLngs[0], {
+            // แปลง route data ให้อยู่ในรูปแบบที่ถูกต้อง
+            let parsedRouteData;
+            try {
+                if (typeof routeData === 'string') {
+                    parsedRouteData = JSON.parse(routeData || '[]');
+                } else {
+                    parsedRouteData = routeData || [];
+                }
+            } catch (e) {
+                console.error('Error parsing route data JSON:', e);
+                parsedRouteData = [];
+            }
+
+            // เตรียมข้อมูลเส้นทาง
+            let points = [];
+
+            // แปลงข้อมูลเป็นรูปแบบ [lat, lng]
+            if (parsedRouteData.length > 0) {
+                console.log('Route data format:', parsedRouteData[0]);
+                if (typeof parsedRouteData[0] === 'object' && parsedRouteData[0].lat !== undefined) {
+                    // กรณีข้อมูลอยู่ในรูปแบบ {lat, lng}
+                    points = parsedRouteData.map(point => [point.lat, point.lng]);
+                } else if (Array.isArray(parsedRouteData[0]) && parsedRouteData[0].length === 2) {
+                    // กรณีข้อมูลอยู่ในรูปแบบ [lat, lng] อยู่แล้ว
+                    points = parsedRouteData;
+                }
+            }
+
+            if (points && points.length > 0) {
+                // สร้างเส้นทาง
+                const polyline = L.polyline(points, {
+                    color: 'blue',
+                    weight: 5,
+                    opacity: 0.7
+                }).addTo(summaryMap);
+
+                // เพิ่มมาร์กเกอร์จุดเริ่มต้นและจุดสิ้นสุด
+                const startPoint = points[0];
+                const endPoint = points[points.length - 1];
+
+                L.marker(startPoint, {
                     icon: L.divIcon({
                         className: 'location-pin',
                         html: '<i class="fas fa-play-circle text-success" style="font-size: 24px;"></i>',
                         iconSize: [24, 24],
                         iconAnchor: [12, 12]
                     })
-                }).addTo(summaryMap)
-                    .bindPopup('<strong>จุดเริ่มต้น</strong>').openPopup();
+                }).addTo(summaryMap);
 
-                L.marker(latLngs[latLngs.length - 1], {
+                L.marker(endPoint, {
                     icon: L.divIcon({
                         className: 'location-pin',
                         html: '<i class="fas fa-flag-checkered text-danger" style="font-size: 24px;"></i>',
                         iconSize: [24, 24],
                         iconAnchor: [12, 12]
                     })
-                }).addTo(summaryMap)
-                    .bindPopup('<strong>จุดสิ้นสุด</strong>');
-            }
+                }).addTo(summaryMap);
 
-            // ปรับขอบเขตแผนที่ให้เห็นเส้นทางทั้งหมด
-            summaryMap.fitBounds(polyline.getBounds(), {
-                padding: [50, 50],
-                maxZoom: 16
-            });
+                // ปรับขอบเขตแผนที่ให้เห็นเส้นทางทั้งหมด
+                summaryMap.fitBounds(polyline.getBounds(), {
+                    padding: [50, 50],
+                    maxZoom: 16
+                });
+            } else {
+                // ถ้าไม่มีข้อมูลเส้นทาง แสดงตำแหน่งเริ่มต้น
+                L.marker([defaultPosition.lat, defaultPosition.lng], {
+                    icon: L.divIcon({
+                        className: 'location-pin',
+                        html: '<i class="fas fa-running text-primary" style="font-size: 24px;"></i>',
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    })
+                }).addTo(summaryMap)
+                    .bindPopup('<strong>ไม่มีข้อมูลเส้นทาง</strong>').openPopup();
+            }
+        } catch (error) {
+            console.error('Error creating summary map:', error);
         }
 
         // Resize map เมื่อ modal แสดงเสร็จสมบูรณ์
         setTimeout(() => {
-            summaryMap.invalidateSize();
-        }, 100);
+            if (summaryMap) {
+                summaryMap.invalidateSize();
+            }
+        }, 200);
     }
 </script>
 @endsection

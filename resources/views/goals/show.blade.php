@@ -2,6 +2,29 @@
 
 @section('title', 'รายละเอียดเป้าหมาย')
 
+@section('styles')
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
+<style>
+    .progress {
+        height: 20px;
+        border-radius: 10px;
+    }
+
+    .progress-bar {
+        border-radius: 10px;
+    }
+
+    .card {
+        border-radius: 12px;
+        box-shadow: 0 5px 12px rgba(0,0,0,0.05);
+    }
+
+    .delete-goal-form {
+        display: inline;
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="container py-4">
     <div class="row justify-content-center">
@@ -15,20 +38,6 @@
                     <i class="fas fa-arrow-left me-1"></i> กลับไปยังรายการเป้าหมาย
                 </a>
             </div>
-
-            @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            @endif
-
-            @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-                {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            @endif
 
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body p-4">
@@ -101,14 +110,14 @@
                                         <li class="mb-2">
                                             <div class="d-flex">
                                                 <div class="text-muted" style="width: 120px;"><i class="fas fa-calendar-alt me-2 text-primary"></i>เริ่มต้น:</div>
-                                                <div class="fw-medium">{{ $goal->start_date->format('d M Y') }}</div>
+                                                <div class="fw-medium">{{ \Carbon\Carbon::parse($goal->start_date)->locale('th')->translatedFormat('d M') }} {{ intval(\Carbon\Carbon::parse($goal->start_date)->format('Y')) + 543 - 2500 }}</div>
                                             </div>
                                         </li>
                                         @if($goal->end_date)
                                         <li class="mb-2">
                                             <div class="d-flex">
                                                 <div class="text-muted" style="width: 120px;"><i class="fas fa-calendar-check me-2 text-primary"></i>สิ้นสุด:</div>
-                                                <div class="fw-medium">{{ $goal->end_date->format('d M Y') }}</div>
+                                                <div class="fw-medium">{{ \Carbon\Carbon::parse($goal->end_date)->locale('th')->translatedFormat('d M') }} {{ intval(\Carbon\Carbon::parse($goal->end_date)->format('Y')) + 543 - 2500 }}</div>
                                             </div>
                                         </li>
                                         @endif
@@ -116,7 +125,7 @@
                                         <li class="mb-2">
                                             <div class="d-flex">
                                                 <div class="text-muted" style="width: 120px;"><i class="fas fa-flag-checkered me-2 text-success"></i>สำเร็จเมื่อ:</div>
-                                                <div class="fw-medium text-success">{{ $goal->updated_at->format('d M Y') }}</div>
+                                                <div class="fw-medium text-success">{{ \Carbon\Carbon::parse($goal->updated_at)->locale('th')->translatedFormat('d M') }} {{ intval(\Carbon\Carbon::parse($goal->updated_at)->format('Y')) + 543 - 2500 }}</div>
                                             </div>
                                         </li>
                                         @elseif($goal->end_date && !$goal->isExpired)
@@ -213,8 +222,7 @@
                             </a>
                         @endif
 
-                        <form action="{{ route('goals.destroy', $goal) }}" method="POST" class="d-inline"
-                              onsubmit="return confirm('คุณแน่ใจหรือไม่ที่จะลบเป้าหมายนี้? การกระทำนี้ไม่สามารถย้อนกลับได้')">
+                        <form action="{{ route('goals.destroy', $goal->id) }}" method="POST" class="delete-goal-form">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-outline-danger">
@@ -281,4 +289,56 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // แสดงข้อความแจ้งเตือนเมื่อโหลดหน้าเสร็จหากมี session messages
+        @if (session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'สำเร็จ!',
+                text: '{{ session('success') }}',
+                confirmButtonText: 'ตกลง',
+                confirmButtonColor: '#28a745'
+            });
+        @endif
+
+        @if (session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด!',
+                text: '{{ session('error') }}',
+                confirmButtonText: 'ตกลง',
+                confirmButtonColor: '#dc3545'
+            });
+        @endif
+
+        // Delete confirmation with SweetAlert2
+        document.querySelectorAll('.delete-goal-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formEl = this;
+
+                Swal.fire({
+                    title: 'คุณแน่ใจหรือไม่?',
+                    text: 'คุณต้องการลบเป้าหมายนี้ใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'ใช่, ลบเป้าหมาย',
+                    cancelButtonText: 'ยกเลิก'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        formEl.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>
 @endsection

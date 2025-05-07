@@ -2,6 +2,12 @@
 
 @section('title', 'แก้ไขเป้าหมาย')
 
+@section('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/white.css">
+
+@endsection
+
 @section('content')
 <div class="container py-4">
     <div class="row justify-content-center">
@@ -41,8 +47,25 @@
                                             <option value="{{ $value }}" {{ (old('activity_type', $goal->activity_type) == $value) ? 'selected' : '' }}>{{ $label }}</option>
                                         @endforeach
                                     </select>
-                                    <div class="form-text">เลือก "Any activity" หากต้องการนับรวมทุกกิจกรรม</div>
+                                    <div class="form-text">เลือกประเภทกิจกรรมที่ต้องการสร้างเป้าหมาย</div>
                                     @error('activity_type')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ฟิลด์สำหรับกรอกรายละเอียดเพิ่มเติมเมื่อเลือก "วิ่งอื่นๆ" -->
+                        <div class="row mb-4" id="activity_type_other_container" style="display: none;">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <div class="form-group">
+                                    <label for="activity_type_other" class="form-label fw-medium">รายละเอียดประเภทกิจกรรม</label>
+                                    <input type="text" name="activity_type_other" id="activity_type_other"
+                                        class="form-control @error('activity_type_other') is-invalid @enderror"
+                                        value="{{ old('activity_type_other', $goal->activity_type_other) }}"
+                                        placeholder="ระบุรายละเอียดประเภทกิจกรรมวิ่ง">
+                                    <div class="form-text">กรุณาระบุประเภทกิจกรรมวิ่งเพิ่มเติม</div>
+                                    @error('activity_type_other')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -96,8 +119,8 @@
                             <div class="col-md-6 mb-3 mb-md-0">
                                 <div class="form-group">
                                     <label for="start_date" class="form-label fw-medium">วันที่เริ่มต้น <span class="text-danger">*</span></label>
-                                    <input type="date" name="start_date" id="start_date"
-                                        class="form-control @error('start_date') is-invalid @enderror" required
+                                    <input type="text" name="start_date" id="start_date"
+                                        class="form-control thai-datepicker @error('start_date') is-invalid @enderror" required
                                         value="{{ old('start_date', $goal->start_date->format('Y-m-d')) }}">
                                     @error('start_date')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -107,8 +130,8 @@
                             <div class="col-md-6" id="end_date_container">
                                 <div class="form-group">
                                     <label for="end_date" class="form-label fw-medium">วันที่สิ้นสุด</label>
-                                    <input type="date" name="end_date" id="end_date"
-                                        class="form-control @error('end_date') is-invalid @enderror"
+                                    <input type="text" name="end_date" id="end_date"
+                                        class="form-control thai-datepicker @error('end_date') is-invalid @enderror"
                                         value="{{ old('end_date', ($goal->end_date ? $goal->end_date->format('Y-m-d') : null)) }}">
                                     <div class="form-text">สำหรับช่วงเวลาแบบกำหนดเอง หรือเว้นว่างสำหรับช่วงเวลาอื่น</div>
                                     @error('end_date')
@@ -163,13 +186,40 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // ตั้งค่า Flatpickr สำหรับปฏิทินไทย
+    flatpickr(".thai-datepicker", {
+        dateFormat: "Y-m-d",
+        locale: "th",
+        altFormat: "j F Y",
+        altInput: true,
+        allowInput: true,
+        yearOffset: 543 // เพิ่มปี พ.ศ.
+    });
+
     const typeSelect = document.getElementById('type');
     const unitLabel = document.getElementById('unit-label');
     const periodSelect = document.getElementById('period');
     const endDateContainer = document.getElementById('end_date_container');
     const endDateInput = document.getElementById('end_date');
+
+    // แสดง/ซ่อนฟิลด์กรอกรายละเอียดเพิ่มเติมสำหรับประเภทกิจกรรมอื่นๆ
+    function toggleActivityTypeOther() {
+        const activityTypeSelect = document.getElementById('activity_type');
+        const activityTypeOtherContainer = document.getElementById('activity_type_other_container');
+        const activityTypeOtherInput = document.getElementById('activity_type_other');
+
+        if (activityTypeSelect.value === 'running_other') {
+            activityTypeOtherContainer.style.display = 'block';
+            activityTypeOtherInput.setAttribute('required', 'required');
+        } else {
+            activityTypeOtherContainer.style.display = 'none';
+            activityTypeOtherInput.removeAttribute('required');
+        }
+    }
 
     // อัพเดทหน่วยตามประเภทเป้าหมาย
     function updateUnitLabel() {
@@ -207,9 +257,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // เรียกใช้ฟังก์ชันเมื่อโหลดและเมื่อมีการเปลี่ยนแปลง
     updateUnitLabel();
     toggleEndDateVisibility();
+    toggleActivityTypeOther();
 
     typeSelect.addEventListener('change', updateUnitLabel);
     periodSelect.addEventListener('change', toggleEndDateVisibility);
+    document.getElementById('activity_type').addEventListener('change', toggleActivityTypeOther);
 });
 </script>
 @endsection

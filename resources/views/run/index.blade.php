@@ -116,73 +116,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- ประวัติการวิ่งล่าสุด -->
-            <div class="card gofit-card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">ประวัติการวิ่งล่าสุด</h5>
-                    <div>
-                        <a href="{{ route('run.history') }}" class="btn btn-sm btn-outline-primary rounded-pill">ดูทั้งหมด</a>
-                    </div>
-                </div>
-                <div class="card-body p-0">
-                    <table class="gofit-table">
-                        <thead>
-                            <tr>
-                                <th>วันที่</th>
-                                <th>ระยะทาง</th>
-                                <th>เวลา</th>
-                                <th>ความเร็วเฉลี่ย</th>
-                                <th>แคลอรี่</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($recentRuns ?? [] as $run)
-                            <tr>
-                                <td>{{ $run->start_time instanceof \Carbon\Carbon
-                                      ? $run->start_time->formatThaiDate()
-                                      : \Carbon\Carbon::parse($run->start_time)->formatThaiDate() }}</td>
-                                <td>{{ number_format($run->distance, 2) }} กม.</td>
-                                <td>
-                                    @if($run->duration)
-                                        @php
-                                            $hours = floor($run->duration / 3600);
-                                            $minutes = floor(($run->duration % 3600) / 60);
-                                            $seconds = $run->duration % 60;
-                                            echo sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
-                                        @endphp
-                                    @else
-                                        <span class="badge bg-warning">กำลังดำเนินการ</span>
-                                    @endif
-                                </td>
-                                <td>{{ number_format($run->average_speed, 1) }} กม./ชม.</td>
-                                <td>{{ number_format($run->calories_burned, 0) }} kcal</td>
-                                <td>
-                                    <a href="#" class="btn btn-sm btn-outline-primary show-run-map"
-                                       data-id="{{ $run->run_id }}"
-                                       data-route="{{ json_encode($run->route_data ?? []) }}"
-                                       data-distance="{{ $run->distance }}"
-                                       data-time="{{ $run->duration ? sprintf('%02d:%02d:%02d', floor($run->duration / 3600), floor(($run->duration % 3600) / 60), $run->duration % 60) : '00:00:00' }}"
-                                       data-calories="{{ $run->calories_burned }}">
-                                        <i class="fas fa-map-marked-alt"></i>
-                                    </a>
-                                    @if($run->is_completed)
-                                    <a href="{{ route('run.show', ['id' => $run->run_id]) }}" class="btn btn-sm btn-outline-success">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    @endif
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="6" class="text-center py-4">ยังไม่มีกิจกรรมที่บันทึก</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
     </div>
 </div>
@@ -446,6 +379,17 @@
         // ดึงโหมดปัจจุบัน (simulation หรือ real)
         const currentMode = document.getElementById('toggleModeBtn').getAttribute('data-mode');
 
+        // ถ้ากำลังวิ่งอยู่ ไม่อนุญาตให้เปลี่ยนโหมด
+        if (isRunning) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'ไม่สามารถเปลี่ยนโหมดได้',
+                text: 'ไม่สามารถเปลี่ยนโหมดขณะกำลังวิ่ง โปรดหยุดการวิ่งก่อน',
+                confirmButtonColor: '#2ecc71'
+            });
+            return;
+        }
+
         // สลับโหมด
         if (currentMode === 'simulation') {
             // เปลี่ยนเป็นโหมดจริง
@@ -555,10 +499,10 @@
             });
 
             fetch('{{ url("/run/share") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify(shareData)
             })
@@ -572,8 +516,8 @@
                 }
                 return response.json();
             })
-            .then(data => {
-                if (data.success) {
+        .then(data => {
+            if (data.success) {
                     alert('แชร์การวิ่งสำเร็จ');
 
                     // ปิดโมดัล
@@ -646,7 +590,7 @@
                             points = routeData.map(point => [point.lat, point.lng]);
                         } else if (Array.isArray(routeData[0]) && routeData[0].length === 2) {
                             points = routeData;
-                        } else {
+        } else {
                             // ถ้ารูปแบบไม่ตรง ใช้ตำแหน่งเริ่มต้น
                             points = [[defaultPosition.lat, defaultPosition.lng]];
                         }
@@ -713,6 +657,9 @@
                 }, 300);
             });
         });
+
+        // อัปเดตสถานะปุ่มสลับโหมดเมื่อโหลดหน้า
+        updateToggleModeButton();
     }
 
     // ฟังก์ชันขอตำแหน่งปัจจุบัน
@@ -979,13 +926,13 @@
 
             // อัปเดตสถานะบน server
             fetch('{{ url("/run/toggle-pause") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    activity_id: runId,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                activity_id: runId,
                     is_paused: false
                 })
             }).catch(error => {
@@ -1076,7 +1023,7 @@
 
                 // ถ้าเป็นข้อผิดพลาดเกี่ยวกับกิจกรรมที่เริ่มไปแล้ว ให้แสดงตัวเลือก
                 if (data.message && data.message.includes('กิจกรรมการวิ่งเริ่มต้นไปแล้ว')) {
-                    Swal.fire({
+                Swal.fire({
                         icon: 'warning',
                         title: 'พบกิจกรรมที่กำลังดำเนินการอยู่',
                         text: 'คุณมีกิจกรรมการวิ่งที่ยังไม่เสร็จสิ้น ต้องการดำเนินการอย่างไร?',
@@ -1097,6 +1044,7 @@
                 } else {
                     // ข้อผิดพลาดอื่นๆ
                     showAlert('error', 'เกิดข้อผิดพลาด', data.message || 'ไม่สามารถเริ่มการวิ่งได้');
+                    resetRunState();
                 }
             }
         })
@@ -1111,6 +1059,9 @@
 
             showAlert('error', 'เกิดข้อผิดพลาด', 'เกิดข้อผิดพลาดในการเริ่มการวิ่ง โปรดลองอีกครั้ง: ' + error.message);
         });
+
+        // ปิดไม่ให้เปลี่ยนโหมดในขณะวิ่ง
+        updateToggleModeButton();
     }
 
     // ฟังก์ชันสำหรับจบกิจกรรมที่ค้างอยู่
@@ -1172,7 +1123,7 @@
                                 message: 'ไม่สามารถอ่านข้อมูลจากเซิร์ฟเวอร์ได้: ' + text.substring(0, 100)
                             };
                         }
-                    } else {
+        } else {
                         // สำหรับ response ที่ไม่ใช่ JSON หรือมีรหัสสถานะผิดพลาด
                         return {
                             status: 'error',
@@ -1235,9 +1186,141 @@
 
     // ฟังก์ชันสำหรับกลับไปดำเนินการกิจกรรมที่ค้างอยู่
     function resumePendingActivity(activityId) {
-        runId = activityId;
-        isRunning = true;
-        startLocationTracking();
+        // แสดงการ loading
+        Swal.fire({
+            title: 'กำลังโหลดข้อมูลกิจกรรม',
+            text: 'กรุณารอสักครู่...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // เรียกข้อมูลรายละเอียดของกิจกรรมจาก server
+        fetch('{{ url("/run/check-active") }}', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            Swal.close();
+
+            if (data.has_active && data.activity_id == activityId) {
+                // ตั้งค่าสถานะการวิ่ง
+                runId = activityId;
+                isRunning = true;
+                isPaused = false;
+
+                // กำหนดโหมดการวิ่งตามข้อมูลที่ได้รับ
+                useSimulation = data.is_test;
+
+                // อัปเดตการแสดงผลของโหมดการวิ่ง
+                if (useSimulation) {
+                    document.getElementById('toggleModeBtn').setAttribute('data-mode', 'simulation');
+                    document.getElementById('toggleModeText').textContent = 'ใช้ GPS จริง';
+                    document.getElementById('simulationBadge').textContent = 'โหมดจำลอง';
+                    document.getElementById('simulationBadge').className = 'badge bg-info ms-2';
+                    document.getElementById('simulationAlert').style.display = 'block';
+                    document.getElementById('speedSelectorContainer').style.display = 'block';
+                } else {
+                    document.getElementById('toggleModeBtn').setAttribute('data-mode', 'real');
+                    document.getElementById('toggleModeText').textContent = 'ใช้โหมดจำลอง';
+                    document.getElementById('simulationBadge').textContent = 'โหมด GPS จริง';
+                    document.getElementById('simulationBadge').className = 'badge bg-success ms-2';
+                    document.getElementById('simulationAlert').style.display = 'none';
+                    document.getElementById('speedSelectorContainer').style.display = 'none';
+                }
+
+                // ตั้งค่าค่าต่างๆ จากข้อมูลที่ได้รับ
+                currentDistance = parseFloat(data.distance) || 0;
+                elapsedSeconds = parseInt(data.elapsed_time) || 0;
+                currentSpeed = parseFloat(data.average_speed) || 0;
+                totalCalories = parseFloat(data.calories_burned) || 0;
+
+                // ถ้ามีข้อมูลเส้นทาง ให้โหลดเส้นทาง
+                if (data.route_data && data.route_data !== '[]') {
+                    try {
+                        let routeData;
+                        if (typeof data.route_data === 'string') {
+                            routeData = JSON.parse(data.route_data);
+                        } else {
+                            routeData = data.route_data;
+                        }
+
+                        // แปลงเส้นทางเป็นรูปแบบที่ใช้ใน routePoints
+                        routePoints = Array.isArray(routeData) ?
+                            routeData.map(point => [point.lat, point.lng]) : [];
+
+        // อัปเดตเส้นทางบนแผนที่
+                        if (routePoints.length > 0) {
+                            // ล้างเส้นทางเดิม
+        if (routePolyline) {
+                                map.removeLayer(routePolyline);
+                            }
+
+                            // สร้างเส้นทางใหม่
+            routePolyline = L.polyline(routePoints, {
+                color: 'blue',
+                weight: 5,
+                opacity: 0.7
+            }).addTo(map);
+
+                            // ปรับมุมมองแผนที่ให้เห็นเส้นทางทั้งหมด
+                            if (routePoints.length > 1) {
+                                map.fitBounds(routePolyline.getBounds(), {
+                                    padding: [50, 50],
+                                    maxZoom: 16
+                                });
+                            }
+
+                            // อัปเดตตำแหน่งปัจจุบัน
+                            if (routePoints.length > 0) {
+                                const lastPoint = routePoints[routePoints.length - 1];
+                                updateMap(lastPoint[0], lastPoint[1]);
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Error parsing route data:', e);
+                        routePoints = [];
+                    }
+                }
+
+                // อัปเดตหน้าจอ
+                updateRunStats();
+
+                // เปลี่ยนปุ่มควบคุม
+                document.getElementById('startRunBtn').style.display = 'none';
+                document.querySelector('.running-controls').style.display = 'flex';
+
+                // เริ่มจับเวลาต่อ
+                startTimer();
+
+                // เริ่มการติดตามตำแหน่งหรือจำลอง
+                if (useSimulation) {
+                    simulateRunning();
+                } else {
+                    startLocationTracking();
+                }
+
+                // ปิดไม่ให้เปลี่ยนโหมดในขณะวิ่ง
+                updateToggleModeButton();
+
+                // แสดงการแจ้งเตือน
+                showAlert('success', 'ดำเนินการต่อสำเร็จ', 'กลับมาดำเนินการกิจกรรมการวิ่งต่อเรียบร้อยแล้ว');
+            } else {
+                showAlert('error', 'เกิดข้อผิดพลาด', 'ไม่พบกิจกรรมที่ค้างอยู่ หรือกิจกรรมอาจถูกปิดไปแล้ว');
+                resetRunState();
+            }
+        })
+        .catch(error => {
+            Swal.close();
+            console.error('Error resuming activity:', error);
+            showAlert('error', 'เกิดข้อผิดพลาด', 'ไม่สามารถดำเนินการต่อกิจกรรมได้: ' + error.message);
+            resetRunState();
+        });
     }
 
     // ฟังก์ชันสำหรับหยุดชั่วคราว
@@ -1261,13 +1344,13 @@
 
             // อัปเดตสถานะบน server
             fetch('{{ url("/run/toggle-pause") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    run_id: runId,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                run_id: runId,
                     is_paused: false
                 })
             }).catch(error => {
@@ -1439,14 +1522,17 @@
                 // รีเซ็ต UI
                 document.getElementById('startRunBtn').style.display = 'block';
                 document.querySelector('.running-controls').style.display = 'none';
-            } else {
+
+                // อัปเดตสถานะปุ่มสลับโหมด
+                updateToggleModeButton();
+        } else {
                     // แสดงข้อผิดพลาด
-                Swal.fire({
-                    icon: 'error',
+            Swal.fire({
+                icon: 'error',
                     title: 'เกิดข้อผิดพลาด',
                     text: data.message || 'ไม่สามารถบันทึกการวิ่งได้',
-                    confirmButtonColor: '#3085d6'
-                });
+                confirmButtonColor: '#3085d6'
+            });
 
                     // รีเซ็ตสถานะของปุ่ม
                     document.getElementById('startRunBtn').style.display = 'block';
@@ -1533,10 +1619,10 @@
             window.summaryMapInstance = summaryMap;
 
                 // เพิ่ม tile layer
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 maxZoom: 19
-                    }).addTo(summaryMap);
+            }).addTo(summaryMap);
 
             // เตรียมข้อมูลเส้นทาง
             let points = [];
@@ -1552,10 +1638,10 @@
 
             if (points && points.length > 0) {
                         const polyline = L.polyline(points, {
-                            color: 'blue',
-                            weight: 5,
-                            opacity: 0.7
-                        }).addTo(summaryMap);
+                    color: 'blue',
+                    weight: 5,
+                    opacity: 0.7
+                }).addTo(summaryMap);
 
                 // ให้แผนที่แสดงทั้งเส้นทาง
                 summaryMap.fitBounds(polyline.getBounds(), {
@@ -1563,38 +1649,38 @@
                     maxZoom: 16
                 });
 
-                        // เพิ่มมาร์กเกอร์จุดเริ่มต้นและจุดสิ้นสุด
+                // เพิ่มมาร์กเกอร์จุดเริ่มต้นและจุดสิ้นสุด
                 const startPoint = points[0];
                 const endPoint = points[points.length - 1];
 
                 L.marker(startPoint, {
-                            icon: L.divIcon({
-                                className: 'location-pin',
-                                html: '<i class="fas fa-play-circle text-success" style="font-size: 24px;"></i>',
-                                iconSize: [24, 24],
-                                iconAnchor: [12, 12]
-                            })
-                        }).addTo(summaryMap);
+                    icon: L.divIcon({
+                        className: 'location-pin',
+                        html: '<i class="fas fa-play-circle text-success" style="font-size: 24px;"></i>',
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    })
+                }).addTo(summaryMap);
 
                 L.marker(endPoint, {
-                            icon: L.divIcon({
-                                className: 'location-pin',
-                                html: '<i class="fas fa-flag-checkered text-danger" style="font-size: 24px;"></i>',
-                                iconSize: [24, 24],
-                                iconAnchor: [12, 12]
-                            })
-                        }).addTo(summaryMap);
+                    icon: L.divIcon({
+                        className: 'location-pin',
+                        html: '<i class="fas fa-flag-checkered text-danger" style="font-size: 24px;"></i>',
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    })
+                }).addTo(summaryMap);
             } else {
                 // ถ้าไม่มีข้อมูลเส้นทาง แสดงตำแหน่งเริ่มต้น
                 L.marker([defaultPosition.lat, defaultPosition.lng], {
                     icon: L.divIcon({
                         className: 'location-pin',
                         html: '<i class="fas fa-running text-primary" style="font-size: 24px;"></i>',
-                                iconSize: [24, 24],
-                                iconAnchor: [12, 12]
-                            })
-                        }).addTo(summaryMap);
-                    }
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    })
+                }).addTo(summaryMap);
+            }
 
             // ทำให้แผนที่ refresh เพื่อแสดงผลอย่างถูกต้อง
             setTimeout(() => {
@@ -1729,11 +1815,11 @@
         fetch('{{ url("/run/check-active") }}', {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
             }
         })
-        .then(response => response.json())
+            .then(response => response.json())
         .then(data => {
             if (data.has_active && data.activity_id) {
                 // แสดงการแจ้งเตือนว่ามีกิจกรรมที่ค้างอยู่
@@ -1821,7 +1907,7 @@
 
                     // ถ้าเกิดข้อผิดพลาด ให้เปลี่ยนเป็นโหมดจำลอง
                     if (!useSimulation) {
-                        Swal.fire({
+        Swal.fire({
                             icon: 'warning',
                             title: 'ไม่สามารถติดตามตำแหน่งได้',
                             text: 'ระบบจะเปลี่ยนเป็นโหมดจำลองแทน',
@@ -1964,12 +2050,12 @@
 
         try {
             fetch('{{ url("/run/update") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
+            },
+            body: JSON.stringify({
                     run_id: runId,
                     distance: parseFloat(currentDistance.toFixed(2)),
                     duration: elapsedSeconds,
@@ -1995,6 +2081,30 @@
     }
 
     // ฟังก์ชันสำหรับตรวจสอบกิจกรรมที่ยังไม่เสร็จสิ้น
+
+    // ฟังก์ชันรีเซ็ตสถานะการวิ่ง
+    function resetRunState() {
+        // ... existing code ...
+
+        // อัปเดตสถานะปุ่มสลับโหมด
+        updateToggleModeButton();
+    }
+
+    // อัปเดตสถานะของปุ่มสลับโหมด (เปิด/ปิดการใช้งาน)
+    function updateToggleModeButton() {
+        const toggleBtn = document.getElementById('toggleModeBtn');
+
+        // ถ้ากำลังวิ่งอยู่ ปิดปุ่มไม่ให้เปลี่ยนโหมด
+        if (isRunning) {
+            toggleBtn.classList.add('disabled');
+            toggleBtn.setAttribute('disabled', 'disabled');
+            toggleBtn.title = 'ไม่สามารถเปลี่ยนโหมดขณะกำลังวิ่งได้';
+        } else {
+            toggleBtn.classList.remove('disabled');
+            toggleBtn.removeAttribute('disabled');
+            toggleBtn.title = '';
+        }
+    }
 </script>
 @endsection
 

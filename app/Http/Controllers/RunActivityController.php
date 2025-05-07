@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Activity;
+use App\Models\Run;
 use App\Models\Badge;
 use App\Models\UserBadge;
 use Carbon\Carbon;
@@ -26,8 +26,7 @@ class RunActivityController extends Controller
         // กรองตามประเภท (จริง/ทดสอบ) ถ้ามีการระบุ
         $isTestFilter = $request->has('is_test') ? $request->boolean('is_test') : null;
 
-        $query = Activity::where('user_id', $user->user_id)
-            ->where('activity_type', 'running');
+        $query = Run::where('user_id', $user->user_id);
 
         // กรองเฉพาะกิจกรรมจริงหรือทดสอบถ้ามีการระบุ
         if ($isTestFilter !== null) {
@@ -38,15 +37,13 @@ class RunActivityController extends Controller
             ->take(5)
             ->get();
 
-        $testActivities = Activity::where('user_id', $user->user_id)
-            ->where('activity_type', 'running')
+        $testActivities = Run::where('user_id', $user->user_id)
             ->where('is_test', true)
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
 
-        $realActivities = Activity::where('user_id', $user->user_id)
-            ->where('activity_type', 'running')
+        $realActivities = Run::where('user_id', $user->user_id)
             ->where('is_test', false)
             ->orderBy('created_at', 'desc')
             ->take(5)
@@ -63,7 +60,7 @@ class RunActivityController extends Controller
         $user = Auth::user();
 
         // Check if user has any unfinished activities
-        $unfinishedActivity = Activity::where('user_id', $user->user_id)
+        $unfinishedActivity = Run::where('user_id', $user->user_id)
             ->whereNull('end_time')
             ->first();
 
@@ -71,12 +68,12 @@ class RunActivityController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'กิจกรรมการวิ่งเริ่มต้นไปแล้ว กรุณาจบกิจกรรมปัจจุบันก่อนเริ่มกิจกรรมใหม่',
-                'activity_id' => $unfinishedActivity->activity_id
+                'activity_id' => $unfinishedActivity->run_id
             ], 400);
         }
 
         // Check for old activities that might be stuck - activities older than 24 hours without end_time
-        $stuckActivities = Activity::where('user_id', $user->user_id)
+        $stuckActivities = Run::where('user_id', $user->user_id)
             ->whereNull('end_time')
             ->where('start_time', '<', Carbon::now()->subHours(24))
             ->get();
@@ -88,7 +85,7 @@ class RunActivityController extends Controller
 
             Log::info('Auto-closed stuck activity', [
                 'user_id' => $user->user_id,
-                'activity_id' => $stuckActivity->activity_id
+                'activity_id' => $stuckActivity->run_id
             ]);
         }
 
@@ -98,17 +95,16 @@ class RunActivityController extends Controller
         ]);
 
         // Create new activity
-        $activity = new Activity();
+        $activity = new Run();
         $activity->user_id = $user->user_id;
-        $activity->activity_type = 'running';
         $activity->start_time = Carbon::now();
-        $activity->route_gps_data = json_encode([]);
+        $activity->route_data = json_encode([]);
         $activity->is_test = $request->input('is_test', false); // ค่าเริ่มต้นเป็น false (วิ่งจริง)
         $activity->save();
 
         return response()->json([
             'status' => 'success',
-            'activity_id' => $activity->activity_id,
+            'activity_id' => $activity->run_id,
             'message' => $activity->is_test ? 'การทดสอบวิ่งเริ่มต้นเรียบร้อยแล้ว' : 'กิจกรรมการวิ่งเริ่มต้นเรียบร้อยแล้ว',
             'is_test' => $activity->is_test
         ]);
@@ -122,7 +118,7 @@ class RunActivityController extends Controller
         try {
             // Validate the incoming request
             $validator = Validator::make($request->all(), [
-                'activity_id' => 'required|exists:tb_activity,activity_id',
+                'activity_id' => 'required|exists:tb_run,run_id',
                 'route_data' => 'required|string',
                 'distance' => 'required|numeric',
                 'duration' => 'required|numeric',
@@ -146,7 +142,7 @@ class RunActivityController extends Controller
             ]);
 
             $user = Auth::user();
-            $activity = Activity::where('activity_id', $request->activity_id)
+            $activity = Run::where('run_id', $request->activity_id)
                 ->where('user_id', $user->user_id)
                 ->first();
 
@@ -192,7 +188,7 @@ class RunActivityController extends Controller
                 $activity->distance = 0;
                 $activity->calories_burned = 0;
                 $activity->average_speed = 0;
-                $activity->route_gps_data = "[]";
+                $activity->route_data = "[]";
                 $activity->notes = "กิจกรรมถูกจบโดยอัตโนมัติเนื่องจากไม่มีการบันทึกข้อมูล";
             } else {
                 // บันทึกข้อมูลปกติ
@@ -209,11 +205,11 @@ class RunActivityController extends Controller
                         // If not a valid JSON, encode it
                         $routeData = json_encode($routeData);
                     }
-                    $activity->route_gps_data = $routeData;
+                    $activity->route_data = $routeData;
                 } catch (\Exception $e) {
                     // If there's an error, store empty route data
                     Log::error('Error parsing route data: ' . $e->getMessage());
-                    $activity->route_gps_data = "[]";
+                    $activity->route_data = "[]";
                 }
 
                 $activity->is_test = $request->input('is_test', false); // ค่าเริ่มต้นเป็น false (วิ่งจริง)
@@ -259,13 +255,13 @@ class RunActivityController extends Controller
     public function updateRoute(Request $request)
     {
         $request->validate([
-            'activity_id' => 'required|exists:tb_activity,activity_id',
+            'activity_id' => 'required|exists:tb_run,id',
             'route_data' => 'required|json',
             'current_distance' => 'required|numeric',
         ]);
 
         $user = Auth::user();
-        $activity = Activity::where('activity_id', $request->activity_id)
+        $activity = Run::where('id', $request->activity_id)
             ->where('user_id', $user->user_id)
             ->whereNull('end_time')
             ->first();
@@ -278,7 +274,7 @@ class RunActivityController extends Controller
         }
 
         // Update route data
-        $activity->route_gps_data = $request->route_data;
+        $activity->route_data = $request->route_data;
         $activity->distance = $request->current_distance;
         $activity->save();
 
@@ -302,9 +298,8 @@ class RunActivityController extends Controller
 
             // ไม่นับแคลอรี่จากการวิ่งทดสอบ
             // ตรวจสอบแคลอรี่สะสมเพื่อรับเหรียญ
-            $totalCalories = DB::table('tb_activity')
+            $totalCalories = DB::table('tb_run')
                 ->where('user_id', $user->user_id)
-                ->where('activity_type', 'running')
                 ->where('is_test', false) // เฉพาะการวิ่งจริงเท่านั้น
                 ->sum('calories_burned');
 
@@ -356,8 +351,7 @@ class RunActivityController extends Controller
                 'distance' => 'required|numeric',
                 'calories_burned' => 'required|numeric',
                 'average_speed' => 'required|numeric',
-                'route_gps_data' => 'required',
-                'activity_type' => 'required|string',
+                'route_data' => 'required',
                 'is_test' => 'boolean'
             ]);
 
@@ -376,9 +370,8 @@ class RunActivityController extends Controller
             }
 
             // สร้างกิจกรรมใหม่
-            $activity = new Activity();
+            $activity = new Run();
             $activity->user_id = $user->user_id;
-            $activity->activity_type = $request->activity_type;
             $activity->start_time = Carbon::now()->subMinutes(30); // สมมติว่าวิ่งมา 30 นาที
             $activity->end_time = Carbon::now();
             $activity->distance = $request->distance;
@@ -386,11 +379,11 @@ class RunActivityController extends Controller
             $activity->average_speed = $request->average_speed;
             $activity->is_test = $request->input('is_test', false); // ค่าเริ่มต้นเป็น false (วิ่งจริง)
 
-            // ตรวจสอบและแปลงข้อมูล route_gps_data ถ้าจำเป็น
-            if (is_string($request->route_gps_data)) {
-                $activity->route_gps_data = $request->route_gps_data;
+            // ตรวจสอบและแปลงข้อมูล route_data ถ้าจำเป็น
+            if (is_string($request->route_data)) {
+                $activity->route_data = $request->route_data;
             } else {
-                $activity->route_gps_data = json_encode($request->route_gps_data);
+                $activity->route_data = json_encode($request->route_data);
             }
 
             $activity->save();
@@ -428,8 +421,7 @@ class RunActivityController extends Controller
         $user = Auth::user();
 
         // ดึงเฉพาะการวิ่งทดสอบ
-        $testActivities = Activity::where('user_id', $user->user_id)
-            ->where('activity_type', 'running')
+        $testActivities = Run::where('user_id', $user->user_id)
             ->where('is_test', true)
             ->orderBy('created_at', 'desc')
             ->take(5)
@@ -446,15 +438,40 @@ class RunActivityController extends Controller
         $user = Auth::user();
 
         // Check if user has any unfinished activities
-        $unfinishedActivity = Activity::where('user_id', $user->user_id)
+        $unfinishedActivity = Run::where('user_id', $user->user_id)
             ->whereNull('end_time')
             ->first();
 
         if ($unfinishedActivity) {
+            // ถ้ามีกิจกรรมที่ยังไม่เสร็จ ให้ส่งข้อมูลเพิ่มเติมเพื่อให้สามารถดำเนินการต่อได้
+            $duration = 0;
+            if ($unfinishedActivity->start_time) {
+                $startTime = $unfinishedActivity->start_time instanceof Carbon
+                    ? $unfinishedActivity->start_time
+                    : Carbon::parse($unfinishedActivity->start_time);
+                $duration = $startTime->diffInSeconds(Carbon::now());
+            }
+
+            // กำหนดค่าเริ่มต้นสำหรับข้อมูลที่อาจไม่มี
+            $routeData = "[]";
+
+            // ถ้ามีข้อมูลเส้นทาง ให้ดึงมา
+            if (!empty($unfinishedActivity->route_data)) {
+                $routeData = $unfinishedActivity->route_data;
+            }
+
+            // สร้าง response ที่มีข้อมูลเพิ่มเติม
             return response()->json([
                 'has_active' => true,
-                'activity_id' => $unfinishedActivity->activity_id,
-                'start_time' => $unfinishedActivity->start_time
+                'activity_id' => $unfinishedActivity->run_id,
+                'start_time' => $unfinishedActivity->start_time,
+                'duration' => $duration,
+                'distance' => $unfinishedActivity->distance ?? 0,
+                'average_speed' => $unfinishedActivity->average_speed ?? 0,
+                'calories_burned' => $unfinishedActivity->calories_burned ?? 0,
+                'is_test' => $unfinishedActivity->is_test ?? false,
+                'route_data' => $routeData,
+                'elapsed_time' => $duration
             ]);
         }
 
@@ -470,7 +487,7 @@ class RunActivityController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'run_id' => 'required|exists:tb_activity,activity_id',
+                'run_id' => 'required|exists:tb_run,id',
                 'is_paused' => 'required|boolean'
             ]);
 
@@ -482,7 +499,7 @@ class RunActivityController extends Controller
             }
 
             $user = Auth::user();
-            $activity = Activity::where('activity_id', $request->run_id)
+            $activity = Run::where('id', $request->run_id)
                 ->where('user_id', $user->user_id)
                 ->whereNull('end_time')
                 ->first();
@@ -496,7 +513,7 @@ class RunActivityController extends Controller
 
             // Just log the pause status - we don't need to store it in DB
             Log::info('Activity pause status toggled', [
-                'activity_id' => $activity->activity_id,
+                'activity_id' => $activity->run_id,
                 'user_id' => $user->user_id,
                 'is_paused' => $request->is_paused
             ]);
@@ -512,6 +529,64 @@ class RunActivityController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'เกิดข้อผิดพลาดในการเปลี่ยนสถานะการวิ่ง: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update activity data during run
+     */
+    public function update(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'run_id' => 'required|exists:tb_run,id',
+                'distance' => 'required|numeric',
+                'duration' => 'required|numeric',
+                'calories' => 'required|numeric',
+                'average_speed' => 'required|numeric'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'ข้อมูลไม่ถูกต้อง: ' . $validator->errors()->first()
+                ], 400);
+            }
+
+            $user = Auth::user();
+            $activity = Run::where('id', $request->run_id)
+                ->where('user_id', $user->user_id)
+                ->whereNull('end_time')
+                ->first();
+
+            if (!$activity) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'ไม่พบกิจกรรมที่ระบุ'
+                ], 404);
+            }
+
+            // ไม่จำเป็นต้องบันทึกข้อมูลในระหว่างการวิ่งทุกครั้ง แต่จะบันทึกล็อกไว้เพื่อการดีบัก
+            Log::info('Activity update received', [
+                'activity_id' => $activity->run_id,
+                'user_id' => $user->user_id,
+                'distance' => $request->distance,
+                'duration' => $request->duration,
+                'calories' => $request->calories,
+                'average_speed' => $request->average_speed
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'บันทึกข้อมูลระหว่างวิ่งเรียบร้อย'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error updating activity data: ' . $e->getMessage());
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'เกิดข้อผิดพลาดในการอัปเดตข้อมูลการวิ่ง: ' . $e->getMessage()
             ], 500);
         }
     }

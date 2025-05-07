@@ -73,10 +73,10 @@ class ActivityGoal extends Model
     public function getFormattedTypeAttribute(): string
     {
         $types = [
-            'distance' => 'Distance (km)',
-            'duration' => 'Duration (minutes)',
-            'calories' => 'Calories burned',
-            'frequency' => 'Number of workouts'
+            'distance' => 'ระยะทาง (กม.)',
+            'duration' => 'ระยะเวลา (นาที)',
+            'calories' => 'แคลอรี่ที่เผาผลาญ',
+            'frequency' => 'จำนวนครั้งการออกกำลังกาย'
         ];
 
         return $types[$this->type] ?? $this->type;
@@ -90,18 +90,26 @@ class ActivityGoal extends Model
     public function getFormattedActivityTypeAttribute(): string
     {
         if (empty($this->activity_type)) {
-            return 'Any activity';
+            return 'ทุกกิจกรรม';
         }
 
         $types = [
-            'run' => 'Running',
-            'walk' => 'Walking',
-            'cycle' => 'Cycling',
-            'swim' => 'Swimming',
-            'gym' => 'Gym Workout',
-            'yoga' => 'Yoga',
+            'running' => 'วิ่ง',
+            'walking' => 'เดิน',
+            'cycling' => 'ปั่นจักรยาน',
+            'swimming' => 'ว่ายน้ำ',
+            'gym' => 'ออกกำลังกายในยิม',
+            'yoga' => 'โยคะ',
             'hiit' => 'HIIT',
-            'other' => 'Other'
+            'other' => 'อื่นๆ',
+            // For backward compatibility with older data
+            'run' => 'วิ่ง',
+            'walk' => 'เดิน',
+            'cycle' => 'ปั่นจักรยาน',
+            'swim' => 'ว่ายน้ำ',
+            // เพิ่มประเภทกิจกรรมวิ่ง
+            'running_health' => 'วิ่งเพื่อสุขภาพ',
+            'running_other' => 'วิ่งอื่นๆ'
         ];
 
         return $types[$this->activity_type] ?? $this->activity_type;
@@ -128,7 +136,7 @@ class ActivityGoal extends Model
      */
     public function getIsExpiredAttribute(): bool
     {
-        return !$this->is_completed && $this->end_date && $this->end_date->isPast();
+        return !$this->is_completed && $this->end_date && $this->end_date->endOfDay()->isPast();
     }
 
     /**
@@ -154,8 +162,21 @@ class ActivityGoal extends Model
         }
 
         // Check if activity type matches (if specific type is set)
-        if ($this->activity_type && $activity->activity_type !== $this->activity_type) {
+        if ($this->activity_type) {
+            // Map old activity types to new format for compatibility
+            $activityTypeMap = [
+                'run' => 'running',
+                'walk' => 'walking',
+                'cycle' => 'cycling',
+                'swim' => 'swimming'
+            ];
+
+            $goalActivityType = $activityTypeMap[$this->activity_type] ?? $this->activity_type;
+            $activityType = $activityTypeMap[$activity->activity_type] ?? $activity->activity_type;
+
+            if ($goalActivityType !== $activityType) {
             return false;
+            }
         }
 
         // Update progress based on goal type

@@ -92,7 +92,33 @@ class EventController extends Controller
             ->whereNotNull('category')
             ->pluck('category');
 
-        return view('events.index', compact('events', 'categories', 'totalCount'));
+        // สร้างข้อมูลสำหรับ stats cards
+        // จำนวนกิจกรรมที่กำลังดำเนินการ
+        $activeEventsCount = Event::when(!Auth::check() || Auth::user()->role_id != 1, function($query) {
+                return $query->where('status', 'published');
+            })
+            ->where('start_datetime', '<=', now())
+            ->where('end_datetime', '>=', now())
+            ->count();
+
+        // จำนวนกิจกรรมที่กำลังจะมาถึง
+        $upcomingEventsCount = Event::when(!Auth::check() || Auth::user()->role_id != 1, function($query) {
+                return $query->where('status', 'published');
+            })
+            ->where('start_datetime', '>', now())
+            ->count();
+
+        // จำนวนผู้เข้าร่วมทั้งหมด
+        $totalParticipants = EventUser::where('status', 'registered')->count();
+
+        return view('events.index', compact(
+            'events',
+            'categories',
+            'totalCount',
+            'activeEventsCount',
+            'upcomingEventsCount',
+            'totalParticipants'
+        ));
     }
 
     /**
@@ -363,16 +389,16 @@ class EventController extends Controller
         $status = $request->input('status', 'all');
 
         // สร้าง query สำหรับการลงทะเบียนของผู้ใช้
-        $query = EventUser::where('user_id', $user->user_id)
+        $query = EventUser::where('tb_event_users.user_id', $user->user_id)
             ->with(['event' => function($query) {
                 $query->withCount('participants');
             }]);
 
         // กรองตามสถานะการลงทะเบียน
         if ($status === 'cancelled') {
-            $query->where('status', 'cancelled');
+            $query->where('tb_event_users.status', 'cancelled');
         } elseif ($status !== 'all') {
-            $query->where('status', 'registered');
+            $query->where('tb_event_users.status', 'registered');
 
             // กรองตามสถานะกิจกรรม
             if ($status === 'upcoming') {
@@ -399,6 +425,26 @@ class EventController extends Controller
         // ดึงข้อมูล
         $registrations = $query->paginate(9);
 
-        return view('events.my-events', compact('registrations', 'status'));
+        // ข้อมูลสถิติสำหรับ stats cards - เฉพาะของผู้ใช้นี้
+        $activeCount = EventUser::where('tb_event_users.user_id', $user->user_id)
+            ->where('tb_event_users.status', 'registered')
+            ->whereHas('event', function($q) {
+                $q->where('start_datetime', '<=', now())
+                  ->where('end_datetime', '>=', now());
+            })->count();
+
+        $upcomingCount = EventUser::where('tb_event_users.user_id', $user->user_id)
+            ->where('tb_event_users.status', 'registered')
+            ->whereHas('event', function($q) {
+                $q->where('start_datetime', '>', now());
+            })->count();
+
+        $completedCount = EventUser::where('tb_event_users.user_id', $user->user_id)
+            ->where('tb_event_users.status', 'registered')
+            ->whereHas('event', function($q) {
+                $q->where('end_datetime', '<', now());
+            })->count();
+
+        return view('events.my-events', compact('registrations', 'status', 'activeCount', 'upcomingCount', 'completedCount'));
     }
 }

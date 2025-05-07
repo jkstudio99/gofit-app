@@ -81,11 +81,6 @@
         color: white !important;
     }
 
-    .filter-card {
-        border-radius: 12px;
-        border: none;
-    }
-
     .hover-translate {
         transition: transform 0.3s ease;
     }
@@ -104,12 +99,61 @@
         color: #d1d1d1;
         margin-bottom: 1rem;
     }
+
+    /* Stats Cards Styles */
+    .event-stat-card {
+        transition: all 0.3s ease;
+        border-radius: 12px;
+    }
+
+    .event-stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .event-stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Tab Navigation Styles */
+    .nav-tabs .nav-link {
+        border: none;
+        padding: 0.75rem 1.25rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        color: #6c757d;
+        background-color: #f8f9fa;
+        margin-right: 0.5rem;
+        transition: all 0.2s;
+    }
+
+    .nav-tabs .nav-link:hover {
+        background-color: #e9ecef;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: #fff;
+        background-color: #2DC679;
+    }
+
+    /* Remove the border/line between tabs and content */
+    .nav-tabs {
+        border-bottom: none;
+    }
+
+    .card-body {
+        padding-top: 0;
+    }
 </style>
 @endsection
 
 @section('content')
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
         <div>
             <h2 class="mb-0">กิจกรรมทั้งหมด</h2>
             <p class="text-muted">ค้นหาและเข้าร่วมกิจกรรมออกกำลังกายต่างๆ</p>
@@ -133,254 +177,275 @@
     </div>
     @endif
 
-    <!-- ตัวกรองและค้นหา -->
-    <div class="card shadow-sm mb-4 filter-card">
-        <div class="card-body p-4">
-            <form action="{{ route('events.index') }}" method="GET">
-                <div class="row g-3">
-                    <div class="col-lg-4 col-md-6">
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0">
-                                <i class="fas fa-search text-muted"></i>
-                            </span>
-                            <input type="text" name="search" class="form-control border-start-0"
-                                   placeholder="ค้นหากิจกรรม..."
-                                   value="{{ request('search') }}">
-                        </div>
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 shadow-sm border-0 event-stat-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="event-stat-icon bg-primary bg-opacity-10 me-3">
+                        <i class="fas fa-calendar-alt text-primary"></i>
                     </div>
-                    <div class="col-lg-2 col-md-6">
-                        <select name="category" class="form-select">
-                            <option value="">ทุกประเภท</option>
-                            @foreach($categories as $category)
-                                <option value="{{ $category }}" {{ request('category') == $category ? 'selected' : '' }}>
-                                    {{ ucfirst($category) }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <select name="status" class="form-select">
-                            <option value="upcoming" {{ request('status') == 'upcoming' ? 'selected' : '' }}>กำลังจะมาถึง</option>
-                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>กำลังดำเนินการ</option>
-                            <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>ทั้งหมด</option>
-                            <option value="past" {{ request('status') == 'past' ? 'selected' : '' }}>ที่ผ่านมา</option>
-                        </select>
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <select name="sort" class="form-select">
-                            <option value="date_asc" {{ request('sort') == 'date_asc' ? 'selected' : '' }}>วันที่: เร็วที่สุด</option>
-                            <option value="date_desc" {{ request('sort') == 'date_desc' ? 'selected' : '' }}>วันที่: ล่าสุด</option>
-                            <option value="popularity" {{ request('sort') == 'popularity' ? 'selected' : '' }}>ความนิยม</option>
-                        </select>
-                    </div>
-                    <div class="col-lg-2 col-md-12">
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary flex-grow-1">
-                                <i class="fas fa-filter me-1"></i> กรอง
-                            </button>
-                            <a href="{{ route('events.index') }}" class="btn btn-outline-secondary flex-grow-1">
-                                <i class="fas fa-redo me-1"></i> รีเซ็ต
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ไม่พบกิจกรรม -->
-    @if ($events->isEmpty())
-    <div class="empty-state bg-light rounded">
-        <i class="fas fa-calendar-times"></i>
-        <h4>ไม่พบกิจกรรม</h4>
-        <p class="text-muted">
-            @if (request('search'))
-                ไม่พบกิจกรรมที่ตรงกับคำค้นหา "{{ request('search') }}"
-            @else
-                ไม่มีกิจกรรมที่ตรงกับตัวกรอง โปรดลองเปลี่ยนตัวกรอง
-            @endif
-        </p>
-        <a href="{{ route('events.index') }}" class="btn btn-primary mt-3">
-            <i class="fas fa-sync me-1"></i> รีเซ็ตตัวกรอง
-        </a>
-    </div>
-
-    @else
-    <!-- จำนวนกิจกรรมที่พบและการแสดงผล -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <p class="text-muted mb-0">พบ {{ $events->total() }} กิจกรรม</p>
-        <div class="btn-group view-toggle">
-            <a href="{{ request()->fullUrlWithQuery(['view' => 'grid']) }}"
-               class="btn {{ request('view', 'grid') == 'grid' ? 'btn-primary' : 'btn-outline-primary' }}">
-                <i class="fas fa-th"></i>
-            </a>
-            <a href="{{ request()->fullUrlWithQuery(['view' => 'list']) }}"
-               class="btn {{ request('view') == 'list' ? 'btn-primary' : 'btn-outline-primary' }}">
-                <i class="fas fa-list"></i>
-            </a>
-        </div>
-    </div>
-
-    <!-- แสดงแบบ Grid -->
-    @if (request('view', 'grid') == 'grid')
-    <div class="row">
-        @foreach ($events as $event)
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card h-100 shadow-sm event-card">
-                <div class="event-img-container">
-                    <img src="{{ asset('storage/' . ($event->event_image ?? $event->image_url ?? 'events/default.jpg')) }}"
-                        class="card-img-top" alt="{{ $event->title }}">
-
-                    <div class="event-badges">
-                        <span class="badge category-badge bg-primary">
-                            {{ ucfirst($event->category ?? 'กิจกรรม') }}
-                        </span>
-                    </div>
-
-                    <div class="event-status">
-                        @if ($event->hasEnded())
-                            <span class="badge bg-secondary">สิ้นสุดแล้ว</span>
-                        @elseif ($event->isActive())
-                            <span class="badge bg-success">กำลังดำเนินการ</span>
-                        @elseif ($event->isFull())
-                            <span class="badge bg-warning text-dark">เต็มแล้ว</span>
-                        @else
-                            <span class="badge bg-info">กำลังจะมาถึง</span>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">{{ $event->title }}</h5>
-                    <p class="card-text text-muted small mb-3" style="height: 3em; overflow: hidden;">
-                        {{ Str::limit($event->description, 80) }}
-                    </p>
-
-                    <div class="mb-3">
-                        <div class="event-stat">
-                            <i class="fas fa-calendar-alt text-primary"></i>
-                            <span>{{ Carbon\Carbon::parse($event->start_datetime)->locale('th')->translatedFormat('d M Y') }}</span>
-                        </div>
-                        <div class="event-stat">
-                            <i class="fas fa-clock text-primary"></i>
-                            <span>{{ Carbon\Carbon::parse($event->start_datetime)->format('H:i') }} น.</span>
-                        </div>
-                        <div class="event-stat">
-                            <i class="fas fa-map-marker-alt text-primary"></i>
-                            <span class="text-truncate">{{ $event->location }}</span>
-                        </div>
-                        <div class="event-stat">
-                            <i class="fas fa-users text-primary"></i>
-                            <div class="w-100">
-                                <div class="d-flex justify-content-between">
-                                    <span>ผู้เข้าร่วม</span>
-                                    <span>{{ $event->participants_count ?? 0 }}/{{ $event->max_participants ?? $event->capacity ?? 'ไม่จำกัด' }}</span>
-                                </div>
-                                @if($event->capacity > 0)
-                                <div class="progress participants-progress">
-                                    @php
-                                        $percentage = min(100, ($event->participants_count / max(1, $event->capacity)) * 100);
-                                    @endphp
-                                    <div class="progress-bar bg-success" role="progressbar"
-                                        style="width: {{ $percentage }}%"
-                                        aria-valuenow="{{ $event->participants_count }}"
-                                        aria-valuemin="0"
-                                        aria-valuemax="{{ $event->capacity }}">
-                                    </div>
-                                </div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex gap-2 mt-auto">
-                        <a href="{{ route('events.show', $event->event_id) }}" class="btn btn-outline-primary flex-grow-1">
-                            <i class="fas fa-info-circle me-1"></i> รายละเอียด
-                        </a>
-                        @if (!$event->hasEnded() && !$event->isFull())
-                            @if (!$event->isRegistered(Auth::id()))
-                                <form action="{{ route('events.register', $event->event_id) }}" method="POST" class="flex-grow-1">
-                                    @csrf
-                                    <button type="submit" class="btn btn-primary w-100">
-                                        <i class="fas fa-calendar-check me-1"></i> เข้าร่วม
-                                    </button>
-                                </form>
-                            @else
-                                <a href="{{ route('events.my') }}" class="btn btn-success flex-grow-1">
-                                    <i class="fas fa-check-circle me-1"></i> ลงทะเบียนแล้ว
-                                </a>
-                            @endif
-                        @endif
+                    <div>
+                        <h6 class="text-muted mb-1">กิจกรรมทั้งหมด</h6>
+                        <h4 class="mb-0">{{ $events->total() }}</h4>
                     </div>
                 </div>
             </div>
         </div>
-        @endforeach
-    </div>
-
-    <!-- แสดงแบบ List -->
-    @else
-    <div class="card shadow-sm">
-        <div class="list-group list-group-flush">
-            @foreach ($events as $event)
-            <a href="{{ route('events.show', $event->event_id) }}" class="list-group-item list-group-item-action p-3">
-                <div class="row align-items-center">
-                    <div class="col-lg-2 col-md-3 mb-3 mb-md-0">
-                        <img src="{{ asset('storage/' . ($event->event_image ?? $event->image_url ?? 'events/default.jpg')) }}"
-                            class="img-fluid rounded" style="height: 100px; width: 100%; object-fit: cover;"
-                            alt="{{ $event->title }}">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 shadow-sm border-0 event-stat-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="event-stat-icon bg-success bg-opacity-10 me-3">
+                        <i class="fas fa-play-circle text-success"></i>
                     </div>
-                    <div class="col-lg-7 col-md-6">
-                        <h5 class="mb-1">{{ $event->title }}</h5>
-                        <p class="text-muted mb-1 small">{{ Str::limit($event->description, 100) }}</p>
-                        <div class="d-flex flex-wrap gap-2 align-items-center mt-2">
-                            <span class="badge category-badge bg-primary">{{ ucfirst($event->category ?? 'กิจกรรม') }}</span>
-
-                            @if ($event->hasEnded())
-                                <span class="badge bg-secondary">สิ้นสุดแล้ว</span>
-                            @elseif ($event->isActive())
-                                <span class="badge bg-success">กำลังดำเนินการ</span>
-                            @elseif ($event->isFull())
-                                <span class="badge bg-warning text-dark">เต็มแล้ว</span>
-                            @else
-                                <span class="badge bg-info">กำลังจะมาถึง</span>
-                            @endif
-
-                            @if ($event->isRegistered(Auth::id()))
-                                <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> ลงทะเบียนแล้ว</span>
-                            @endif
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-3">
-                        <div class="event-stat">
-                            <i class="fas fa-calendar-alt text-primary"></i>
-                            <span>{{ Carbon\Carbon::parse($event->start_datetime)->locale('th')->translatedFormat('d M Y') }}</span>
-                        </div>
-                        <div class="event-stat">
-                            <i class="fas fa-clock text-primary"></i>
-                            <span>{{ Carbon\Carbon::parse($event->start_datetime)->format('H:i') }} น.</span>
-                        </div>
-                        <div class="event-stat">
-                            <i class="fas fa-map-marker-alt text-primary"></i>
-                            <span class="text-truncate">{{ $event->location }}</span>
-                        </div>
-                        <div class="event-stat">
-                            <i class="fas fa-users text-primary"></i>
-                            <span>{{ $event->participants_count ?? 0 }}/{{ $event->max_participants ?? $event->capacity ?? 'ไม่จำกัด' }}</span>
-                        </div>
+                    <div>
+                        <h6 class="text-muted mb-1">กำลังดำเนินการ</h6>
+                        <h4 class="mb-0">{{ $activeEventsCount ?? 0 }}</h4>
                     </div>
                 </div>
-            </a>
-            @endforeach
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 shadow-sm border-0 event-stat-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="event-stat-icon bg-warning bg-opacity-10 me-3">
+                        <i class="fas fa-hourglass-start text-warning"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">กำลังจะมาถึง</h6>
+                        <h4 class="mb-0">{{ $upcomingEventsCount ?? 0 }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card h-100 shadow-sm border-0 event-stat-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="event-stat-icon bg-info bg-opacity-10 me-3">
+                        <i class="fas fa-users text-info"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">ผู้เข้าร่วมทั้งหมด</h6>
+                        <h4 class="mb-0">{{ $totalParticipants ?? 0 }}</h4>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    @endif
+
+    <!-- Events Grid with Tabs -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body pt-4">
+            <!-- Tab Navigation - แบบใหม่ใช้ Bootstrap client-side tabs -->
+            <ul class="nav nav-tabs mb-4" id="eventsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-events" type="button" role="tab" aria-controls="all-events" aria-selected="true">
+                        <i class="fas fa-list me-1"></i> ทั้งหมด
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming-events" type="button" role="tab" aria-controls="upcoming-events" aria-selected="false">
+                        <i class="fas fa-hourglass-start me-1"></i> กำลังจะมาถึง
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="active-tab" data-bs-toggle="tab" data-bs-target="#active-events" type="button" role="tab" aria-controls="active-events" aria-selected="false">
+                        <i class="fas fa-play-circle me-1"></i> กำลังดำเนินการ
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="past-tab" data-bs-toggle="tab" data-bs-target="#past-events" type="button" role="tab" aria-controls="past-events" aria-selected="false">
+                        <i class="fas fa-history me-1"></i> ที่ผ่านมา
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Search Bar -->
+            <div class="mb-4">
+                <div class="d-flex">
+                    <div class="input-group">
+                        <input type="text" id="searchInput" class="form-control" placeholder="ค้นหากิจกรรม..." value="{{ request('search') }}">
+                        <button class="btn btn-primary" type="button" id="searchButton">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="eventsTabContent">
+                <!-- Tab: ทั้งหมด -->
+                <div class="tab-pane fade show active" id="all-events" role="tabpanel" aria-labelledby="all-tab">
+                    @if (count($events->filter(function($event) { return !$event->hasEnded(); })) === 0)
+                    <div class="empty-state bg-light rounded">
+                        <i class="fas fa-calendar-times"></i>
+                        <h4>ไม่พบกิจกรรม</h4>
+                        <p class="text-muted">ไม่มีกิจกรรมที่ตรงกับเงื่อนไข</p>
+                    </div>
+                    @else
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        @foreach ($events as $event)
+                            @if ($event->hasEnded())
+                                @continue
+                            @endif
+                            @include('events.partials.event-card', ['event' => $event])
+                        @endforeach
+                    </div>
+                    @endif
+                </div>
+
+                <!-- Tab: กำลังจะมาถึง -->
+                <div class="tab-pane fade" id="upcoming-events" role="tabpanel" aria-labelledby="upcoming-tab">
+                    @php
+                        $upcomingEvents = $events->filter(function($event) {
+                            return !$event->hasStarted() && !$event->hasEnded();
+                        });
+                    @endphp
+
+                    @if ($upcomingEvents->isEmpty())
+                    <div class="empty-state bg-light rounded">
+                        <i class="fas fa-calendar-times"></i>
+                        <h4>ไม่พบกิจกรรม</h4>
+                        <p class="text-muted">ไม่มีกิจกรรมที่กำลังจะมาถึง</p>
+                    </div>
+                    @else
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        @foreach ($upcomingEvents as $event)
+                            @include('events.partials.event-card', ['event' => $event])
+                        @endforeach
+                    </div>
+                    @endif
+                </div>
+
+                <!-- Tab: กำลังดำเนินการ -->
+                <div class="tab-pane fade" id="active-events" role="tabpanel" aria-labelledby="active-tab">
+                    @php
+                        $activeEvents = $events->filter(function($event) {
+                            return $event->isActive();
+                        });
+                    @endphp
+
+                    @if ($activeEvents->isEmpty())
+                    <div class="empty-state bg-light rounded">
+                        <i class="fas fa-calendar-times"></i>
+                        <h4>ไม่พบกิจกรรม</h4>
+                        <p class="text-muted">ไม่มีกิจกรรมที่กำลังดำเนินการอยู่</p>
+                    </div>
+                    @else
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        @foreach ($activeEvents as $event)
+                            @include('events.partials.event-card', ['event' => $event])
+                        @endforeach
+                    </div>
+                    @endif
+                </div>
+
+                <!-- Tab: ที่ผ่านมา -->
+                <div class="tab-pane fade" id="past-events" role="tabpanel" aria-labelledby="past-tab">
+                    @php
+                        $pastEvents = $events->filter(function($event) {
+                            return $event->hasEnded();
+                        });
+                    @endphp
+
+                    @if ($pastEvents->isEmpty())
+                    <div class="empty-state bg-light rounded">
+                        <i class="fas fa-calendar-times"></i>
+                        <h4>ไม่พบกิจกรรม</h4>
+                        <p class="text-muted">ไม่มีกิจกรรมที่ผ่านมา</p>
+                    </div>
+                    @else
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        @foreach ($pastEvents as $event)
+                            @include('events.partials.event-card', ['event' => $event])
+                        @endforeach
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Pagination -->
     <div class="d-flex justify-content-center mt-4">
         {{ $events->appends(request()->query())->links() }}
     </div>
-    @endif
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ฟังก์ชั่นค้นหากิจกรรม
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+
+        searchButton.addEventListener('click', function() {
+            performSearch();
+        });
+
+        searchInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        function performSearch() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            let foundEvents = false;
+
+            // ซ่อนทุกการ์ดกิจกรรมก่อน
+            document.querySelectorAll('.event-card').forEach(card => {
+                const title = card.querySelector('.card-title').textContent.toLowerCase();
+                const description = card.querySelector('.card-text').textContent.toLowerCase();
+                const location = card.querySelector('.event-stat:nth-child(3) span').textContent.toLowerCase();
+
+                // แสดงเฉพาะการ์ดที่ตรงกับคำค้นหา
+                if (searchTerm === '' ||
+                    title.includes(searchTerm) ||
+                    description.includes(searchTerm) ||
+                    location.includes(searchTerm)) {
+                    card.closest('.col-lg-4').style.display = '';
+                    foundEvents = true;
+                } else {
+                    card.closest('.col-lg-4').style.display = 'none';
+                }
+            });
+
+            // แสดงข้อความเมื่อไม่พบกิจกรรม
+            document.querySelectorAll('.tab-pane.active .empty-state').forEach(emptyState => {
+                emptyState.style.display = !foundEvents ? '' : 'none';
+            });
+
+            document.querySelectorAll('.tab-pane.active .row').forEach(row => {
+                row.style.display = foundEvents ? '' : 'none';
+            });
+        }
+
+        // เมื่อเปลี่ยนแท็บให้รีเซ็ตการค้นหา
+        const tabEls = document.querySelectorAll('button[data-bs-toggle="tab"]');
+        tabEls.forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function() {
+                searchInput.value = '';
+                document.querySelectorAll('.event-card').forEach(card => {
+                    card.closest('.col-lg-4').style.display = '';
+                });
+
+                // แสดง/ซ่อน empty state ให้ถูกต้อง
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    const hasEvents = pane.querySelector('.row .col-lg-4') !== null;
+                    if (pane.classList.contains('active')) {
+                        if (pane.querySelector('.empty-state')) {
+                            pane.querySelector('.empty-state').style.display = hasEvents ? 'none' : '';
+                        }
+                        if (pane.querySelector('.row')) {
+                            pane.querySelector('.row').style.display = hasEvents ? '' : 'none';
+                        }
+                    }
+                });
+            });
+        });
+    });
+</script>
 @endsection
 

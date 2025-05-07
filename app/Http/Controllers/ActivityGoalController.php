@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class ActivityGoalController extends Controller
 {
@@ -19,7 +20,7 @@ class ActivityGoalController extends Controller
             ->where('is_completed', false)
             ->where(function ($query) {
                 $query->whereNull('end_date')
-                    ->orWhere('end_date', '>=', now());
+                    ->orWhere('end_date', '>=', now()->startOfDay());
             })
             ->orderBy('end_date')
             ->get();
@@ -32,7 +33,7 @@ class ActivityGoalController extends Controller
 
         $expiredGoals = ActivityGoal::where('user_id', Auth::id())
             ->where('is_completed', false)
-            ->where('end_date', '<', now())
+            ->where('end_date', '<', now()->startOfDay())
             ->orderBy('end_date', 'desc')
             ->limit(10)
             ->get();
@@ -46,29 +47,28 @@ class ActivityGoalController extends Controller
     public function create()
     {
         $goalTypes = [
-            'distance' => 'Distance (km)',
-            'duration' => 'Duration (minutes)',
-            'calories' => 'Calories burned',
-            'frequency' => 'Number of workouts'
+            'distance' => 'ระยะทาง (กม.)',
+            'duration' => 'ระยะเวลา (นาที)',
+            'calories' => 'แคลอรี่ที่เผาผลาญ',
+            'frequency' => 'จำนวนครั้งการออกกำลังกาย'
         ];
 
         $activityTypes = [
-            '' => 'Any activity',
-            'run' => 'Running',
-            'walk' => 'Walking',
-            'cycle' => 'Cycling',
-            'swim' => 'Swimming',
-            'gym' => 'Gym Workout',
-            'yoga' => 'Yoga',
-            'hiit' => 'HIIT',
-            'other' => 'Other'
+            '' => 'เลือกกิจกรรม',
+            'running_health' => 'วิ่งเพื่อสุขภาพ',
+            'running_marathon' => 'วิ่งมาราธอน',
+            'running_mini' => 'วิ่งมินิมาราธอน',
+            'running_trail' => 'วิ่งเทรล',
+            'running_training' => 'วิ่งฝึกซ้อม',
+            'running_event' => 'วิ่งงานอีเวนต์',
+            'running_other' => 'วิ่งอื่นๆ (ระบุเอง)'
         ];
 
         $periods = [
-            'daily' => 'Daily',
-            'weekly' => 'Weekly',
-            'monthly' => 'Monthly',
-            'custom' => 'Custom period'
+            'daily' => 'รายวัน',
+            'weekly' => 'รายสัปดาห์',
+            'monthly' => 'รายเดือน',
+            'custom' => 'กำหนดเอง'
         ];
 
         return view('goals.create', compact('goalTypes', 'activityTypes', 'periods'));
@@ -81,7 +81,8 @@ class ActivityGoalController extends Controller
     {
         $validated = $request->validate([
             'type' => ['required', 'string', Rule::in(['distance', 'duration', 'calories', 'frequency'])],
-            'activity_type' => ['nullable', 'string', Rule::in(['', 'run', 'walk', 'cycle', 'swim', 'gym', 'yoga', 'hiit', 'other'])],
+            'activity_type' => ['required', 'string', Rule::in(['', 'running_health', 'running_marathon', 'running_mini', 'running_trail', 'running_training', 'running_event', 'running_other'])],
+            'activity_type_other' => ['nullable', 'string', 'max:100', 'required_if:activity_type,running_other'],
             'target_value' => ['required', 'numeric', 'min:1'],
             'period' => ['required', 'string', Rule::in(['daily', 'weekly', 'monthly', 'custom'])],
             'start_date' => ['required', 'date'],
@@ -94,7 +95,8 @@ class ActivityGoalController extends Controller
 
             switch ($validated['period']) {
                 case 'daily':
-                    $validated['end_date'] = $startDate->copy()->endOfDay();
+                    // กำหนดเวลาสิ้นสุดของวันให้ชัดเจน (23:59:59)
+                    $validated['end_date'] = $startDate->copy()->setTime(23, 59, 59);
                     break;
                 case 'weekly':
                     $validated['end_date'] = $startDate->copy()->addWeek()->subDay();
@@ -105,10 +107,19 @@ class ActivityGoalController extends Controller
             }
         }
 
-        $goal = Auth::user()->activityGoals()->create($validated);
+        $goal = ActivityGoal::create([
+            'user_id' => Auth::id(),
+            'type' => $validated['type'],
+            'activity_type' => $validated['activity_type'],
+            'activity_type_other' => $validated['activity_type_other'],
+            'target_value' => $validated['target_value'],
+            'period' => $validated['period'],
+            'start_date' => $validated['start_date'],
+            'end_date' => $validated['end_date'],
+        ]);
 
         return redirect()->route('goals.show', $goal)
-            ->with('success', 'Fitness goal created successfully!');
+            ->with('success', 'เพิ่มเป้าหมายการออกกำลังกายสำเร็จ!');
     }
 
     /**
@@ -116,7 +127,10 @@ class ActivityGoalController extends Controller
      */
     public function show(ActivityGoal $goal)
     {
-        $this->authorize('view', $goal);
+        // ตรวจสอบสิทธิ์โดยตรงแทนการใช้ authorize
+        if (Auth::id() !== $goal->user_id) {
+            abort(403, 'ไม่มีสิทธิ์ในการดูเป้าหมายนี้');
+        }
 
         // Calculate progress percentage
         $progressPercentage = 0;
@@ -132,32 +146,34 @@ class ActivityGoalController extends Controller
      */
     public function edit(ActivityGoal $goal)
     {
-        $this->authorize('update', $goal);
+        // ตรวจสอบสิทธิ์โดยตรงแทนการใช้ authorize
+        if (Auth::id() !== $goal->user_id) {
+            abort(403, 'ไม่มีสิทธิ์ในการแก้ไขเป้าหมายนี้');
+        }
 
         $goalTypes = [
-            'distance' => 'Distance (km)',
-            'duration' => 'Duration (minutes)',
-            'calories' => 'Calories burned',
-            'frequency' => 'Number of workouts'
+            'distance' => 'ระยะทาง (กม.)',
+            'duration' => 'ระยะเวลา (นาที)',
+            'calories' => 'แคลอรี่ที่เผาผลาญ',
+            'frequency' => 'จำนวนครั้งการออกกำลังกาย'
         ];
 
         $activityTypes = [
-            '' => 'Any activity',
-            'run' => 'Running',
-            'walk' => 'Walking',
-            'cycle' => 'Cycling',
-            'swim' => 'Swimming',
-            'gym' => 'Gym Workout',
-            'yoga' => 'Yoga',
-            'hiit' => 'HIIT',
-            'other' => 'Other'
+            '' => 'เลือกกิจกรรม',
+            'running_health' => 'วิ่งเพื่อสุขภาพ',
+            'running_marathon' => 'วิ่งมาราธอน',
+            'running_mini' => 'วิ่งมินิมาราธอน',
+            'running_trail' => 'วิ่งเทรล',
+            'running_training' => 'วิ่งฝึกซ้อม',
+            'running_event' => 'วิ่งงานอีเวนต์',
+            'running_other' => 'วิ่งอื่นๆ (ระบุเอง)'
         ];
 
         $periods = [
-            'daily' => 'Daily',
-            'weekly' => 'Weekly',
-            'monthly' => 'Monthly',
-            'custom' => 'Custom period'
+            'daily' => 'รายวัน',
+            'weekly' => 'รายสัปดาห์',
+            'monthly' => 'รายเดือน',
+            'custom' => 'กำหนดเอง'
         ];
 
         return view('goals.edit', compact('goal', 'goalTypes', 'activityTypes', 'periods'));
@@ -168,7 +184,10 @@ class ActivityGoalController extends Controller
      */
     public function update(Request $request, ActivityGoal $goal)
     {
-        $this->authorize('update', $goal);
+        // ตรวจสอบสิทธิ์โดยตรงแทนการใช้ authorize
+        if (Auth::id() !== $goal->user_id) {
+            abort(403, 'ไม่มีสิทธิ์ในการแก้ไขเป้าหมายนี้');
+        }
 
         // Only allow updating if the goal is not completed
         if ($goal->is_completed) {
@@ -178,7 +197,8 @@ class ActivityGoalController extends Controller
 
         $validated = $request->validate([
             'type' => ['required', 'string', Rule::in(['distance', 'duration', 'calories', 'frequency'])],
-            'activity_type' => ['nullable', 'string', Rule::in(['', 'run', 'walk', 'cycle', 'swim', 'gym', 'yoga', 'hiit', 'other'])],
+            'activity_type' => ['required', 'string', Rule::in(['', 'running_health', 'running_marathon', 'running_mini', 'running_trail', 'running_training', 'running_event', 'running_other'])],
+            'activity_type_other' => ['nullable', 'string', 'max:100', 'required_if:activity_type,running_other'],
             'target_value' => ['required', 'numeric', 'min:1'],
             'period' => ['required', 'string', Rule::in(['daily', 'weekly', 'monthly', 'custom'])],
             'start_date' => ['required', 'date'],
@@ -191,7 +211,8 @@ class ActivityGoalController extends Controller
 
             switch ($validated['period']) {
                 case 'daily':
-                    $validated['end_date'] = $startDate->copy()->endOfDay();
+                    // กำหนดเวลาสิ้นสุดของวันให้ชัดเจน (23:59:59)
+                    $validated['end_date'] = $startDate->copy()->setTime(23, 59, 59);
                     break;
                 case 'weekly':
                     $validated['end_date'] = $startDate->copy()->addWeek()->subDay();
@@ -208,19 +229,25 @@ class ActivityGoalController extends Controller
         $goal->update($validated);
 
         return redirect()->route('goals.show', $goal)
-            ->with('success', 'Fitness goal updated successfully!');
+            ->with('success', 'อัปเดตเป้าหมายการออกกำลังกายสำเร็จแล้ว!');
     }
 
     /**
      * Remove the specified goal from storage.
      */
-    public function destroy(ActivityGoal $goal)
+    public function destroy($id)
     {
-        $this->authorize('delete', $goal);
+        $goal = ActivityGoal::findOrFail($id);
 
+        // Check if the goal belongs to the authenticated user
+        if (Auth::id() !== $goal->user_id) {
+            abort(403, 'ไม่มีสิทธิ์ในการลบเป้าหมายนี้');
+        }
+
+        // Delete the goal
         $goal->delete();
 
         return redirect()->route('goals.index')
-            ->with('success', 'Fitness goal deleted successfully!');
+            ->with('success', 'เป้าหมายถูกลบเรียบร้อยแล้ว');
     }
 }
