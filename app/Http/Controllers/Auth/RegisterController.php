@@ -71,7 +71,7 @@ class RegisterController extends Controller
 
             'telephone.required' => 'กรุณากรอกเบอร์โทรศัพท์',
             'telephone.string' => 'เบอร์โทรศัพท์ต้องเป็นตัวเลขเท่านั้น',
-            'telephone.regex' => 'รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง',
+            'telephone.regex' => 'กรุณากรอกเบอร์โทรศัพท์เป็นตัวเลข 10 หลัก (เช่น 0812345678)',
 
             'password.required' => 'กรุณากรอกรหัสผ่าน',
             'password.string' => 'รหัสผ่านต้องเป็นตัวอักษรเท่านั้น',
@@ -84,8 +84,8 @@ class RegisterController extends Controller
         return Validator::make($data, [
             'firstname' => ['required', 'string', 'max:255'],
             'lastname' => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'max:50', 'unique:users', 'alpha_dash'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'username' => ['required', 'string', 'max:50', 'unique:tb_user', 'alpha_dash'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:tb_user'],
             'telephone' => ['required', 'string', 'regex:/^[0-9]{10}$/'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'accept_terms' => ['required'],
@@ -101,12 +101,15 @@ class RegisterController extends Controller
     protected function create(array $data)
     {
         return User::create([
+            'user_type_id' => 1, // Default user type (regular user)
+            'user_status_id' => 1, // Default status (active)
             'firstname' => $data['firstname'],
             'lastname' => $data['lastname'],
             'username' => $data['username'],
             'email' => $data['email'],
             'telephone' => $data['telephone'],
             'password' => Hash::make($data['password']),
+            'points' => 0, // Initial points
         ]);
     }
 }
