@@ -258,7 +258,7 @@
                 <h1 class="h3 mb-0">รายละเอียดเป้าหมาย</h1>
                 <p class="text-muted mb-0">{{ $goal->getTypeLabel() }} - {{ $goal->target_value }} {{ $goal->getUnitLabel() }}</p>
             </div>
-            <div class="btn-group">
+            <div class="btn-group  gap-2">
                 <a href="{{ route('goals.edit', $goal) }}" class="btn btn-outline-primary">
                     <i class="fas fa-edit me-1"></i> แก้ไข
                 </a>
@@ -353,7 +353,7 @@
                                 </span>
                             </div>
                             @if(!$goal->isCompleted() && !$goal->isExpired())
-                                <a href="{{ route('run.index') }}" class="btn btn-success">
+                                <a href="{{ route('run.index') }}" class="btn btn-primary">
                                     <i class="fas fa-running me-1"></i> เริ่มวิ่ง
                                 </a>
                             @endif

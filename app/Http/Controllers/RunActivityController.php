@@ -443,12 +443,30 @@ class RunActivityController extends Controller
             ->first();
 
         if ($unfinishedActivity) {
+            // ตรวจสอบว่ากิจกรรมนี้เก่าเกินไปหรือไม่ (เก่ากว่า 6 ชั่วโมง)
+            $startTime = $unfinishedActivity->start_time instanceof Carbon
+                ? $unfinishedActivity->start_time
+                : Carbon::parse($unfinishedActivity->start_time);
+
+            if ($startTime->lt(Carbon::now()->subHours(6))) {
+                // ถ้าเป็นกิจกรรมเก่า ให้ปิดโดยอัตโนมัติ
+                $unfinishedActivity->end_time = Carbon::now();
+                $unfinishedActivity->save();
+
+                Log::info('ปิดกิจกรรมเก่าที่ยังไม่เสร็จสิ้นโดยอัตโนมัติ', [
+                    'user_id' => $user->user_id,
+                    'activity_id' => $unfinishedActivity->run_id
+                ]);
+
+                // ส่งคืนค่าว่าไม่มีกิจกรรมที่กำลังดำเนินอยู่
+                return response()->json([
+                    'has_active' => false
+                ]);
+            }
+
             // ถ้ามีกิจกรรมที่ยังไม่เสร็จ ให้ส่งข้อมูลเพิ่มเติมเพื่อให้สามารถดำเนินการต่อได้
             $duration = 0;
             if ($unfinishedActivity->start_time) {
-                $startTime = $unfinishedActivity->start_time instanceof Carbon
-                    ? $unfinishedActivity->start_time
-                    : Carbon::parse($unfinishedActivity->start_time);
                 $duration = $startTime->diffInSeconds(Carbon::now());
             }
 

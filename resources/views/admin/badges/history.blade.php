@@ -4,7 +4,7 @@
 
 @section('styles')
 <style>
-    .badge-image {
+ุ   .badge-image {
         border-radius: 10px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         transition: transform 0.3s ease;
@@ -245,6 +245,48 @@
             height: 30px;
         }
     }
+
+    /* Search functionality styles */
+    .search-wrapper {
+        position: relative;
+    }
+
+    .search-wrapper .form-control {
+        padding-left: 40px;
+        border-radius: 8px;
+    }
+
+    .search-wrapper .search-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #adb5bd;
+    }
+
+    /* Loading spinner */
+    .spinner-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        border-radius: 10px;
+    }
+
+    .search-results-count {
+        background-color: #f8f9fa;
+        border-radius: 50px;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-left: 10px;
+    }
 </style>
 @endsection
 
@@ -377,6 +419,14 @@
                                 <input type="date" name="date_end" id="date_end" class="form-control" value="{{ request('date_end') }}">
                             </div>
 
+                            <div class="col-md-2 col-sm-6">
+                                <label for="search_input" class="form-label">ค้นหา</label>
+                                <div class="search-wrapper">
+                                    <i class="fas fa-search search-icon"></i>
+                                    <input type="text" id="search_input" class="form-control" placeholder="ค้นหารายการ..." value="{{ request('search') }}">
+                                </div>
+                            </div>
+
                             <div class="col-md-2 col-12 d-flex align-items-end">
                                 <div class="d-flex gap-2 w-100">
                                     <button type="submit" class="btn btn-primary flex-grow-1">
@@ -402,8 +452,16 @@
                 <i class="fas fa-medal me-2 text-primary"></i>
                 ประวัติการได้รับเหรียญตรา
             </h5>
+            <div id="search-results-count" class="search-results-count d-none">
+                <i class="fas fa-search me-1"></i> <span id="count-number">0</span> รายการ
+            </div>
         </div>
-        <div class="card-body p-0">
+        <div class="card-body p-0 position-relative">
+            <div id="results-loading" class="spinner-overlay d-none">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">กำลังโหลด...</span>
+                </div>
+            </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead>
@@ -418,7 +476,7 @@
                             <th width="10%" class="text-center">จัดการ</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="history-list-container">
                         @if($badgeHistory->isEmpty())
                             <tr>
                                 <td colspan="8" class="text-center py-5">
@@ -436,7 +494,7 @@
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="flex-shrink-0 me-2 d-none d-sm-block">
-                                                @if(isset($item->profile_image))
+                                                @if(!empty($item->profile_image) && file_exists(public_path('profile_images/' . $item->profile_image)))
                                                     <img src="{{ asset('profile_images/' . $item->profile_image) }}" class="rounded-circle" width="40" height="40" alt="Profile" style="object-fit: cover;">
                                                 @else
                                                     <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white" style="width: 40px; height: 40px;">
@@ -509,8 +567,13 @@
                                         @endif
                                     </td>
                                     <td>
-                                        {{ \Carbon\Carbon::parse($item->earned_at)->format('d/m/Y') }}
-                                        <div class="small text-muted d-none d-md-block">{{ \Carbon\Carbon::parse($item->earned_at)->format('H:i:s') }}</div>
+                                        @php
+                                            $earnedDate = \Carbon\Carbon::parse($item->earned_at);
+                                            $thaiYear = $earnedDate->year + 543;
+                                            $formattedDate = $earnedDate->locale('th')->translatedFormat('j M').' '.substr($thaiYear, 2);
+                                        @endphp
+                                        {{ $formattedDate }}
+                                        <div class="small text-muted d-none d-md-block">{{ $earnedDate->format('H:i') }} น.</div>
                                     </td>
                                     <td class="text-center">
                                         <a href="{{ route('admin.badges.show', $item->badge_id) }}" class="btn btn-sm btn-info btn-action mb-1" title="ดูรายละเอียดเหรียญตรา">
@@ -527,7 +590,7 @@
                 </table>
             </div>
 
-            <div class="d-flex justify-content-center mt-4 mb-4">
+            <div class="d-flex justify-content-center mt-4 mb-4" id="pagination-container">
                 {{ $badgeHistory->appends(request()->query())->links() }}
             </div>
         </div>
@@ -591,6 +654,65 @@
                 $('.badge-stat-card').removeClass('mb-2');
                 $('.btn-action').removeClass('btn-sm').css('width', '').css('height', '');
             }
+        }
+
+        // กำหนดตัวแปรสำหรับการค้นหาแบบ realtime
+        let searchTimeout;
+        const searchDelay = 500; // ระยะเวลารอก่อนส่งคำขอค้นหา (ms)
+
+        // ฟังก์ชันสำหรับการค้นหาแบบ realtime
+        $('#search_input').on('input', function() {
+            clearTimeout(searchTimeout);
+            const searchValue = $(this).val().trim();
+
+            if (searchValue.length >= 2 || searchValue.length === 0) {
+                $('#results-loading').removeClass('d-none');
+
+                searchTimeout = setTimeout(function() {
+                    performSearch(searchValue);
+                }, searchDelay);
+            }
+        });
+
+        // ฟังก์ชันสำหรับการส่งคำขอค้นหา AJAX
+        function performSearch(searchValue) {
+            $.ajax({
+                url: "{{ route('admin.badges.history.api.search') }}",
+                type: "GET",
+                data: {
+                    search: searchValue,
+                    user_id: $('#user_id').val(),
+                    badge_type: $('#badge_type').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // อัปเดตตาราง
+                        $('#history-list-container').html(response.html);
+
+                        // อัปเดตการแบ่งหน้า
+                        $('#pagination-container').html(response.pagination);
+
+                        // แสดงจำนวนผลลัพธ์
+                        $('#count-number').text(response.count);
+                        $('#search-results-count').removeClass('d-none');
+
+                        // ถ้าไม่มีการค้นหา ซ่อนจำนวนผลลัพธ์
+                        if (searchValue.length === 0 && $('#user_id').val() === '' && $('#badge_type').val() === '') {
+                            $('#search-results-count').addClass('d-none');
+                        }
+                    }
+
+                    // ซ่อน loading
+                    $('#results-loading').addClass('d-none');
+                },
+                error: function() {
+                    // ซ่อน loading กรณีเกิดข้อผิดพลาด
+                    $('#results-loading').addClass('d-none');
+
+                    // แสดงข้อความแจ้งเตือน
+                    alert('เกิดข้อผิดพลาดในการค้นหา กรุณาลองใหม่อีกครั้ง');
+                }
+            });
         }
     });
 </script>

@@ -104,6 +104,8 @@ Route::middleware(['auth'])->group(function () {
         ->name('health-articles.like');
     Route::post('/health-articles/{id}/save', [HealthArticleController::class, 'toggleSave'])
         ->name('health-articles.save');
+    Route::post('/health-articles/save-filter', [HealthArticleController::class, 'saveFilter'])
+        ->name('health-articles.save-filter');
     Route::post('/health-articles/{id}/share', [HealthArticleController::class, 'share'])
         ->name('health-articles.share');
     Route::delete('/health-articles/comments/{commentId}', [HealthArticleController::class, 'deleteComment'])
@@ -148,6 +150,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Badges management - improved CRUD
     Route::get('/badges', [BadgeController::class, 'admin'])->name('badges.index');
+    Route::get('/badges/api/search', [BadgeController::class, 'apiSearch'])->name('badges.api.search');
     Route::get('/badges/statistics', [BadgeController::class, 'statistics'])->name('badges.statistics');
     Route::get('/badges/history', [BadgeController::class, 'adminHistory'])->name('badges.history');
     Route::get('/badges/create', [BadgeController::class, 'create'])->name('badges.create');
@@ -327,3 +330,4 @@ Route::prefix('tour')->middleware(['auth'])->group(function () {
 Route::get('/admin/badges', [BadgeController::class, 'admin'])->name('admin.badges.index');
 Route::get('/admin/badges/api/search', [BadgeController::class, 'apiSearch'])->name('admin.badges.api.search');
 Route::get('/admin/badges/create', [BadgeController::class, 'create'])->name('admin.badges.create');
+Route::get('/admin/badges/history/api/search', [BadgeController::class, 'apiSearchHistory'])->name('admin.badges.history.api.search');

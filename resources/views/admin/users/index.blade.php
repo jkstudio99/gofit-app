@@ -478,10 +478,10 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    // อัพเดตตาราง
+                    // อัปเดตตาราง
                     updateTable(data);
 
-                    // อัพเดตการแสดงผลจำนวนข้อมูล
+                    // อัปเดตการแสดงผลจำนวนข้อมูล
                     const countBadge = document.getElementById('search_results_count');
                     if (data.users.data.length > 0) {
                         countBadge.textContent = `กำลังแสดงผลลัพธ์: ${data.users.data.length} รายการ`;
@@ -490,10 +490,10 @@
                         countBadge.classList.add('d-none');
                     }
 
-                    // อัพเดตจำนวนผู้ใช้ทั้งหมด
+                    // อัปเดตจำนวนผู้ใช้ทั้งหมด
                     document.getElementById('total_users').textContent = data.users.total;
 
-                    // อัพเดตการแสดง pagination
+                    // อัปเดตการแสดง pagination
                     updatePagination(data.users);
                 })
                 .catch(error => {
@@ -509,7 +509,7 @@
                 });
             };
 
-            // ฟังก์ชันอัพเดตตาราง
+            // ฟังก์ชันอัปเดตตาราง
             const updateTable = function(data) {
                 const tableBody = document.getElementById('users_table_body');
                 const noResults = document.getElementById('no_results');
@@ -604,7 +604,7 @@
                 setupDeleteButtons();
             };
 
-            // ฟังก์ชันอัพเดต pagination
+            // ฟังก์ชันอัปเดต pagination
             const updatePagination = function(paginationData) {
                 const paginationContainer = document.getElementById('pagination_container');
 

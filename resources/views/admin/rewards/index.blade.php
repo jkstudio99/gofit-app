@@ -347,7 +347,7 @@
                 if (statusFilter) {
                     statusFilter.value = status;
                 }
-                // อัพเดต UI ของ badges
+                // อัปเดต UI ของ badges
                 statusFilterBadges.forEach(b => {
                     b.classList.remove('bg-primary');
                     b.classList.add('bg-light', 'text-dark');
@@ -409,13 +409,13 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // อัพเดต reward list
+                        // อัปเดต reward list
                         document.getElementById('reward-list-container').innerHTML = data.html;
 
-                        // อัพเดต pagination
+                        // อัปเดต pagination
                         document.getElementById('pagination-container').innerHTML = data.pagination;
 
-                        // อัพเดต count
+                        // อัปเดต count
                         document.getElementById('total-count').textContent = data.count;
                         document.getElementById('pagination-total').textContent = data.count;
 
@@ -462,13 +462,13 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // อัพเดต reward list
+                        // อัปเดต reward list
                         document.getElementById('reward-list-container').innerHTML = data.html;
 
-                        // อัพเดต pagination
+                        // อัปเดต pagination
                         document.getElementById('pagination-container').innerHTML = data.pagination;
 
-                        // อัพเดต count
+                        // อัปเดต count
                         document.getElementById('total-count').textContent = data.count;
                         document.getElementById('pagination-total').textContent = data.count;
 

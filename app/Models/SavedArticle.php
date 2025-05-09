@@ -31,6 +31,18 @@ class SavedArticle extends Model
     protected $fillable = [
         'article_id',
         'user_id',
+        'filter_name',
+        'filter_data',
+        'is_filter',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'is_filter' => 'boolean',
     ];
 
     /**

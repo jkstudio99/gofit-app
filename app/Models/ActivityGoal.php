@@ -83,6 +83,23 @@ class ActivityGoal extends Model
     }
 
     /**
+     * Get the type label for display in UI.
+     *
+     * @return string
+     */
+    public function getTypeLabel(): string
+    {
+        $types = [
+            'distance' => 'ระยะทาง (กม.)',
+            'duration' => 'ระยะเวลา (นาที)',
+            'calories' => 'แคลอรี่ที่เผาผลาญ',
+            'frequency' => 'จำนวนครั้งการออกกำลังกาย'
+        ];
+
+        return $types[$this->type] ?? $this->type;
+    }
+
+    /**
      * Get the formatted activity type.
      *
      * @return string
@@ -116,6 +133,175 @@ class ActivityGoal extends Model
     }
 
     /**
+     * Get the activity type label for display in UI.
+     *
+     * @return string
+     */
+    public function getActivityTypeLabel(): string
+    {
+        if (empty($this->activity_type)) {
+            return 'ทุกกิจกรรม';
+        }
+
+        $types = [
+            'running' => 'วิ่ง',
+            'walking' => 'เดิน',
+            'cycling' => 'ปั่นจักรยาน',
+            'swimming' => 'ว่ายน้ำ',
+            'gym' => 'ออกกำลังกายในยิม',
+            'yoga' => 'โยคะ',
+            'hiit' => 'HIIT',
+            'other' => 'อื่นๆ',
+            // For backward compatibility with older data
+            'run' => 'วิ่ง',
+            'walk' => 'เดิน',
+            'cycle' => 'ปั่นจักรยาน',
+            'swim' => 'ว่ายน้ำ',
+            // เพิ่มประเภทกิจกรรมวิ่ง
+            'running_health' => 'วิ่งเพื่อสุขภาพ',
+            'running_other' => 'วิ่งอื่นๆ'
+        ];
+
+        return $types[$this->activity_type] ?? $this->activity_type;
+    }
+
+    /**
+     * Get the unit label based on goal type.
+     *
+     * @return string
+     */
+    public function getUnitLabel(): string
+    {
+        $units = [
+            'distance' => 'กม.',
+            'duration' => 'นาที',
+            'calories' => 'แคลอรี่',
+            'frequency' => 'ครั้ง'
+        ];
+
+        return $units[$this->type] ?? '';
+    }
+
+    /**
+     * Get the period label for display in UI.
+     *
+     * @return string
+     */
+    public function getPeriodLabel(): string
+    {
+        $periods = [
+            'daily' => 'รายวัน',
+            'weekly' => 'รายสัปดาห์',
+            'monthly' => 'รายเดือน',
+            'custom' => 'กำหนดเอง'
+        ];
+
+        return $periods[$this->period] ?? $this->period;
+    }
+
+    /**
+     * Get the current value of the goal.
+     *
+     * @return float
+     */
+    public function getCurrentValue(): float
+    {
+        return (float) $this->current_value;
+    }
+
+    /**
+     * Get the remaining amount to complete the goal.
+     *
+     * @return float
+     */
+    public function getRemaining(): float
+    {
+        $remaining = max(0, (float) $this->target_value - (float) $this->current_value);
+        return round($remaining, 2);
+    }
+
+    /**
+     * Get the number of days remaining until the goal's end date.
+     *
+     * @return int|null
+     */
+    public function getRemainingDays(): ?int
+    {
+        if (!$this->end_date) {
+            return null;
+        }
+
+        $today = now()->startOfDay();
+        $endDate = $this->end_date->startOfDay();
+
+        if ($today > $endDate) {
+            return 0;
+        }
+
+        return $today->diffInDays($endDate);
+    }
+
+    /**
+     * Get the status label for display in UI.
+     *
+     * @return string
+     */
+    public function getStatusLabel(): string
+    {
+        if ($this->is_completed) {
+            return 'สำเร็จแล้ว';
+        }
+
+        if ($this->isExpired()) {
+            return 'หมดเวลา';
+        }
+
+        return 'กำลังดำเนินการ';
+    }
+
+    /**
+     * Get the CSS class for the status badge.
+     *
+     * @return string
+     */
+    public function getStatusBadgeClass(): string
+    {
+        if ($this->is_completed) {
+            return 'bg-success';
+        }
+
+        if ($this->isExpired()) {
+            return 'bg-danger';
+        }
+
+        return 'bg-primary';
+    }
+
+    /**
+     * Check if the goal is completed.
+     *
+     * @return bool
+     */
+    public function isCompleted(): bool
+    {
+        return $this->is_completed;
+    }
+
+    /**
+     * Get the progress percentage.
+     *
+     * @return int
+     */
+    public function getProgressPercentage(): int
+    {
+        if ($this->target_value <= 0) {
+            return 0;
+        }
+
+        return min(100, (int) round(($this->current_value / $this->target_value) * 100));
+    }
+
+    /**
      * Get the progress percentage.
      *
      * @return int
@@ -135,6 +321,16 @@ class ActivityGoal extends Model
      * @return bool
      */
     public function getIsExpiredAttribute(): bool
+    {
+        return !$this->is_completed && $this->end_date && $this->end_date->endOfDay()->isPast();
+    }
+
+    /**
+     * Check if the goal has expired.
+     *
+     * @return bool
+     */
+    public function isExpired(): bool
     {
         return !$this->is_completed && $this->end_date && $this->end_date->endOfDay()->isPast();
     }

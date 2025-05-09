@@ -1459,6 +1459,11 @@
                                         <i class="fas fa-bullseye"></i> เป้าหมาย
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {{ request()->routeIs('health-articles.*') ? 'active' : '' }}" href="{{ route('health-articles.index') }}">
+                                        <i class="fas fa-heartbeat"></i> บทความสุขภาพ
+                                    </a>
+                                </li>
                             @endauth
                         </ul>
 
@@ -1506,6 +1511,11 @@
                                 <li class="nav-item d-md-none">
                                     <a class="nav-link {{ request()->routeIs('goals.*') ? 'active' : '' }}" href="{{ route('goals.index') }}">
                                         <i class="fas fa-bullseye me-2"></i> เป้าหมาย
+                                    </a>
+                                </li>
+                                <li class="nav-item d-md-none">
+                                    <a class="nav-link {{ request()->routeIs('health-articles.*') ? 'active' : '' }}" href="{{ route('health-articles.index') }}">
+                                        <i class="fas fa-heartbeat me-2"></i> บทความสุขภาพ
                                     </a>
                                 </li>
 
@@ -1599,6 +1609,10 @@
             <a href="{{ route('rewards.index') }}" class="mobile-nav-item {{ request()->routeIs('rewards.*') ? 'active' : '' }}">
                 <i class="fas fa-gift mobile-nav-icon"></i>
                 <span>รางวัล</span>
+            </a>
+            <a href="{{ route('health-articles.index') }}" class="mobile-nav-item {{ request()->routeIs('health-articles.*') ? 'active' : '' }}">
+                <i class="fas fa-heartbeat mobile-nav-icon"></i>
+                <span>บทความ</span>
             </a>
             <a href="{{ route('profile.edit') }}" class="mobile-nav-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
                 <i class="fas fa-user mobile-nav-icon"></i>

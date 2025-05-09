@@ -3,19 +3,40 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="GoFit - แอปพลิเคชันส่งเสริมการออกกำลังกายโดยใช้หลักการเกมมิฟิเคชัน">
-    <title>GoFit - ออกกำลังกายสนุกสไตล์เกม</title>
+        <meta name="description" content="GoFit - แอปพลิเคชันออกกำลังกายด้วยระบบเกมมิฟิเคชัน สะสมแต้ม รับเหรียญตรา และแลกของรางวัลมากมาย">
+        <meta name="keywords" content="ออกกำลังกาย, เกมมิฟิเคชัน, สุขภาพ, วิ่ง, รางวัล, เหรียญตรา, แอปพลิเคชัน">
+        <meta name="author" content="GoFit Team">
+        <meta name="robots" content="index, follow">
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{ url('/') }}">
+        <meta property="og:title" content="GoFit - ออกกำลังกายสนุกด้วยระบบเกมมิฟิเคชัน">
+        <meta property="og:description" content="แอปพลิเคชันที่จะทำให้การออกกำลังกายของคุณสนุกมากขึ้นด้วยระบบเกมมิฟิเคชัน สะสมแต้ม รับเหรียญตรา และแลกของรางวัลมากมาย">
+        <meta property="og:image" content="{{ asset('images/gofit-share.jpg') }}">
+
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image">
+        <meta property="twitter:url" content="{{ url('/') }}">
+        <meta property="twitter:title" content="GoFit - ออกกำลังกายสนุกด้วยระบบเกมมิฟิเคชัน">
+        <meta property="twitter:description" content="แอปพลิเคชันที่จะทำให้การออกกำลังกายของคุณสนุกมากขึ้นด้วยระบบเกมมิฟิเคชัน สะสมแต้ม รับเหรียญตรา และแลกของรางวัลมากมาย">
+        <meta property="twitter:image" content="{{ asset('images/gofit-share.jpg') }}">
+
+        <title>GoFit - ออกกำลังกายสนุก สะสมแต้ม รับรางวัล</title>
+
+        <!-- Preconnect to required origins -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 
         <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <!-- FontAwesome -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
 
         <!-- Styles -->
-    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+        @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
         <style>
         body {
@@ -166,7 +187,6 @@
             font-weight: var(--font-weight-bold);
             margin-bottom: 1.5rem;
             color: var(--color-text-primary);
-
         }
 
         .footer-link {
@@ -279,10 +299,10 @@
     </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-gofit">
+    <nav class="navbar navbar-expand-lg navbar-gofit sticky-top">
         <div class="container">
             <a class="navbar-brand" href="{{ url('/') }}">
-                <img src="{{ asset('images/gofit-logo-text-black.svg') }}" alt="GoFit Logo">
+                <img src="{{ asset('images/gofit-logo-text-black.svg') }}" alt="GoFit Logo" width="120" height="40">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -323,7 +343,7 @@
                     </div>
                 </div>
                 <div class="col-lg-6 text-center">
-                    <img src="{{ asset('images/cover-1.png') }}" alt="GoFit App" class="mockup-device">
+                    <img src="{{ asset('images/cover2.png') }}" alt="GoFit App แอปพลิเคชันออกกำลังกาย" class="mockup-device" loading="lazy" width="600" height="450">
                 </div>
             </div>
         </div>
@@ -337,7 +357,7 @@
                 <div class="col-md-4 mb-4">
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="fas fa-medal"></i>
+                            <i class="fas fa-medal" aria-hidden="true"></i>
                         </div>
                         <h3>เหรียญตราท้าทาย</h3>
                         <p>สะสมเหรียญตราจากความสำเร็จในการออกกำลังกายแต่ละครั้ง ยิ่งออกกำลังกายมาก ยิ่งได้รับเหรียญมากขึ้น</p>
@@ -346,7 +366,7 @@
                 <div class="col-md-4 mb-4">
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="fas fa-route"></i>
+                            <i class="fas fa-route" aria-hidden="true"></i>
                         </div>
                         <h3>ติดตามการวิ่งแบบ GPS</h3>
                         <p>บันทึกเส้นทางการวิ่งด้วย GPS อย่างแม่นยำ พร้อมแสดงผลแคลอรี่ ระยะทาง และความเร็วเฉลี่ย</p>
@@ -355,7 +375,7 @@
                 <div class="col-md-4 mb-4">
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="fas fa-gift"></i>
+                            <i class="fas fa-gift" aria-hidden="true"></i>
                         </div>
                         <h3>รางวัลจริง</h3>
                         <p>แลกเหรียญตราที่สะสมได้กับรางวัลจริงมากมาย เช่น ส่วนลด คูปอง หรือของรางวัลพิเศษ</p>
@@ -366,28 +386,28 @@
                 <div class="col-md-4 mb-4">
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="fas fa-chart-line"></i>
+                            <i class="fas fa-chart-line" aria-hidden="true"></i>
                         </div>
                         <h3>ติดตามความก้าวหน้า</h3>
-                        <p>ดูสถิติและความก้าวหน้าในการออกกำลังกายของคุณผ่านแดชบอร์ดที่ใช้งานง่าย</p>
+                        <p>ดูสถิติและความก้าวหน้าในการออกกำลังกายของคุณผ่านแดชบอร์ดที่ใช้งานง่าย ช่วยให้คุณเห็นพัฒนาการได้อย่างชัดเจน</p>
                     </div>
                 </div>
                 <div class="col-md-4 mb-4">
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="fas fa-users"></i>
+                            <i class="fas fa-users" aria-hidden="true"></i>
                         </div>
                         <h3>ท้าทายเพื่อน</h3>
-                        <p>สร้างการท้าทายและแข่งขันกับเพื่อนเพื่อเพิ่มแรงจูงใจในการออกกำลังกาย</p>
+                        <p>สร้างการท้าทายและแข่งขันกับเพื่อนเพื่อเพิ่มแรงจูงใจในการออกกำลังกาย แชร์ผลลัพธ์และกระตุ้นซึ่งกันและกัน</p>
                     </div>
                 </div>
                 <div class="col-md-4 mb-4">
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="fas fa-bell"></i>
+                            <i class="fas fa-bell" aria-hidden="true"></i>
                         </div>
                         <h3>แจ้งเตือนอัจฉริยะ</h3>
-                        <p>ระบบแจ้งเตือนที่ชาญฉลาดเพื่อช่วยกระตุ้นให้คุณออกกำลังกายอย่างสม่ำเสมอ</p>
+                        <p>ระบบแจ้งเตือนที่ชาญฉลาดเพื่อช่วยกระตุ้นให้คุณออกกำลังกายอย่างสม่ำเสมอ ปรับเปลี่ยนตามพฤติกรรมของคุณ</p>
                     </div>
                 </div>
             </div>
@@ -402,28 +422,28 @@
             <h2 class="section-title text-center">เหรียญตราที่รอคุณอยู่</h2>
             <div class="text-center">
                 <div class="badge-item mb-3">
-                    <i class="fas fa-running badge-icon"></i> นักวิ่งมือใหม่
+                    <i class="fas fa-running badge-icon" aria-hidden="true"></i> นักวิ่งมือใหม่
                 </div>
                 <div class="badge-item mb-3">
-                    <i class="fas fa-fire badge-icon"></i> เผาผลาญ 1,000 แคลอรี่
+                    <i class="fas fa-fire badge-icon" aria-hidden="true"></i> เผาผลาญ 1,000 แคลอรี่
                 </div>
                 <div class="badge-item mb-3">
-                    <i class="fas fa-road badge-icon"></i> วิ่ง 10 กิโลเมตร
+                    <i class="fas fa-road badge-icon" aria-hidden="true"></i> วิ่ง 10 กิโลเมตร
                 </div>
                 <div class="badge-item mb-3">
-                    <i class="fas fa-bolt badge-icon"></i> ความเร็วสายฟ้า
+                    <i class="fas fa-bolt badge-icon" aria-hidden="true"></i> ความเร็วสายฟ้า
                 </div>
                 <div class="badge-item mb-3">
-                    <i class="fas fa-calendar-check badge-icon"></i> ออกกำลังกาย 7 วันติดต่อกัน
+                    <i class="fas fa-calendar-check badge-icon" aria-hidden="true"></i> ออกกำลังกาย 7 วันติดต่อกัน
                 </div>
                 <div class="badge-item mb-3">
-                    <i class="fas fa-mountain badge-icon"></i> นักพิชิตยอดเขา
+                    <i class="fas fa-mountain badge-icon" aria-hidden="true"></i> นักพิชิตยอดเขา
                 </div>
                 <div class="badge-item mb-3">
-                    <i class="fas fa-trophy badge-icon"></i> แชมป์ประจำเดือน
+                    <i class="fas fa-trophy badge-icon" aria-hidden="true"></i> แชมป์ประจำเดือน
                 </div>
                 <div class="badge-item mb-3">
-                    <i class="fas fa-star badge-icon"></i> ดาวรุ่งวงการวิ่ง
+                    <i class="fas fa-star badge-icon" aria-hidden="true"></i> ดาวรุ่งวงการวิ่ง
                 </div>
             </div>
         </div>
@@ -435,7 +455,7 @@
             <h2 class="section-title text-center">วิธีใช้งาน GoFit</h2>
             <div class="row align-items-center mb-5">
                 <div class="col-lg-6 order-lg-2 mb-4 mb-lg-0">
-                    <img src="https://source.unsplash.com/random/600x400/?mobile,app" alt="ลงทะเบียน" class="img-fluid rounded-lg shadow-lg">
+                    <img src="{{ asset('images/regis.png') }}" alt="ลงทะเบียนใช้งาน GoFit" class="" loading="lazy" width="400" height="400">
                 </div>
                 <div class="col-lg-6 order-lg-1">
                     <div class="d-flex mb-4">
@@ -444,14 +464,14 @@
                         </div>
                         <div>
                             <h3>ลงทะเบียนและสร้างโปรไฟล์</h3>
-                            <p>เริ่มต้นด้วยการลงทะเบียนง่ายๆ เพียงไม่กี่ขั้นตอน แล้วสร้างโปรไฟล์ส่วนตัวของคุณ</p>
+                            <p>เริ่มต้นด้วยการลงทะเบียนง่ายๆ เพียงไม่กี่ขั้นตอน แล้วสร้างโปรไฟล์ส่วนตัวของคุณเพื่อเก็บข้อมูลการออกกำลังกาย</p>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="row align-items-center mb-5">
                 <div class="col-lg-6 mb-4 mb-lg-0">
-                    <img src="https://source.unsplash.com/random/600x400/?running,tracking" alt="เริ่มวิ่ง" class="img-fluid rounded-lg shadow-lg">
+                    <img src="{{ asset('images/run.png') }}" alt="บันทึกการวิ่ง GoFit" class="" loading="lazy" width="400" height="400">
                 </div>
                 <div class="col-lg-6">
                     <div class="d-flex mb-4">
@@ -460,14 +480,14 @@
                         </div>
                         <div>
                             <h3>เริ่มวิ่งและบันทึกกิจกรรม</h3>
-                            <p>กดปุ่ม "เริ่มวิ่ง" เพื่อบันทึกกิจกรรมการวิ่งของคุณ ระบบจะติดตามเส้นทาง ระยะทาง และแคลอรี่แบบเรียลไทม์</p>
+                            <p>กดปุ่ม "เริ่มวิ่ง" เพื่อบันทึกกิจกรรมการวิ่งของคุณ ระบบจะติดตามเส้นทาง ระยะทาง และแคลอรี่แบบเรียลไทม์ด้วยเทคโนโลยี GPS ที่แม่นยำ</p>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="row align-items-center">
                 <div class="col-lg-6 order-lg-2 mb-4 mb-lg-0">
-                    <img src="https://source.unsplash.com/random/600x400/?rewards,medal" alt="รับเหรียญตรา" class="img-fluid rounded-lg shadow-lg">
+                    <img src="{{ asset('images/badge.png') }}" alt="เหรียญตราและรางวัล GoFit" class="" loading="lazy" width="600" height="600">
                 </div>
                 <div class="col-lg-6 order-lg-1">
                     <div class="d-flex mb-4">
@@ -476,12 +496,12 @@
                         </div>
                             <div>
                             <h3>รับเหรียญตราและแลกรางวัล</h3>
-                            <p>รับเหรียญตราเมื่อทำภารกิจสำเร็จและสะสมเพื่อแลกของรางวัลมากมาย</p>
+                            <p>รับเหรียญตราเมื่อทำภารกิจสำเร็จและสะสมคะแนนเพื่อแลกของรางวัลมากมาย ยิ่งออกกำลังกายมาก ยิ่งได้รับสิทธิประโยชน์มากขึ้น</p>
                         </div>
                     </div>
                 </div>
             </div>
-                                </div>
+        </div>
     </section>
 
     <!-- Stats Section -->
@@ -489,15 +509,15 @@
         <div class="container py-5">
             <div class="row text-center">
                 <div class="col-md-4 mb-4 mb-md-0">
-                    <div class="stats-number">5,000+</div>
+                    <div class="stats-number">10,000+</div>
                     <div class="stats-label">ผู้ใช้งานที่พึงพอใจ</div>
                 </div>
                 <div class="col-md-4 mb-4 mb-md-0">
-                    <div class="stats-number">10,000+</div>
+                    <div class="stats-number">50,000+</div>
                     <div class="stats-label">กิโลเมตรที่วิ่งสะสม</div>
                 </div>
                 <div class="col-md-4">
-                    <div class="stats-number">2,500+</div>
+                    <div class="stats-number">5,000+</div>
                     <div class="stats-label">เหรียญตราที่มอบให้ผู้ใช้</div>
                 </div>
             </div>
@@ -512,11 +532,11 @@
                 <div class="col-md-6 mb-4">
                     <div class="testimonial-card">
                         <div class="testimonial-quote">
-                            "GoFit ทำให้ผมกลับมาวิ่งอีกครั้งหลังจากหยุดมานาน ระบบเหรียญตราทำให้รู้สึกสนุกและมีแรงจูงใจมากขึ้น"
+                            "GoFit ทำให้ผมกลับมาวิ่งอีกครั้งหลังจากหยุดมานาน ระบบเหรียญตราทำให้รู้สึกสนุกและมีแรงจูงใจมากขึ้น ตอนนี้วิ่งเป็นกิจวัตรไปแล้ว"
                         </div>
                         <div class="d-flex align-items-center">
                             <div class="avatar">
-                                <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" class="img-fluid">
+                                <img src="{{ asset('images/testimonials/user1.jpg') }}" alt="รีวิวจากคุณต้น" class="img-fluid" loading="lazy" width="64" height="64">
                             </div>
                             <div>
                                 <h5 class="mb-0">ต้น สมชาย</h5>
@@ -528,11 +548,11 @@
                 <div class="col-md-6 mb-4">
                     <div class="testimonial-card">
                         <div class="testimonial-quote">
-                            "ฉันชอบการติดตามความก้าวหน้าและการได้รับเหรียญตรา มันทำให้การออกกำลังกายสนุกขึ้นเยอะเลย!"
-                                </div>
+                            "ฉันชอบการติดตามความก้าวหน้าและการได้รับเหรียญตรา มันทำให้การออกกำลังกายสนุกขึ้นเยอะเลย! แทบรอไม่ไหวที่จะได้เหรียญใหม่"
+                        </div>
                         <div class="d-flex align-items-center">
                             <div class="avatar">
-                                <img src="https://i.pravatar.cc/150?img=5" alt="Avatar" class="img-fluid">
+                                <img src="{{ asset('images/testimonials/user2.jpg') }}" alt="รีวิวจากคุณแพร" class="img-fluid" loading="lazy" width="64" height="64">
                             </div>
                             <div>
                                 <h5 class="mb-0">แพร วรรณา</h5>
@@ -544,11 +564,11 @@
                 <div class="col-md-6 mb-4">
                     <div class="testimonial-card">
                         <div class="testimonial-quote">
-                            "แอปที่ดีมาก ระบบติดตาม GPS แม่นยำ และการแลกรางวัลก็คุ้มค่ามาก ใช้มา 3 เดือนแล้วไม่เคยเบื่อเลย"
-                                </div>
+                            "แอปที่ดีมาก ระบบติดตาม GPS แม่นยำ และการแลกรางวัลก็คุ้มค่ามาก ใช้มา 3 เดือนแล้วไม่เคยเบื่อเลย สุดยอดจริงๆ"
+                        </div>
                         <div class="d-flex align-items-center">
                             <div class="avatar">
-                                <img src="https://i.pravatar.cc/150?img=3" alt="Avatar" class="img-fluid">
+                                <img src="{{ asset('images/testimonials/user3.jpg') }}" alt="รีวิวจากคุณปอนด์" class="img-fluid" loading="lazy" width="64" height="64">
                             </div>
                             <div>
                                 <h5 class="mb-0">ปอนด์ กิตติพงศ์</h5>
@@ -560,11 +580,11 @@
                 <div class="col-md-6 mb-4">
                     <div class="testimonial-card">
                         <div class="testimonial-quote">
-                            "ชอบที่มีการแจ้งเตือนอัจฉริยะ ทำให้ฉันไม่พลาดการออกกำลังกายตามแผน แนะนำเลย!"
+                            "ชอบที่มีการแจ้งเตือนอัจฉริยะ ทำให้ฉันไม่พลาดการออกกำลังกายตามแผน แนะนำเลย! จาก 3 วันต่อสัปดาห์ ตอนนี้วิ่ง 5 วันแล้ว"
                         </div>
                         <div class="d-flex align-items-center">
                             <div class="avatar">
-                                <img src="https://i.pravatar.cc/150?img=9" alt="Avatar" class="img-fluid">
+                                <img src="{{ asset('images/testimonials/user4.jpg') }}" alt="รีวิวจากคุณมีน" class="img-fluid" loading="lazy" width="64" height="64">
                             </div>
                             <div>
                                 <h5 class="mb-0">มีน มินตรา</h5>
@@ -577,16 +597,14 @@
         </div>
     </section>
 
-
- <!-- CTA Section -->
- <section class="cta-section">
-    <div class="container text-center">
-        <h2 class="display-5 fw-bold mb-4">พร้อมเริ่มต้นการออกกำลังกายแบบสนุกแล้วหรือยัง?</h2>
-        <p class="lead mb-5">สมัครสมาชิกวันนี้ และเริ่มต้นเก็บเหรียญตราแรกของคุณ!</p>
-        <a href="{{ route('register') }}" class="btn btn-light btn-lg px-5">สมัครสมาชิกฟรี</a>
-    </div>
-</section>
-
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container text-center">
+            <h2 class="display-5 fw-bold mb-4">พร้อมเริ่มต้นการออกกำลังกายแบบสนุกแล้วหรือยัง?</h2>
+            <p class="lead mb-5">สมัครสมาชิกวันนี้ และเริ่มต้นเก็บเหรียญตราแรกของคุณ!</p>
+            <a href="{{ route('register') }}" class="btn btn-light btn-lg px-5">สมัครสมาชิกฟรี</a>
+        </div>
+    </section>
 
     <!-- Footer -->
     <footer>
@@ -622,7 +640,7 @@
                     <h5 class="footer-title">ติดต่อเรา</h5>
                     <p class="mb-2"><i class="fas fa-map-marker-alt me-2"></i> 123 ถนนพระราม 9 แขวงห้วยขวาง กรุงเทพฯ 10310</p>
                     <p class="mb-2"><i class="fas fa-phone me-2"></i> 02-123-4567</p>
-                    <p class="mb-2"><i class="fas fa-envelope me-2"></i> contact@gofit-app.com</p>
+                    <p class="mb-2"><i class="fas fa-envelope me-2"></i> contact@gofitrunnow.com</p>
                 </div>
             </div>
             <div class="text-center copyright">
@@ -630,7 +648,6 @@
             </div>
         </div>
     </footer>
-
 
     @section('scripts')
     <script>

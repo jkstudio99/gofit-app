@@ -4,197 +4,234 @@
 
 @section('styles')
 <style>
-    .preview-container {
-        width: 100%;
-        height: 200px;
-        border: 2px dashed #ddd;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        background-color: #f8f9fa;
-        margin-bottom: 10px;
-        text-align: center;
-    }
-
-    .preview-image {
-        max-width: 100%;
-        max-height: 100%;
+    .reward-img-preview {
+        max-height: 150px;
+        max-width: 150px;
         object-fit: contain;
     }
 
-    .form-label {
-        font-weight: 500;
-    }
-
-    .required-asterisk {
-        color: #dc3545;
-        margin-left: 2px;
-    }
-
-    .form-control:focus, .form-select:focus {
-        border-color: #2DC679;
-        box-shadow: 0 0 0 0.2rem rgba(45, 198, 121, 0.25);
-    }
-
-    .form-floating label {
-        color: #6c757d;
-    }
-
-    .image-upload-container {
-        text-align: center;
-    }
-
-    .image-upload-btn {
-        display: inline-block;
+    .image-preview-container {
+        width: 150px;
+        height: 150px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         background-color: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 4px;
-        padding: 10px 15px;
+        border: 1px dashed #ced4da;
+        border-radius: 5px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .image-remove-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 24px;
+        height: 24px;
+        background-color: #ff4d4f;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
-        transition: all 0.3s;
+        font-size: 14px;
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        opacity: 0.9;
     }
 
-    .image-upload-btn:hover {
-        background-color: #e9ecef;
+    .image-remove-btn:hover {
+        background-color: #ff1f1f;
+        opacity: 1;
     }
 
-    .required-field:after {
-        content: " *";
+    .required-field::after {
+        content: "*";
+        color: red;
+        margin-left: 3px;
+    }
+
+    .feedback-icon {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+    }
+
+    .is-valid ~ .feedback-icon.valid-feedback-icon {
+        display: block;
+        color: #28a745;
+    }
+
+    .is-invalid ~ .feedback-icon.invalid-feedback-icon {
+        display: block;
         color: #dc3545;
+    }
+
+    .feedback-icon {
+        display: none;
+    }
+
+    .form-control, .form-select {
+        padding-right: 40px;
+    }
+
+    .field-container {
+        position: relative;
+    }
+
+    /* ซ่อนไอคอนเครื่องหมายตกใจสำหรับฟิลด์ที่ระบุ */
+    #name-container .invalid-feedback-icon {
+        display: none !important;
     }
 </style>
 @endsection
 
 @section('content')
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center">
                 <h1 class="h3 mb-0">เพิ่มรางวัลใหม่</h1>
-                <a href="{{ route('admin.rewards') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>กลับไปยังรายการ
-                </a>
+                <div>
+                    <a href="{{ route('admin.rewards') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> กลับไปยังรายการ
+                    </a>
+                </div>
             </div>
+        </div>
+    </div>
 
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form action="{{ route('admin.rewards.store') }}" method="POST" enctype="multipart/form-data" id="reward-form" novalidate>
+                @csrf
 
-            <div class="card shadow-sm">
-                <div class="card-header py-3">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-gift text-primary me-2"></i>ข้อมูลรางวัล
-                    </h5>
-                </div>
+                <div class="row">
+                    <div class="col-md-8">
+                        <!-- ชื่อรางวัล -->
+                        <div class="mb-3">
+                            <label for="name" class="form-label required-field">ชื่อรางวัล</label>
+                            <div class="field-container" id="name-container">
+                                <input type="text" class="form-control @error('name') is-invalid @enderror"
+                                    id="name" name="name" value="{{ old('name') }}" required
+                                    data-error-message="กรุณาระบุชื่อรางวัล">
+                                <i class="fas fa-check-circle feedback-icon valid-feedback-icon"></i>
+                                <i class="fas fa-exclamation-circle feedback-icon invalid-feedback-icon"></i>
+                                @error('name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="invalid-feedback" id="name-error">กรุณาระบุชื่อรางวัล</div>
+                            </div>
+                        </div>
 
-                <form action="{{ route('admin.rewards.store') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <div class="card-body">
+                        <!-- คำอธิบายรางวัล -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label required-field">คำอธิบายรางวัล</label>
+                            <div class="field-container">
+                                <textarea class="form-control @error('description') is-invalid @enderror"
+                                    id="description" name="description" rows="4" required
+                                    data-error-message="กรุณาระบุคำอธิบายรางวัล">{{ old('description') }}</textarea>
+                                @error('description')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="invalid-feedback" id="description-error">กรุณาระบุคำอธิบายรางวัล</div>
+                            </div>
+                        </div>
+
                         <div class="row">
-                            <div class="col-md-7">
-                                <div class="mb-3">
-                                    <label for="name" class="form-label required-field">ชื่อรางวัล</label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" required>
-                                    @error('name')
+                            <!-- คะแนนที่ใช้แลก -->
+                            <div class="col-md-6 mb-3">
+                                <label for="points_required" class="form-label required-field">คะแนนที่ใช้แลก</label>
+                                <div class="input-group has-validation">
+                                    <input type="number" class="form-control @error('points_required') is-invalid @enderror"
+                                        id="points_required" name="points_required" value="{{ old('points_required', 100) }}" min="1" required
+                                        data-error-message="กรุณาระบุคะแนนที่ใช้แลก">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-coins text-warning"></i>
+                                    </span>
+                                    @error('points_required')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    <div class="invalid-feedback" id="points_required-error">กรุณาระบุคะแนนที่ใช้แลก</div>
                                 </div>
+                                <small class="form-text text-muted">
+                                    จำนวนคะแนนที่ผู้ใช้ต้องใช้ในการแลกรับรางวัลนี้
+                                </small>
+                            </div>
 
-                                <div class="mb-3">
-                                    <label for="description" class="form-label required-field">คำอธิบาย</label>
-                                    <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="4" required>{{ old('description') }}</textarea>
-                                    @error('description')
+                            <!-- จำนวนสินค้า -->
+                            <div class="col-md-6 mb-3">
+                                <label for="quantity" class="form-label required-field">จำนวนสินค้า</label>
+                                <div class="input-group has-validation">
+                                    <input type="number" class="form-control @error('quantity') is-invalid @enderror"
+                                        id="quantity" name="quantity" value="{{ old('quantity', 10) }}" min="0" required
+                                        data-error-message="กรุณาระบุจำนวนสินค้า">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-cubes"></i>
+                                    </span>
+                                    @error('quantity')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    <div class="invalid-feedback" id="quantity-error">กรุณาระบุจำนวนสินค้า</div>
                                 </div>
-
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="points_required" class="form-label required-field">คะแนนที่ใช้แลก</label>
-                                            <div class="input-group">
-                                                <input type="number" class="form-control @error('points_required') is-invalid @enderror" id="points_required" name="points_required" min="1" value="{{ old('points_required', 100) }}" required>
-                                                <span class="input-group-text">
-                                                    <i class="fas fa-coins text-warning"></i>
-                                                </span>
-                                            </div>
-                                            @error('points_required')
-                                                <div class="text-danger mt-1 small">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="quantity" class="form-label required-field">จำนวนสินค้า</label>
-                                            <div class="input-group">
-                                                <input type="number" class="form-control @error('quantity') is-invalid @enderror" id="quantity" name="quantity" min="0" value="{{ old('quantity', 10) }}" required>
-                                                <span class="input-group-text">
-                                                    <i class="fas fa-cubes"></i>
-                                                </span>
-                                            </div>
-                                            @error('quantity')
-                                                <div class="text-danger mt-1 small">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mb-3 form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="is_enabled" name="is_enabled" checked>
-                                    <label class="form-check-label" for="is_enabled">เปิดใช้งานรางวัลนี้</label>
-                                    <div class="text-muted small">รางวัลที่เปิดใช้งานเท่านั้นที่จะแสดงให้ผู้ใช้เห็น</div>
-                                </div>
+                                <small class="form-text text-muted">
+                                    จำนวนรางวัลที่มีให้แลก (0 = หมด)
+                                </small>
                             </div>
+                        </div>
 
-                            <div class="col-md-5">
-                                <div class="mb-3">
-                                    <label for="image_path" class="form-label">รูปภาพรางวัล</label>
-                                    <div class="preview-container" id="image-preview-container">
-                                        <div id="placeholder-content" class="text-center">
-                                            <i class="fas fa-gift fa-3x mb-3 text-muted"></i>
-                                            <p class="mb-1 text-muted">คลิกเพื่ออัปโหลดรูปภาพ</p>
-                                            <small class="text-muted d-block">รองรับไฟล์ JPG, PNG, GIF ขนาดไม่เกิน 2MB</small>
-                                        </div>
-                                        <img src="" id="preview-image" style="display: none; max-width: 100%; max-height: 100%; object-fit: contain;">
-                                    </div>
-
-                                    <div class="image-upload-container">
-                                        <label for="image_path" class="image-upload-btn">
-                                            <i class="fas fa-upload me-2"></i>เลือกรูปภาพ
-                                        </label>
-                                        <input type="file" id="image_path" name="image_path" class="d-none" accept="image/*">
-                                    </div>
-
-                                    <div id="file-info" class="mt-2 small text-center" style="display: none;">
-                                        <span class="me-2"><i class="fas fa-check-circle text-success"></i></span>
-                                        <span id="file-name"></span>
-                                        <button type="button" id="remove-image" class="btn btn-link text-danger p-0 ms-2">
-                                            <i class="fas fa-times"></i> ลบ
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                        <!-- สถานะการใช้งาน -->
+                        <div class="mb-3 form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="is_enabled" name="is_enabled" checked>
+                            <label class="form-check-label" for="is_enabled">เปิดใช้งานรางวัลนี้</label>
+                            <small class="form-text text-muted d-block">
+                                รางวัลที่เปิดใช้งานเท่านั้นที่จะแสดงให้ผู้ใช้เห็น
+                            </small>
                         </div>
                     </div>
 
-                    <div class="card-footer bg-white d-flex justify-content-between">
-                        <a href="{{ route('admin.rewards') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-times me-2"></i>ยกเลิก
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-2"></i>บันทึกรางวัล
-                        </button>
+                    <div class="col-md-4">
+                        <!-- รูปภาพรางวัล -->
+                        <div class="mb-3">
+                            <label for="image_path" class="form-label">รูปภาพรางวัล</label>
+                            <div class="text-center mb-3">
+                                <div class="image-preview-container mx-auto mb-2">
+                                    <div class="text-center text-muted" id="placeholderImage">
+                                        <i class="fas fa-gift fa-3x"></i>
+                                        <p class="small mt-2">ไม่มีรูปภาพ</p>
+                                    </div>
+                                    <img src="" id="imagePreview" class="reward-img-preview d-none">
+                                    <div id="removeImageBtn" class="image-remove-btn d-none">
+                                        <i class="fas fa-times"></i>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-center">
+                                    <input type="file" class="form-control @error('image_path') is-invalid @enderror"
+                                        id="image_path" name="image_path" accept="image/*" style="max-width: 250px;">
+                                </div>
+                                @error('image_path')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div id="image_path-error" class="invalid-feedback text-center mt-2"></div>
+                                <small class="form-text text-muted mt-2">
+                                    อัพโหลดรูปภาพขนาดไม่เกิน 2MB (รองรับ: JPEG, PNG, GIF)
+                                </small>
+                            </div>
+                        </div>
                     </div>
-                </form>
-            </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="button" class="btn btn-outline-secondary me-2" onclick="history.back()">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">
+                        <i class="fas fa-plus me-1"></i> เพิ่มรางวัล
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -203,78 +240,144 @@
 @section('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // ตรวจสอบการอัพโหลดรูปภาพใหม่
         const imageInput = document.getElementById('image_path');
-        const previewContainer = document.getElementById('image-preview-container');
-        const previewImage = document.getElementById('preview-image');
-        const placeholderContent = document.getElementById('placeholder-content');
-        const fileInfo = document.getElementById('file-info');
-        const fileName = document.getElementById('file-name');
-        const removeImageBtn = document.getElementById('remove-image');
-
-        // คลิกที่ container จะเปิดหน้าต่างเลือกไฟล์
-        previewContainer.addEventListener('click', function() {
-            imageInput.click();
-        });
+        const imagePreview = document.getElementById('imagePreview');
+        const placeholderImage = document.getElementById('placeholderImage');
+        const removeImageBtn = document.getElementById('removeImageBtn');
+        const imageError = document.getElementById('image_path-error');
 
         imageInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+
                 // ตรวจสอบขนาดไฟล์ (ไม่เกิน 2MB)
                 if (file.size > 2 * 1024 * 1024) {
-                    Swal.fire({
-                        title: 'ไม่สามารถอัพโหลดได้',
-                        text: 'ขนาดไฟล์ต้องไม่เกิน 2MB',
-                        icon: 'error',
-                        confirmButtonColor: '#dc3545',
-                        confirmButtonText: 'ตกลง'
-                    });
+                    imageError.textContent = 'ขนาดไฟล์ต้องไม่เกิน 2MB';
+                    imageError.style.display = 'block';
                     this.value = ''; // ล้างค่า input
+                    imageInput.classList.add('is-invalid');
                     return;
                 }
 
                 // ตรวจสอบประเภทไฟล์
                 const validImageTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
                 if (!validImageTypes.includes(file.type)) {
-                    Swal.fire({
-                        title: 'ไม่สามารถอัพโหลดได้',
-                        text: 'กรุณาเลือกไฟล์รูปภาพเท่านั้น (JPEG, PNG, GIF, WEBP)',
-                        icon: 'error',
-                        confirmButtonColor: '#dc3545',
-                        confirmButtonText: 'ตกลง'
-                    });
+                    imageError.textContent = 'กรุณาเลือกไฟล์รูปภาพเท่านั้น (JPEG, PNG, GIF, WEBP)';
+                    imageError.style.display = 'block';
                     this.value = ''; // ล้างค่า input
+                    imageInput.classList.add('is-invalid');
                     return;
                 }
+
+                // ล้างข้อความผิดพลาดถ้ามี
+                imageError.textContent = '';
+                imageError.style.display = 'none';
+                imageInput.classList.remove('is-invalid');
+                imageInput.classList.add('is-valid');
 
                 const reader = new FileReader();
 
                 reader.onload = function(e) {
-                    previewImage.src = e.target.result;
-                    previewImage.style.display = 'block';
-                    placeholderContent.style.display = 'none';
-                    fileInfo.style.display = 'block';
-                    fileName.textContent = file.name;
-                };
+                    imagePreview.src = e.target.result;
+                    imagePreview.classList.remove('d-none');
+                    removeImageBtn.classList.remove('d-none');
+                    if (placeholderImage) {
+                        placeholderImage.classList.add('d-none');
+                    }
+                }
 
                 reader.readAsDataURL(file);
-            } else {
-                resetImagePreview();
             }
         });
 
-        removeImageBtn.addEventListener('click', function(e) {
-            e.stopPropagation(); // ป้องกันการ bubble event ไปที่ container
+        // ฟังก์ชันลบรูปภาพด้วยปุ่ม X
+        removeImageBtn.addEventListener('click', function() {
+            // ล้างค่า input file
             imageInput.value = '';
-            resetImagePreview();
+            // ซ่อนรูปและปุ่มลบ
+            imagePreview.classList.add('d-none');
+            removeImageBtn.classList.add('d-none');
+            // แสดง placeholder
+            placeholderImage.classList.remove('d-none');
+            // ล้างสถานะการตรวจสอบ
+            imageInput.classList.remove('is-valid');
+            imageInput.classList.remove('is-invalid');
+            imageError.style.display = 'none';
         });
 
-        function resetImagePreview() {
-            previewImage.src = '';
-            previewImage.style.display = 'none';
-            placeholderContent.style.display = 'block';
-            fileInfo.style.display = 'none';
-            fileName.textContent = '';
+        // ฟังก์ชันตรวจสอบการกรอกข้อมูล
+        const form = document.getElementById('reward-form');
+        const fields = form.querySelectorAll('input[required], select[required], textarea[required]');
+
+        // เมื่อมีการกรอกข้อมูลในฟิลด์
+        fields.forEach(field => {
+            field.addEventListener('input', function() {
+                validateField(field);
+            });
+
+            field.addEventListener('blur', function() {
+                validateField(field);
+            });
+
+            // สำหรับ select
+            if (field.tagName === 'SELECT') {
+                field.addEventListener('change', function() {
+                    validateField(field);
+                });
+            }
+        });
+
+        function validateField(field) {
+            const errorElement = document.getElementById(`${field.id}-error`);
+
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                field.classList.remove('is-valid');
+                if (errorElement) {
+                    errorElement.textContent = field.getAttribute('data-error-message') || 'กรุณากรอกข้อมูลในช่องนี้';
+                }
+                return false;
+            } else {
+                field.classList.remove('is-invalid');
+                field.classList.add('is-valid');
+                return true;
+            }
         }
+
+        // เมื่อกดปุ่ม submit
+        form.addEventListener('submit', function(event) {
+            let isValid = true;
+
+            // ตรวจสอบทุกฟิลด์ที่จำเป็น
+            fields.forEach(field => {
+                if (!validateField(field)) {
+                    isValid = false;
+                }
+            });
+
+            if (!isValid) {
+                event.preventDefault();
+                // แสดงข้อความผิดพลาดที่ส่วนบนของฟอร์ม
+                window.scrollTo(0, 0);
+
+                // แสดง SweetAlert แจ้งเตือน
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'กรุณาตรวจสอบข้อมูล',
+                        text: 'กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง',
+                        icon: 'warning',
+                        confirmButtonText: 'ตกลง',
+                        confirmButtonColor: '#3085d6'
+                    });
+                }
+            }
+        });
+
+        // ตรวจสอบค่าเริ่มต้นของฟิลด์ทั้งหมด
+        fields.forEach(field => {
+            validateField(field);
+        });
     });
 </script>
 @endsection

@@ -2,6 +2,36 @@
 
 @section('title', 'จัดการบทความสุขภาพ - GoFit')
 
+@php
+function getThaiMonth($month)
+{
+    $thaiMonths = [
+        1 => 'ม.ค.',
+        2 => 'ก.พ.',
+        3 => 'มี.ค.',
+        4 => 'เม.ย.',
+        5 => 'พ.ค.',
+        6 => 'มิ.ย.',
+        7 => 'ก.ค.',
+        8 => 'ส.ค.',
+        9 => 'ก.ย.',
+        10 => 'ต.ค.',
+        11 => 'พ.ย.',
+        12 => 'ธ.ค.'
+    ];
+    return $thaiMonths[$month];
+}
+
+function formatThaiDate($date)
+{
+    $day = date('j', strtotime($date));
+    $month = getThaiMonth(date('n', strtotime($date)));
+    $year = (date('Y', strtotime($date)) + 543);
+    $shortYear = substr($year, -2);
+    return "$day $month $shortYear";
+}
+@endphp
+
 @section('styles')
 <style>
     .article-grid {
@@ -388,10 +418,11 @@
                                 <h5 class="article-title">{{ $article->title }}</h5>
                                 <p class="article-excerpt">{{ $article->excerpt }}</p>
                                 <div class="article-meta mb-3">
-                                    <div><i class="fas fa-calendar-alt"></i> {{ $article->created_at->format('d/m/Y') }}</div>
+                                    <div><i class="fas fa-calendar-alt"></i> {{ formatThaiDate($article->created_at) }}</div>
                                     <div><i class="fas fa-eye"></i> {{ number_format($article->view_count) }} ครั้ง</div>
-                                    <div><i class="fas fa-heart"></i> {{ number_format($article->like_count) }} ถูกใจ</div>
-                                    <div><i class="fas fa-comment"></i> {{ number_format($article->comments_count) }} ความคิดเห็น</div>
+                                    <div><i class="fas fa-heart"></i> {{ number_format($article->likes()->count()) }} ถูกใจ</div>
+                                    <div><i class="fas fa-comment"></i> {{ number_format($article->comments()->count()) }} ความคิดเห็น</div>
+                                    <div><i class="fas fa-bookmark"></i> {{ number_format($article->savedBy()->count()) }} บันทึก</div>
                                 </div>
                                 <div class="article-actions">
                                     <a href="{{ route('admin.health-articles.show', $article->article_id) }}" class="btn btn-info article-action-btn" title="ดูรายละเอียด">

@@ -60,6 +60,41 @@ class AppServiceProvider extends ServiceProvider
                 return $this->format('j') . ' ' . $month . ' ' . $year;
             }
         });
+
+        // Add flexible Thai format macro
+        \Carbon\Carbon::macro('thaiFormat', function ($format = 'j M y H:i') {
+            /** @var \Carbon\Carbon $this */
+            $thaiMonths = [
+                1 => 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+                'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'
+            ];
+
+            $thaiMonthsFull = [
+                1 => 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+            ];
+
+            $year = $this->year;
+            $thaiYear = $year + 543;
+            $monthNumber = $this->month;
+
+            $result = str_replace(
+                ['Y', 'y', 'F', 'M', 'j', 'd', 'H', 'i'],
+                [
+                    $thaiYear,                  // Y: Thai year (full)
+                    substr($thaiYear, -2),      // y: Thai year (short)
+                    $thaiMonthsFull[$monthNumber], // F: Thai month (full)
+                    $thaiMonths[$monthNumber],  // M: Thai month (short)
+                    $this->day,                 // j: Day without leading zeros
+                    str_pad($this->day, 2, '0', STR_PAD_LEFT), // d: Day with leading zeros
+                    $this->hour,                // H: Hours
+                    str_pad($this->minute, 2, '0', STR_PAD_LEFT) // i: Minutes
+                ],
+                $format
+            );
+
+            return $result;
+        });
     }
 }
 

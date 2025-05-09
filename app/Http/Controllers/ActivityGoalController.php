@@ -138,7 +138,17 @@ class ActivityGoalController extends Controller
             $progressPercentage = min(100, round(($goal->current_value / $goal->target_value) * 100));
         }
 
-        return view('goals.show', compact('goal', 'progressPercentage'));
+        // Get activity contributions for this goal
+        // This would typically come from a related model that tracks contributions
+        // For now, we'll create an empty collection to prevent the undefined variable error
+        $contributions = collect();
+
+        // If you have a real GoalContribution model, you would use something like:
+        // $contributions = GoalContribution::where('goal_id', $goal->id)
+        //     ->orderBy('created_at', 'desc')
+        //     ->paginate(10);
+
+        return view('goals.show', compact('goal', 'progressPercentage', 'contributions'));
     }
 
     /**

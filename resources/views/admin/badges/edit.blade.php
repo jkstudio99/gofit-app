@@ -20,12 +20,73 @@
         border: 1px dashed #ced4da;
         border-radius: 5px;
         overflow: hidden;
+        position: relative;
+    }
+
+    .image-remove-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 24px;
+        height: 24px;
+        background-color: #ff4d4f;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 14px;
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        opacity: 0.9;
+    }
+
+    .image-remove-btn:hover {
+        background-color: #ff1f1f;
+        opacity: 1;
     }
 
     .required-field::after {
         content: "*";
         color: red;
         margin-left: 3px;
+    }
+
+    .feedback-icon {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+    }
+
+    .is-valid ~ .feedback-icon.valid-feedback-icon {
+        display: block;
+        color: #28a745;
+    }
+
+    .is-invalid ~ .feedback-icon.invalid-feedback-icon {
+        display: block;
+        color: #dc3545;
+    }
+
+    .feedback-icon {
+        display: none;
+    }
+
+    .form-control, .form-select {
+        padding-right: 40px;
+    }
+
+    .field-container {
+        position: relative;
+    }
+
+    /* ซ่อนไอคอนเครื่องหมายตกใจสำหรับฟิลด์ที่ระบุ */
+    #badge_name-container .invalid-feedback-icon,
+    #type-container .invalid-feedback-icon {
+        display: none !important;
     }
 </style>
 @endsection
@@ -50,7 +111,7 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <form action="{{ route('admin.badges.update', $badge) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('admin.badges.update', $badge) }}" method="POST" enctype="multipart/form-data" id="badge-form" novalidate>
                 @csrf
                 @method('PUT')
 
@@ -59,50 +120,68 @@
                         <!-- ชื่อเหรียญตรา -->
                         <div class="mb-3">
                             <label for="badge_name" class="form-label required-field">ชื่อเหรียญตรา</label>
-                            <input type="text" class="form-control @error('badge_name') is-invalid @enderror"
-                                   id="badge_name" name="badge_name" value="{{ old('badge_name', $badge->badge_name) }}" required>
-                            @error('badge_name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <div class="field-container" id="badge_name-container">
+                                <input type="text" class="form-control @error('badge_name') is-invalid @enderror"
+                                       id="badge_name" name="badge_name" value="{{ old('badge_name', $badge->badge_name) }}" required
+                                       data-error-message="กรุณาระบุชื่อเหรียญตรา">
+                                <i class="fas fa-check-circle feedback-icon valid-feedback-icon"></i>
+                                <i class="fas fa-exclamation-circle feedback-icon invalid-feedback-icon"></i>
+                                @error('badge_name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="invalid-feedback" id="badge_name-error">กรุณาระบุชื่อเหรียญตรา</div>
+                            </div>
                         </div>
 
                         <!-- คำอธิบายเหรียญตรา -->
                         <div class="mb-3">
                             <label for="badge_description" class="form-label required-field">คำอธิบายเหรียญตรา</label>
-                            <textarea class="form-control @error('badge_description') is-invalid @enderror"
-                                     id="badge_description" name="badge_description" rows="4" required>{{ old('badge_description', $badge->badge_description) }}</textarea>
-                            @error('badge_description')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <div class="field-container">
+                                <textarea class="form-control @error('badge_description') is-invalid @enderror"
+                                         id="badge_description" name="badge_description" rows="4" required
+                                         data-error-message="กรุณาระบุคำอธิบายเหรียญตรา">{{ old('badge_description', $badge->badge_description) }}</textarea>
+                                @error('badge_description')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="invalid-feedback" id="badge_description-error">กรุณาระบุคำอธิบายเหรียญตรา</div>
+                            </div>
                         </div>
 
                         <div class="row">
                             <!-- ประเภทเหรียญตรา -->
                             <div class="col-md-6 mb-3">
                                 <label for="type" class="form-label required-field">ประเภทเหรียญตรา</label>
-                                <select class="form-select @error('type') is-invalid @enderror" id="type" name="type" required>
-                                    <option value="" disabled>เลือกประเภท</option>
-                                    <option value="distance" {{ old('type', $badge->type) == 'distance' ? 'selected' : '' }}>ระยะทาง</option>
-                                    <option value="calories" {{ old('type', $badge->type) == 'calories' ? 'selected' : '' }}>แคลอรี่</option>
-                                    <option value="streak" {{ old('type', $badge->type) == 'streak' ? 'selected' : '' }}>ต่อเนื่อง</option>
-                                    <option value="speed" {{ old('type', $badge->type) == 'speed' ? 'selected' : '' }}>ความเร็ว</option>
-                                    <option value="event" {{ old('type', $badge->type) == 'event' ? 'selected' : '' }}>กิจกรรม</option>
-                                </select>
-                                @error('type')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                <div class="field-container" id="type-container">
+                                    <select class="form-select @error('type') is-invalid @enderror" id="type" name="type" required
+                                           data-error-message="กรุณาเลือกประเภทเหรียญตรา">
+                                        <option value="" disabled>เลือกประเภท</option>
+                                        <option value="distance" {{ old('type', $badge->type) == 'distance' ? 'selected' : '' }}>ระยะทาง</option>
+                                        <option value="calories" {{ old('type', $badge->type) == 'calories' ? 'selected' : '' }}>แคลอรี่</option>
+                                        <option value="streak" {{ old('type', $badge->type) == 'streak' ? 'selected' : '' }}>ต่อเนื่อง</option>
+                                        <option value="speed" {{ old('type', $badge->type) == 'speed' ? 'selected' : '' }}>ความเร็ว</option>
+                                        <option value="event" {{ old('type', $badge->type) == 'event' ? 'selected' : '' }}>กิจกรรม</option>
+                                    </select>
+                                    <i class="fas fa-check-circle feedback-icon valid-feedback-icon"></i>
+                                    <i class="fas fa-exclamation-circle feedback-icon invalid-feedback-icon"></i>
+                                    @error('type')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="invalid-feedback" id="type-error">กรุณาเลือกประเภทเหรียญตรา</div>
+                                </div>
                             </div>
 
                             <!-- เกณฑ์การได้รับ -->
                             <div class="col-md-6 mb-3">
                                 <label for="criteria" class="form-label required-field">เกณฑ์การได้รับ</label>
-                                <div class="input-group">
+                                <div class="input-group has-validation">
                                     <input type="number" class="form-control @error('criteria') is-invalid @enderror"
-                                           id="criteria" name="criteria" value="{{ old('criteria', $badge->criteria) }}" step="0.01" min="0" required>
+                                           id="criteria" name="criteria" value="{{ old('criteria', $badge->criteria) }}" step="0.01" min="0" required
+                                           data-error-message="กรุณาระบุเกณฑ์การได้รับเหรียญตรา">
                                     <span class="input-group-text criteria-unit">หน่วย</span>
                                     @error('criteria')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    <div class="invalid-feedback" id="criteria-error">กรุณาระบุเกณฑ์การได้รับเหรียญตรา</div>
                                 </div>
                                 <small class="form-text text-muted">
                                     <span id="criteria-help">ค่าเกณฑ์ขั้นต่ำในการได้รับเหรียญตรา</span>
@@ -113,13 +192,15 @@
                         <!-- คะแนนที่จะได้รับ -->
                         <div class="mb-3">
                             <label for="points" class="form-label required-field">คะแนนที่จะได้รับ</label>
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                                 <input type="number" class="form-control @error('points') is-invalid @enderror"
-                                       id="points" name="points" value="{{ old('points', $badge->points) }}" min="0" required>
+                                       id="points" name="points" value="{{ old('points', $badge->points) }}" min="0" required
+                                       data-error-message="กรุณาระบุคะแนนที่จะได้รับ">
                                 <span class="input-group-text">คะแนน</span>
                                 @error('points')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <div class="invalid-feedback" id="points-error">กรุณาระบุคะแนนที่จะได้รับ</div>
                             </div>
                             <small class="form-text text-muted">
                                 คะแนนที่ผู้ใช้จะได้รับเมื่อปลดล็อคเหรียญตรานี้
@@ -135,12 +216,18 @@
                                 <div class="image-preview-container mx-auto mb-2">
                                     @if($badge->badge_image)
                                         <img src="{{ asset('storage/' . $badge->badge_image) }}" id="imagePreview" class="badge-img-preview">
+                                        <div id="removeImageBtn" class="image-remove-btn">
+                                            <i class="fas fa-times"></i>
+                                        </div>
                                     @else
                                         <div class="text-center text-muted" id="placeholderImage">
                                             <i class="fas fa-medal fa-3x"></i>
                                             <p class="small mt-2">ไม่มีรูปภาพ</p>
                                         </div>
                                         <img src="" id="imagePreview" class="badge-img-preview d-none">
+                                        <div id="removeImageBtn" class="image-remove-btn d-none">
+                                            <i class="fas fa-times"></i>
+                                        </div>
                                     @endif
                                 </div>
                                 <div class="d-flex justify-content-center">
@@ -150,9 +237,17 @@
                                 @error('badge_image')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <div id="badge_image-error" class="invalid-feedback text-center mt-2"></div>
                                 <small class="form-text text-muted mt-2">
                                     อัพโหลดรูปภาพขนาดไม่เกิน 2MB (รองรับ: JPEG, PNG, GIF)
                                 </small>
+                            </div>
+
+                            <div class="form-check mt-3">
+                                <input class="form-check-input" type="checkbox" name="remove_image" id="remove_image">
+                                <label class="form-check-label text-danger" for="remove_image">
+                                    ลบรูปภาพปัจจุบัน
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -160,7 +255,7 @@
 
                 <div class="d-flex justify-content-end mt-4">
                     <button type="button" class="btn btn-outline-secondary me-2" onclick="history.back()">ยกเลิก</button>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" id="submit-btn">
                         <i class="fas fa-save me-1"></i> บันทึกการเปลี่ยนแปลง
                     </button>
                 </div>
@@ -177,6 +272,9 @@
         const badgeImageInput = document.getElementById('badge_image');
         const imagePreview = document.getElementById('imagePreview');
         const placeholderImage = document.getElementById('placeholderImage');
+        const removeImageBtn = document.getElementById('removeImageBtn');
+        const removeImageCheck = document.getElementById('remove_image');
+        const imageError = document.getElementById('badge_image-error');
 
         badgeImageInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
@@ -184,42 +282,163 @@
 
                 // ตรวจสอบขนาดไฟล์ (ไม่เกิน 2MB)
                 if (file.size > 2 * 1024 * 1024) {
-                    Swal.fire({
-                        title: 'ไม่สามารถอัพโหลดได้',
-                        text: 'ขนาดไฟล์ต้องไม่เกิน 2MB',
-                        icon: 'error',
-                        confirmButtonColor: '#dc3545',
-                        confirmButtonText: 'ตกลง'
-                    });
+                    imageError.textContent = 'ขนาดไฟล์ต้องไม่เกิน 2MB';
+                    imageError.style.display = 'block';
                     this.value = ''; // ล้างค่า input
+                    badgeImageInput.classList.add('is-invalid');
                     return;
                 }
 
                 // ตรวจสอบประเภทไฟล์
                 const validImageTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
                 if (!validImageTypes.includes(file.type)) {
-                    Swal.fire({
-                        title: 'ไม่สามารถอัพโหลดได้',
-                        text: 'กรุณาเลือกไฟล์รูปภาพเท่านั้น (JPEG, PNG, GIF, WEBP)',
-                        icon: 'error',
-                        confirmButtonColor: '#dc3545',
-                        confirmButtonText: 'ตกลง'
-                    });
+                    imageError.textContent = 'กรุณาเลือกไฟล์รูปภาพเท่านั้น (JPEG, PNG, GIF, WEBP)';
+                    imageError.style.display = 'block';
                     this.value = ''; // ล้างค่า input
+                    badgeImageInput.classList.add('is-invalid');
                     return;
                 }
+
+                // ล้างข้อความผิดพลาดถ้ามี
+                imageError.textContent = '';
+                imageError.style.display = 'none';
+                badgeImageInput.classList.remove('is-invalid');
+                badgeImageInput.classList.add('is-valid');
 
                 const reader = new FileReader();
 
                 reader.onload = function(e) {
                     imagePreview.src = e.target.result;
                     imagePreview.classList.remove('d-none');
+                    removeImageBtn.classList.remove('d-none');
+                    if (placeholderImage) {
+                        placeholderImage.classList.add('d-none');
+                    }
+                    // ถ้ามีการเลือกไฟล์ใหม่ ไม่ต้องลบไฟล์เก่า
+                    removeImageCheck.checked = false;
+                }
+
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // ฟังก์ชันลบรูปภาพด้วยปุ่ม X
+        removeImageBtn.addEventListener('click', function() {
+            // ล้างค่า input file
+            badgeImageInput.value = '';
+
+            if ("{{ $badge->badge_image }}") {
+                // ถ้ามีรูปภาพเดิม ให้เลือกช่อง "ลบรูปภาพปัจจุบัน"
+                removeImageCheck.checked = true;
+            }
+
+            // ซ่อนรูปและปุ่มลบ
+            imagePreview.classList.add('d-none');
+            removeImageBtn.classList.add('d-none');
+            // แสดง placeholder
+            if (placeholderImage) {
+                placeholderImage.classList.remove('d-none');
+            }
+
+            // ล้างสถานะการตรวจสอบ
+            badgeImageInput.classList.remove('is-valid');
+            badgeImageInput.classList.remove('is-invalid');
+            imageError.style.display = 'none';
+        });
+
+        // การทำงานของ checkbox ลบรูปภาพ
+        removeImageCheck.addEventListener('change', function() {
+            if (this.checked) {
+                // ถ้าเลือกลบรูปภาพ ให้ซ่อนรูปและแสดง placeholder
+                imagePreview.classList.add('d-none');
+                removeImageBtn.classList.add('d-none');
+                if (placeholderImage) {
+                    placeholderImage.classList.remove('d-none');
+                }
+                // ล้างค่า input file
+                badgeImageInput.value = '';
+            } else {
+                // ถ้ายกเลิกการลบรูปภาพ และมีรูปเดิมอยู่
+                if ("{{ $badge->badge_image }}") {
+                    imagePreview.classList.remove('d-none');
+                    removeImageBtn.classList.remove('d-none');
                     if (placeholderImage) {
                         placeholderImage.classList.add('d-none');
                     }
                 }
+            }
+        });
 
-                reader.readAsDataURL(file);
+        // ฟังก์ชันตรวจสอบการกรอกข้อมูล
+        const form = document.getElementById('badge-form');
+        const fields = form.querySelectorAll('input[required], select[required], textarea[required]');
+
+        // เมื่อมีการกรอกข้อมูลในฟิลด์
+        fields.forEach(field => {
+            // ตรวจสอบค่าเริ่มต้นทุกฟิลด์
+            if (field.value && field.value.trim() !== '') {
+                field.classList.add('is-valid');
+            }
+
+            field.addEventListener('input', function() {
+                validateField(field);
+            });
+
+            field.addEventListener('blur', function() {
+                validateField(field);
+            });
+
+            // สำหรับ select
+            if (field.tagName === 'SELECT') {
+                field.addEventListener('change', function() {
+                    validateField(field);
+                });
+            }
+        });
+
+        function validateField(field) {
+            const errorElement = document.getElementById(`${field.id}-error`);
+
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                field.classList.remove('is-valid');
+                if (errorElement) {
+                    errorElement.textContent = field.getAttribute('data-error-message') || 'กรุณากรอกข้อมูลในช่องนี้';
+                }
+                return false;
+            } else {
+                field.classList.remove('is-invalid');
+                field.classList.add('is-valid');
+                return true;
+            }
+        }
+
+        // เมื่อกดปุ่ม submit
+        form.addEventListener('submit', function(event) {
+            let isValid = true;
+
+            // ตรวจสอบทุกฟิลด์ที่จำเป็น
+            fields.forEach(field => {
+                if (!validateField(field)) {
+                    isValid = false;
+                }
+            });
+
+            if (!isValid) {
+                event.preventDefault();
+                // แสดงข้อความผิดพลาดที่ส่วนบนของฟอร์ม
+                window.scrollTo(0, 0);
+
+                // แสดง SweetAlert แจ้งเตือน
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'กรุณาตรวจสอบข้อมูล',
+                        text: 'กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง',
+                        icon: 'warning',
+                        confirmButtonText: 'ตกลง',
+                        confirmButtonColor: '#3085d6'
+                    });
+                }
             }
         });
 
@@ -281,6 +500,9 @@
                 descriptionField.value = defaultDesc;
                 originalDescription = defaultDesc;
             }
+
+            // ตรวจสอบการเลือกประเภทเมื่อมีการเปลี่ยนแปลง
+            validateField(typeSelect);
         }
 
         // อัพเดทหน่วยเมื่อโหลดหน้า

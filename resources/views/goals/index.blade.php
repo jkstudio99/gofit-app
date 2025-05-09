@@ -16,7 +16,7 @@
         box-shadow: 0 6px 12px rgba(0,0,0,0.08);
         transition: all 0.3s ease;
         border: none;
-        height: 100%;
+        height: auto;
         overflow: hidden;
     }
 
@@ -29,26 +29,33 @@
         background: linear-gradient(135deg, #2ecc71, #1abc9c);
         color: white;
         border-bottom: none;
-        padding: 15px 20px;
+        padding: 10px 15px;
     }
 
     .goal-card .card-body {
-        padding: 20px;
+        padding: 15px;
     }
 
     .goal-icon {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        color: #2ecc71;
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+        margin: 0 auto 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        background-color: #2ecc71;
+        border-radius: 50%;
     }
 
     /* Progress circle */
     .progress-circle {
         position: relative;
-        width: 120px;
-        height: 120px;
+        width: 100px;
+        height: 100px;
         border-radius: 50%;
-        margin: 0 auto 20px;
+        margin: 0 auto 15px;
         background: #f8f9fa;
     }
 
@@ -57,8 +64,8 @@
         position: absolute;
         top: 10px;
         left: 10px;
-        width: 100px;
-        height: 100px;
+        width: 80px;
+        height: 80px;
         border-radius: 50%;
         background: white;
     }
@@ -68,7 +75,7 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        font-size: 1.5rem;
+        font-size: 1.2rem;
         font-weight: 700;
         color: #333;
     }
@@ -154,11 +161,11 @@
     /* Goal metrics */
     .goal-metric {
         text-align: center;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
     }
 
     .goal-metric .metric-value {
-        font-size: 1.8rem;
+        font-size: 1.5rem;
         font-weight: 700;
         line-height: 1;
         color: #2ecc71;
@@ -174,8 +181,8 @@
     .goal-summary {
         display: flex;
         align-items: center;
-        margin-bottom: 15px;
-        padding: 10px 15px;
+        margin-bottom: 10px;
+        padding: 8px 12px;
         background: #f8f9fa;
         border-radius: 10px;
     }
@@ -198,7 +205,7 @@
 
     /* Header */
     .page-header {
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
     }
 
     .page-header h1 {
@@ -226,9 +233,9 @@
 
     /* Goal date */
     .goal-date {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
         color: #6c757d;
-        margin-bottom: 5px;
+        margin-bottom: 3px;
     }
 
     .goal-date i {
@@ -265,6 +272,50 @@
             padding-left: 0;
             padding-right: 0;
         }
+    }
+
+    /* New styles for circular buttons like in admin rewards */
+    .goal-action-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transition: all 0.2s ease;
+        color: white !important;
+    }
+
+    .goal-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        opacity: 0.9;
+    }
+
+    .goal-action-btn i {
+        font-size: 1rem;
+    }
+
+    .goal-action-btn.btn-info {
+        background-color: #4e73df;
+        border-color: #4e73df;
+    }
+
+    .goal-action-btn.btn-warning {
+        background-color: #f6c23e;
+        border-color: #f6c23e;
+        color: #212529 !important;
+    }
+
+    .goal-action-btn.btn-success {
+        background-color: #1cc88a;
+        border-color: #1cc88a;
+    }
+
+    .goal-action-btn.btn-danger {
+        background-color: #e74a3b;
+        border-color: #e74a3b;
     }
 </style>
 @endsection
@@ -322,8 +373,8 @@
                                         </div>
                                     </div>
                                     <div class="card-body">
-                                        <div class="text-center mb-3">
-                                            <div class="goal-icon">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="goal-icon me-3">
                                                 @if($goal->type == 'distance')
                                                     <i class="fas fa-road"></i>
                                                 @elseif($goal->type == 'duration')
@@ -334,53 +385,53 @@
                                                     <i class="fas fa-redo"></i>
                                                 @endif
                                             </div>
-                                            <h4 class="mb-2">{{ $goal->target_value }} {{ $goal->getUnitLabel() }}</h4>
-                                            <p class="text-muted mb-3">{{ $goal->getActivityTypeLabel() }}</p>
+                                            <div>
+                                                <h4 class="mb-0">{{ $goal->target_value }} {{ $goal->getUnitLabel() }}</h4>
+                                                <p class="text-muted mb-0">{{ $goal->getActivityTypeLabel() }}</p>
+                                            </div>
                                         </div>
 
-                                        <div class="progress-container mb-4">
+                                        <div class="progress-container mb-3">
                                             <div class="progress-circle">
-                                                <svg width="120" height="120" viewBox="0 0 120 120">
-                                                    <circle class="progress-bar bg-light" cx="60" cy="60" r="50" />
-                                                    <circle class="progress-bar progress-bar-fill" cx="60" cy="60" r="50" style="--percent: {{ $goal->getProgressPercentage() }}" />
+                                                <svg width="100" height="100" viewBox="0 0 100 100">
+                                                    <circle class="progress-bar bg-light" cx="50" cy="50" r="40" />
+                                                    <circle class="progress-bar progress-bar-fill" cx="50" cy="50" r="40" style="--percent: {{ $goal->getProgressPercentage() }}" />
                                                 </svg>
                                                 <div class="progress-value">{{ $goal->getProgressPercentage() }}%</div>
                                             </div>
-                                            <p class="text-center mb-0">
+                                            <p class="text-center mb-0 small">
                                                 <span class="fw-bold">{{ $goal->getCurrentValue() }}</span> จากเป้าหมาย <span class="fw-bold">{{ $goal->target_value }}</span> {{ $goal->getUnitLabel() }}
                                             </p>
                                         </div>
 
-                                        <div class="goal-dates mb-3">
-                                            <div class="goal-date">
-                                                <i class="fas fa-calendar-alt"></i> ช่วงเวลา: {{ $goal->getPeriodLabel() }}
+                                        <div class="goal-dates mb-2">
+                                            <div class="goal-date d-flex align-items-center">
+                                                <i class="fas fa-calendar-alt"></i> <span>{{ $goal->getPeriodLabel() }}</span>
                                             </div>
-                                            <div class="goal-date">
-                                                <i class="fas fa-play"></i> เริ่ม: {{ $goal->start_date->format('d/m/Y') }}
+                                            <div class="goal-date d-flex align-items-center">
+                                                <i class="fas fa-play"></i> <span>เริ่ม: {{ $goal->start_date->format('d/m/Y') }}</span>
                                             </div>
                                             @if($goal->end_date)
-                                                <div class="goal-date">
-                                                    <i class="fas fa-flag-checkered"></i> สิ้นสุด: {{ $goal->end_date->format('d/m/Y') }}
+                                                <div class="goal-date d-flex align-items-center">
+                                                    <i class="fas fa-flag-checkered"></i> <span>สิ้นสุด: {{ $goal->end_date->format('d/m/Y') }}</span>
                                                 </div>
                                             @endif
                                         </div>
 
-                                        <div class="goal-actions d-flex justify-content-between mt-3">
-                                            <a href="{{ route('goals.show', $goal) }}" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-eye me-1"></i> ดูรายละเอียด
+                                        <div class="goal-actions d-flex justify-content-center mt-2">
+                                            <a href="{{ route('goals.show', $goal) }}" class="btn btn-sm btn-info text-white goal-action-btn me-2" title="ดูรายละเอียด">
+                                                <i class="fas fa-eye"></i>
                                             </a>
-                                            <div>
-                                                <a href="{{ route('goals.edit', $goal) }}" class="btn btn-sm btn-outline-secondary me-1">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <form action="{{ route('goals.destroy', $goal) }}" method="POST" class="delete-goal-form d-inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="button" class="btn btn-sm btn-outline-danger delete-goal-btn" data-goal-id="{{ $goal->id }}">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
+                                            <a href="{{ route('goals.edit', $goal) }}" class="btn btn-sm btn-warning goal-action-btn me-2" title="แก้ไข">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form action="{{ route('goals.destroy', $goal) }}" method="POST" class="delete-goal-form d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button" class="btn btn-sm btn-danger goal-action-btn delete-goal-btn" data-goal-id="{{ $goal->id }}" title="ลบ">
+                                                    <i class="fas fa-trash text-white"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
@@ -418,8 +469,8 @@
                                         </div>
                                     </div>
                                     <div class="card-body">
-                                        <div class="text-center mb-3">
-                                            <div class="goal-icon">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="goal-icon me-3">
                                                 @if($goal->type == 'distance')
                                                     <i class="fas fa-road"></i>
                                                 @elseif($goal->type == 'duration')
@@ -430,46 +481,48 @@
                                                     <i class="fas fa-redo"></i>
                                                 @endif
                                             </div>
-                                            <h4 class="mb-2">{{ $goal->target_value }} {{ $goal->getUnitLabel() }}</h4>
-                                            <p class="text-muted mb-3">{{ $goal->getActivityTypeLabel() }}</p>
+                                            <div>
+                                                <h4 class="mb-0">{{ $goal->target_value }} {{ $goal->getUnitLabel() }}</h4>
+                                                <p class="text-muted mb-0">{{ $goal->getActivityTypeLabel() }}</p>
+                                            </div>
                                         </div>
 
-                                        <div class="progress-container mb-4">
+                                        <div class="progress-container mb-3">
                                             <div class="progress-circle">
-                                                <svg width="120" height="120" viewBox="0 0 120 120">
-                                                    <circle class="progress-bar bg-light" cx="60" cy="60" r="50" />
-                                                    <circle class="progress-bar progress-bar-fill" cx="60" cy="60" r="50" style="--percent: 100" />
+                                                <svg width="100" height="100" viewBox="0 0 100 100">
+                                                    <circle class="progress-bar bg-light" cx="50" cy="50" r="40" />
+                                                    <circle class="progress-bar progress-bar-fill" cx="50" cy="50" r="40" style="--percent: 100" />
                                                 </svg>
                                                 <div class="progress-value">100%</div>
                                             </div>
-                                            <p class="text-center mb-0">
+                                            <p class="text-center mb-0 small">
                                                 <span class="fw-bold">{{ $goal->getCurrentValue() }}</span> จากเป้าหมาย <span class="fw-bold">{{ $goal->target_value }}</span> {{ $goal->getUnitLabel() }}
                                             </p>
                                         </div>
 
-                                        <div class="goal-dates mb-3">
-                                            <div class="goal-date">
-                                                <i class="fas fa-calendar-alt"></i> ช่วงเวลา: {{ $goal->getPeriodLabel() }}
+                                        <div class="goal-dates mb-2">
+                                            <div class="goal-date d-flex align-items-center">
+                                                <i class="fas fa-calendar-alt"></i> <span>{{ $goal->getPeriodLabel() }}</span>
                                             </div>
-                                            <div class="goal-date">
-                                                <i class="fas fa-play"></i> เริ่ม: {{ $goal->start_date->format('d/m/Y') }}
+                                            <div class="goal-date d-flex align-items-center">
+                                                <i class="fas fa-play"></i> <span>เริ่ม: {{ $goal->start_date->format('d/m/Y') }}</span>
                                             </div>
                                             @if($goal->completed_at)
-                                                <div class="goal-date">
-                                                    <i class="fas fa-trophy text-success"></i> สำเร็จเมื่อ: {{ $goal->completed_at->format('d/m/Y') }}
+                                                <div class="goal-date d-flex align-items-center">
+                                                    <i class="fas fa-trophy text-success"></i> <span>สำเร็จเมื่อ: {{ $goal->completed_at->format('d/m/Y') }}</span>
                                                 </div>
                                             @endif
                                         </div>
 
-                                        <div class="goal-actions d-flex justify-content-between mt-3">
-                                            <a href="{{ route('goals.show', $goal) }}" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-eye me-1"></i> ดูรายละเอียด
+                                        <div class="goal-actions d-flex justify-content-center mt-2">
+                                            <a href="{{ route('goals.show', $goal) }}" class="btn btn-sm btn-info text-white goal-action-btn me-2" title="ดูรายละเอียด">
+                                                <i class="fas fa-eye"></i>
                                             </a>
-                                            <form action="{{ route('goals.destroy', $goal) }}" method="POST" class="delete-goal-form">
+                                            <form action="{{ route('goals.destroy', $goal) }}" method="POST" class="delete-goal-form d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="button" class="btn btn-sm btn-outline-danger delete-goal-btn" data-goal-id="{{ $goal->id }}">
-                                                    <i class="fas fa-trash"></i>
+                                                <button type="button" class="btn btn-sm btn-danger goal-action-btn delete-goal-btn" data-goal-id="{{ $goal->id }}" title="ลบ">
+                                                    <i class="fas fa-trash text-white"></i>
                                                 </button>
                                             </form>
                                         </div>
@@ -503,8 +556,8 @@
                                         </div>
                                     </div>
                                     <div class="card-body">
-                                        <div class="text-center mb-3">
-                                            <div class="goal-icon text-muted">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="goal-icon me-3">
                                                 @if($goal->type == 'distance')
                                                     <i class="fas fa-road"></i>
                                                 @elseif($goal->type == 'duration')
@@ -515,53 +568,53 @@
                                                     <i class="fas fa-redo"></i>
                                                 @endif
                                             </div>
-                                            <h4 class="mb-2">{{ $goal->target_value }} {{ $goal->getUnitLabel() }}</h4>
-                                            <p class="text-muted mb-3">{{ $goal->getActivityTypeLabel() }}</p>
+                                            <div>
+                                                <h4 class="mb-0">{{ $goal->target_value }} {{ $goal->getUnitLabel() }}</h4>
+                                                <p class="text-muted mb-0">{{ $goal->getActivityTypeLabel() }}</p>
+                                            </div>
                                         </div>
 
-                                        <div class="progress-container mb-4">
+                                        <div class="progress-container mb-3">
                                             <div class="progress-circle">
-                                                <svg width="120" height="120" viewBox="0 0 120 120">
-                                                    <circle class="progress-bar bg-light" cx="60" cy="60" r="50" />
-                                                    <circle class="progress-bar progress-bar-fill" cx="60" cy="60" r="50" style="--percent: {{ $goal->getProgressPercentage() }}" />
+                                                <svg width="100" height="100" viewBox="0 0 100 100">
+                                                    <circle class="progress-bar bg-light" cx="50" cy="50" r="40" />
+                                                    <circle class="progress-bar progress-bar-fill" cx="50" cy="50" r="40" style="--percent: {{ $goal->getProgressPercentage() }}" />
                                                 </svg>
                                                 <div class="progress-value">{{ $goal->getProgressPercentage() }}%</div>
                                             </div>
-                                            <p class="text-center mb-0">
+                                            <p class="text-center mb-0 small">
                                                 <span class="fw-bold">{{ $goal->getCurrentValue() }}</span> จากเป้าหมาย <span class="fw-bold">{{ $goal->target_value }}</span> {{ $goal->getUnitLabel() }}
                                             </p>
                                         </div>
 
-                                        <div class="goal-dates mb-3">
-                                            <div class="goal-date">
-                                                <i class="fas fa-calendar-alt"></i> ช่วงเวลา: {{ $goal->getPeriodLabel() }}
+                                        <div class="goal-dates mb-2">
+                                            <div class="goal-date d-flex align-items-center">
+                                                <i class="fas fa-calendar-alt"></i> <span>{{ $goal->getPeriodLabel() }}</span>
                                             </div>
-                                            <div class="goal-date">
-                                                <i class="fas fa-play"></i> เริ่ม: {{ $goal->start_date->format('d/m/Y') }}
+                                            <div class="goal-date d-flex align-items-center">
+                                                <i class="fas fa-play"></i> <span>เริ่ม: {{ $goal->start_date->format('d/m/Y') }}</span>
                                             </div>
                                             @if($goal->end_date)
-                                                <div class="goal-date">
-                                                    <i class="fas fa-flag-checkered text-danger"></i> สิ้นสุด: {{ $goal->end_date->format('d/m/Y') }}
+                                                <div class="goal-date d-flex align-items-center">
+                                                    <i class="fas fa-flag-checkered text-danger"></i> <span>สิ้นสุด: {{ $goal->end_date->format('d/m/Y') }}</span>
                                                 </div>
                                             @endif
                                         </div>
 
-                                        <div class="goal-actions d-flex justify-content-between mt-3">
-                                            <a href="{{ route('goals.show', $goal) }}" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-eye me-1"></i> ดูรายละเอียด
+                                        <div class="goal-actions d-flex justify-content-center mt-2">
+                                            <a href="{{ route('goals.show', $goal) }}" class="btn btn-sm btn-info text-white goal-action-btn me-2" title="ดูรายละเอียด">
+                                                <i class="fas fa-eye"></i>
                                             </a>
-                                            <div>
-                                                <a href="{{ route('goals.create') }}" class="btn btn-sm btn-success me-1" title="สร้างเป้าหมายใหม่คล้ายกับเป้าหมายนี้">
-                                                    <i class="fas fa-copy"></i>
-                                                </a>
-                                                <form action="{{ route('goals.destroy', $goal) }}" method="POST" class="delete-goal-form d-inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="button" class="btn btn-sm btn-outline-danger delete-goal-btn" data-goal-id="{{ $goal->id }}">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
+                                            <a href="{{ route('goals.create') }}" class="btn btn-sm btn-success goal-action-btn me-2" title="สร้างเป้าหมายใหม่คล้ายกับเป้าหมายนี้">
+                                                <i class="fas fa-copy"></i>
+                                            </a>
+                                            <form action="{{ route('goals.destroy', $goal) }}" method="POST" class="delete-goal-form d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button" class="btn btn-sm btn-danger goal-action-btn delete-goal-btn" data-goal-id="{{ $goal->id }}" title="ลบ">
+                                                    <i class="fas fa-trash text-white"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>

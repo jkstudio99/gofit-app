@@ -38,7 +38,11 @@ class ArticleTag extends Model
      */
     public function articles()
     {
-        return $this->belongsToMany(HealthArticle::class, 'tb_health_article_tag', 'tag_id', 'article_id')
-                    ->withTimestamps();
+        return $this->belongsToMany(
+            HealthArticle::class,
+            'tb_health_article_tag',
+            'tag_id',
+            'article_id'
+        )->withTimestamps();
     }
 }

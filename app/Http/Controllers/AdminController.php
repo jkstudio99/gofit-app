@@ -515,7 +515,7 @@ class AdminController extends Controller
                 $user->save();
 
                 return redirect()->route('admin.users.show', $user)
-                    ->with('success', 'อัพเดทรูปโปรไฟล์สำเร็จแล้ว');
+                    ->with('success', 'อัปโหลดรูปภาพสำเร็จแล้ว');
             } else {
                 throw new \Exception('ไม่สามารถอัพโหลดไฟล์ได้');
             }

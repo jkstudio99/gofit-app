@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Run;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class BadgeController extends Controller
 {
@@ -483,7 +484,7 @@ class BadgeController extends Controller
                 'updated_at' => now()
             ]);
 
-            // อัพเดตคะแนนของผู้ใช้
+            // อัปเดตคะแนนของผู้ใช้
             DB::table('tb_user')
                 ->where('user_id', $user->user_id)
                 ->increment('points', $pointsEarned);
@@ -554,6 +555,9 @@ class BadgeController extends Controller
     {
         $user = Auth::user();
 
+        // ตั้งค่าภาษาไทยสำหรับ Carbon
+        Carbon::setLocale('th');
+
         // ดึงข้อมูลเหรียญตราที่ผู้ใช้ได้รับ พร้อมเรียงตามวันที่ได้รับล่าสุด
         $badgeHistory = UserBadge::where('user_id', $user->user_id)
             ->join('tb_badge', 'tb_user_badge.badge_id', '=', 'tb_badge.badge_id')
@@ -575,6 +579,9 @@ class BadgeController extends Controller
      */
     public function adminHistory(Request $request)
     {
+        // ตั้งค่าภาษาไทยสำหรับ Carbon
+        Carbon::setLocale('th');
+
         // ตัวกรอง
         $query = UserBadge::query()
             ->join('tb_badge', 'tb_user_badge.badge_id', '=', 'tb_badge.badge_id')
@@ -588,7 +595,8 @@ class BadgeController extends Controller
                 'tb_badge.criteria',
                 'tb_user.username',
                 'tb_user.firstname',
-                'tb_user.lastname'
+                'tb_user.lastname',
+                'tb_user.profile_image'
             );
 
         // กรองตาม user ถ้ามีการระบุ
@@ -659,6 +667,79 @@ class BadgeController extends Controller
             'monthlyBadges',
             'totalPoints'
         ));
+    }
+
+    /**
+     * API endpoint for AJAX badge history search
+     */
+    public function apiSearchHistory(Request $request)
+    {
+        // ตั้งค่าภาษาไทยสำหรับ Carbon
+        Carbon::setLocale('th');
+
+        // ตัวกรอง
+        $query = UserBadge::query()
+            ->join('tb_badge', 'tb_user_badge.badge_id', '=', 'tb_badge.badge_id')
+            ->join('tb_user', 'tb_user_badge.user_id', '=', 'tb_user.user_id')
+            ->select(
+                'tb_user_badge.*',
+                'tb_badge.badge_name',
+                'tb_badge.badge_desc',
+                'tb_badge.badge_image',
+                'tb_badge.type',
+                'tb_badge.criteria',
+                'tb_user.username',
+                'tb_user.firstname',
+                'tb_user.lastname',
+                'tb_user.profile_image'
+            );
+
+        // กรองตาม user ถ้ามีการระบุ
+        if ($request->has('user_id') && $request->user_id) {
+            $query->where('tb_user_badge.user_id', $request->user_id);
+        }
+
+        // กรองตามประเภทเหรียญ
+        if ($request->has('badge_type') && $request->badge_type) {
+            $query->where('tb_badge.type', $request->badge_type);
+        }
+
+        // ค้นหาข้อความ
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('tb_user.username', 'like', "%{$search}%")
+                  ->orWhere('tb_user.firstname', 'like', "%{$search}%")
+                  ->orWhere('tb_user.lastname', 'like', "%{$search}%")
+                  ->orWhere('tb_badge.badge_name', 'like', "%{$search}%")
+                  ->orWhere('tb_badge.badge_desc', 'like', "%{$search}%");
+            });
+        }
+
+        // เรียงลำดับ
+        $query->orderBy('tb_user_badge.earned_at', 'desc');
+
+        // ดึงข้อมูลพร้อมแบ่งหน้า
+        $badgeHistory = $query->paginate(15);
+
+        // ดึงข้อมูลคะแนนที่ได้รับจากเหรียญตรา
+        $badgeIds = $badgeHistory->pluck('badge_id')->toArray();
+        $userIds = $badgeHistory->pluck('user_id')->toArray();
+
+        $pointsHistory = \App\Models\PointHistory::whereIn('user_id', $userIds)
+            ->where('source_type', 'badge')
+            ->whereIn('source_id', $badgeIds)
+            ->get()
+            ->groupBy(function($item) {
+                return $item->user_id . '_' . $item->source_id;
+            });
+
+        return response()->json([
+            'success' => true,
+            'html' => view('admin.badges.partials.history_list', compact('badgeHistory', 'pointsHistory'))->render(),
+            'pagination' => view('admin.badges.partials.pagination', ['badges' => $badgeHistory])->render(),
+            'count' => $badgeHistory->total()
+        ]);
     }
 }
 

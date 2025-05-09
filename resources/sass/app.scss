@@ -574,3 +574,10 @@
     font-size: var(--font-size-sm);
   }
 }
+
+// Hide exclamation icons in specific form fields
+#badge_name-container .invalid-feedback-icon,
+#type-container .invalid-feedback-icon,
+#name-container .invalid-feedback-icon {
+  display: none !important;
+}

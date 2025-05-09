@@ -218,6 +218,95 @@
         margin-bottom: 1.5rem;
     }
 
+    /* Styling for like and save buttons */
+    .card-link {
+        z-index: 1;
+    }
+
+    .like-btn, .save-btn {
+        position: relative;
+        z-index: 2;
+    }
+
+    .like-btn.active {
+        background-color: #ff385c;
+        color: white;
+    }
+
+    .save-btn.active {
+        background-color: #2DC679;
+        color: white;
+    }
+
+    .save-btn.active:hover {
+        background-color: #25a866;
+    }
+
+    /* Animation for button interaction */
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+
+    .pulse {
+        animation: pulse 0.4s;
+    }
+
+    /* Article action buttons styling to match design system */
+    .article-actions {
+        position: relative;
+        z-index: 2;
+        margin-top: auto;
+        padding-top: 12px;
+        border-top: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .article-action-btn {
+        background: transparent;
+        border: none;
+        padding: 8px 12px;
+        margin-right: 10px;
+        border-radius: 20px;
+        color: #6c757d;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+
+    .article-action-btn i {
+        margin-right: 5px;
+    }
+
+    .article-action-btn:hover {
+        background-color: rgba(45, 198, 121, 0.1);
+        color: #2DC679;
+    }
+
+    .article-action-btn.like-btn.active {
+        color: white;
+        background-color: #ff385c;
+    }
+
+    .article-action-btn.like-btn.active:hover {
+        background-color: #e6324f;
+    }
+
+    .article-action-btn.save-btn.active {
+        color: white;
+        background-color: #2DC679;
+    }
+
+    .article-action-btn.save-btn.active:hover {
+        background-color: #25a866;
+    }
+
+    /* Card link position fix */
+    .card-link {
+        z-index: 1;
+    }
+
     @media (max-width: 767.98px) {
         .hero-section {
             padding: 3rem 0;
@@ -353,6 +442,12 @@
                     <a href="{{ route('health-articles.index') }}" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-redo me-1"></i>ล้างตัวกรอง
                     </a>
+
+                    @auth
+                    <button id="save-filter-btn" class="btn btn-sm btn-outline-primary ms-2">
+                        <i class="fas fa-save me-1"></i>บันทึกตัวกรอง
+                    </button>
+                    @endauth
                 </div>
             </div>
         </div>
@@ -395,7 +490,7 @@
                             <div>
                                 <span class="article-meta-item">
                                     <i class="fas fa-calendar-alt"></i>
-                                    {{ \Carbon\Carbon::parse($article->published_at)->locale('th')->format('d M Y') }}
+                                    {{ \Carbon\Carbon::parse($article->published_at)->locale('th')->thaiFormat('j M y H:i') }} น.
                                 </span>
                             </div>
                             <div>
@@ -410,9 +505,27 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Add action buttons below the card content with better styling -->
+                    <div class="article-actions mt-2 d-flex">
+                        <button type="button"
+                                class="article-action-btn like-btn {{ $article->isLikedByUser() ? 'active' : '' }}"
+                                data-article-id="{{ $article->article_id }}"
+                                title="{{ $article->isLikedByUser() ? 'เลิกถูกใจ' : 'ถูกใจ' }}">
+                            <i class="fas fa-heart"></i>
+                            <span class="like-count">{{ $article->likes->count() }}</span>
+                        </button>
+
+                        <button type="button"
+                                class="article-action-btn save-btn {{ $article->isSavedByUser() ? 'active' : '' }}"
+                                data-article-id="{{ $article->article_id }}"
+                                title="{{ $article->isSavedByUser() ? 'เลิกบันทึก' : 'บันทึก' }}">
+                            <i class="fas fa-bookmark"></i>
+                        </button>
+                    </div>
                 </div>
 
-                <a href="{{ route('health-articles.show', $article->article_id) }}" class="stretched-link"></a>
+                <a href="{{ route('health-articles.show', $article->article_id) }}" class="stretched-link card-link"></a>
             </div>
         </div>
         @empty
@@ -439,7 +552,7 @@
     </div>
 
     <!-- Popular Tags Section -->
-    @if(count($popularTags) > 0)
+    @if(isset($popularTags) && count($popularTags) > 0)
     <div class="bg-light rounded-3 p-4 mt-4">
         <h4 class="mb-3">แท็กยอดนิยม</h4>
         <div>
@@ -536,6 +649,124 @@
                 let url = new URL(this.href);
                 url.searchParams.set('page', '1');
                 window.location.href = url.toString();
+            });
+        });
+
+        // Handle like buttons
+        document.querySelectorAll('.like-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const articleId = this.dataset.articleId;
+                const likeCount = this.querySelector('.like-count');
+
+                // Disable button temporarily
+                this.disabled = true;
+
+                // Create form data with CSRF token
+                const formData = new FormData();
+                formData.append('_token', '{{ csrf_token() }}');
+
+                fetch(`/health-articles/${articleId}/like`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Update button state
+                        this.classList.toggle('active');
+
+                        // Update like count
+                        likeCount.textContent = data.likesCount;
+
+                        // Add animation
+                        this.classList.add('pulse');
+                        setTimeout(() => {
+                            this.classList.remove('pulse');
+                        }, 400);
+
+                        // Update title
+                        this.title = this.classList.contains('active') ? 'เลิกถูกใจ' : 'ถูกใจ';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Show error message or redirect to login if needed
+                    if (error.message === 'Unauthorized') {
+                        window.location.href = '{{ route("login") }}';
+                    }
+                })
+                .finally(() => {
+                    // Re-enable button
+                    this.disabled = false;
+                });
+            });
+        });
+
+        // Handle save buttons
+        document.querySelectorAll('.save-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const articleId = this.dataset.articleId;
+
+                // Disable button temporarily
+                this.disabled = true;
+
+                // Create form data with CSRF token
+                const formData = new FormData();
+                formData.append('_token', '{{ csrf_token() }}');
+
+                fetch(`/health-articles/${articleId}/save`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Update button state
+                        this.classList.toggle('active');
+
+                        // Add animation
+                        this.classList.add('pulse');
+                        setTimeout(() => {
+                            this.classList.remove('pulse');
+                        }, 400);
+
+                        // Update title
+                        this.title = this.classList.contains('active') ? 'เลิกบันทึก' : 'บันทึก';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Show error message or redirect to login if needed
+                    if (error.message === 'Unauthorized') {
+                        window.location.href = '{{ route("login") }}';
+                    }
+                })
+                .finally(() => {
+                    // Re-enable button
+                    this.disabled = false;
+                });
             });
         });
 

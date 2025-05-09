@@ -195,7 +195,7 @@
                     <div class="article-meta">
                         <span class="article-meta-item">
                             <i class="fas fa-calendar-alt"></i>
-                            {{ \Carbon\Carbon::parse($saved->article->published_at)->locale('th')->format('d M Y') }}
+                            {{ \Carbon\Carbon::parse($saved->article->published_at)->locale('th')->thaiFormat('j M y') }}
                         </span>
                         <span class="article-meta-item">
                             <i class="fas fa-eye"></i>
@@ -218,7 +218,7 @@
                         </form>
                     </div>
                     <div class="date-saved">
-                        บันทึกเมื่อ {{ \Carbon\Carbon::parse($saved->created_at)->locale('th')->diffForHumans() }}
+                        บันทึกเมื่อ {{ \Carbon\Carbon::parse($saved->created_at)->locale('th')->thaiFormat('j M y H:i') }} น.
                     </div>
                 </div>
             </div>

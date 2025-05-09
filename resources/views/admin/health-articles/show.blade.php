@@ -2,7 +2,49 @@
 
 @section('title', $article->title . ' - GoFit')
 
+@php
+function getThaiMonth($month)
+{
+    $thaiMonths = [
+        1 => 'ม.ค.',
+        2 => 'ก.พ.',
+        3 => 'มี.ค.',
+        4 => 'เม.ย.',
+        5 => 'พ.ค.',
+        6 => 'มิ.ย.',
+        7 => 'ก.ค.',
+        8 => 'ส.ค.',
+        9 => 'ก.ย.',
+        10 => 'ต.ค.',
+        11 => 'พ.ย.',
+        12 => 'ธ.ค.'
+    ];
+    return $thaiMonths[$month];
+}
+
+function formatThaiDate($date)
+{
+    $day = date('j', strtotime($date));
+    $month = getThaiMonth(date('n', strtotime($date)));
+    $year = (date('Y', strtotime($date)) + 543);
+    $shortYear = substr($year, -2);
+    return "$day $month $shortYear";
+}
+
+function formatThaiDateTime($date)
+{
+    $day = date('j', strtotime($date));
+    $month = getThaiMonth(date('n', strtotime($date)));
+    $year = (date('Y', strtotime($date)) + 543);
+    $shortYear = substr($year, -2);
+    $time = date('H:i', strtotime($date));
+    return "$day $month $shortYear $time น.";
+}
+@endphp
+
 @section('styles')
+<!-- SweetAlert2 CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
 <style>
     .article-header {
         background-color: #f8f9fa;
@@ -189,7 +231,7 @@
                         <i class="fas fa-user"></i> {{ $article->author->name ?? $article->author->username }}
                     </div>
                     <div class="article-meta-item">
-                        <i class="fas fa-calendar-alt"></i> {{ $article->created_at->format('d M Y') }}
+                        <i class="fas fa-calendar-alt"></i> {{ formatThaiDate($article->created_at) }}
                     </div>
                     <div class="article-meta-item">
                         @if($article->status == 'published')
@@ -266,16 +308,29 @@
                             @foreach($article->comments->take(5) as $comment)
                                 <div class="list-group-item list-group-item-action">
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <h6 class="mb-1">{{ $comment->user->name }}</h6>
-                                        <small class="text-muted">{{ $comment->created_at->diffForHumans() }}</small>
+                                        <div class="d-flex align-items-center">
+                                            <img src="{{ asset('profile_images/' . ($comment->user->profile_image ?? 'default-profile.png')) }}"
+                                                 class="rounded-circle me-2" width="30" height="30"
+                                                 alt="{{ $comment->user->firstname ?? 'ผู้ใช้งาน' }}">
+                                            <h6 class="mb-0">{{ $comment->user->firstname ?? 'ผู้ใช้งาน' }}</h6>
+                                        </div>
+                                        <small class="text-muted">{{ formatThaiDateTime($comment->created_at) }}</small>
                                     </div>
-                                    <p class="mb-1">{{ $comment->content }}</p>
+                                    <p class="mb-1 mt-2">{{ $comment->comment_text ?? $comment->content }}</p>
+                                    <div class="d-flex justify-content-end">
+                                        <button type="button" class="btn btn-sm btn-outline-danger delete-comment-btn"
+                                                data-comment-id="{{ $comment->comment_id }}"
+                                                data-bs-toggle="tooltip"
+                                                title="ลบความคิดเห็นนี้">
+                                            <i class="fas fa-trash-alt"></i> ลบ
+                                        </button>
+                                    </div>
                                 </div>
                             @endforeach
                         </div>
                         @if($article->comments->count() > 5)
                             <div class="text-center mt-3">
-                                <a href="#" class="btn btn-outline-primary btn-sm">
+                                <a href="#" class="btn btn-outline-primary btn-sm view-all-comments">
                                     ดูความคิดเห็นทั้งหมด ({{ $article->comments->count() }})
                                 </a>
                             </div>
@@ -325,16 +380,16 @@
                     </div>
                     <div class="article-info-item">
                         <div class="article-info-label">วันที่สร้าง</div>
-                        <div>{{ $article->created_at->format('d/m/Y H:i') }}</div>
+                        <div>{{ formatThaiDateTime($article->created_at) }}</div>
                     </div>
                     <div class="article-info-item">
                         <div class="article-info-label">อัปเดตล่าสุด</div>
-                        <div>{{ $article->updated_at->format('d/m/Y H:i') }}</div>
+                        <div>{{ formatThaiDateTime($article->updated_at) }}</div>
                     </div>
                     @if($article->status == 'published' && $article->published_at)
                     <div class="article-info-item">
                         <div class="article-info-label">วันที่เผยแพร่</div>
-                        <div>{{ $article->published_at->format('d/m/Y H:i') }}</div>
+                        <div>{{ formatThaiDateTime($article->published_at) }}</div>
                     </div>
                     @endif
                 </div>
@@ -351,12 +406,34 @@
                             <div class="article-stats-label">เข้าชม</div>
                         </div>
                         <div class="col-4 article-stats-item border-end">
-                            <div class="article-stats-value">{{ number_format($article->like_count) }}</div>
+                            <div class="article-stats-value">{{ number_format($article->likes()->count()) }}</div>
                             <div class="article-stats-label">ถูกใจ</div>
                         </div>
                         <div class="col-4 article-stats-item">
-                            <div class="article-stats-value">{{ number_format($article->comments_count) }}</div>
+                            <div class="article-stats-value">{{ number_format($article->comments()->count()) }}</div>
                             <div class="article-stats-label">ความคิดเห็น</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card article-sidebar-card">
+                <div class="card-header">
+                    <i class="fas fa-users me-1"></i> การมีส่วนร่วม
+                </div>
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <div class="col-6 article-stats-item border-end">
+                            <div class="article-stats-value">{{ number_format($article->likes()->count()) }}</div>
+                            <div class="article-stats-label">
+                                <i class="fas fa-heart text-danger me-1"></i> ถูกใจ
+                            </div>
+                        </div>
+                        <div class="col-6 article-stats-item">
+                            <div class="article-stats-value">{{ number_format($article->savedBy()->count()) }}</div>
+                            <div class="article-stats-label">
+                                <i class="fas fa-bookmark text-primary me-1"></i> บันทึก
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -397,35 +474,31 @@
 @endsection
 
 @section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Delete article confirmation
-        const deleteButton = document.querySelector('.delete-article');
-
-        if (deleteButton) {
-            deleteButton.addEventListener('click', function() {
-                const articleId = this.getAttribute('data-article-id');
-                const articleTitle = this.getAttribute('data-article-title');
+        // Delete article button
+        const deleteArticleBtn = document.querySelector('.delete-article');
+        if (deleteArticleBtn) {
+            deleteArticleBtn.addEventListener('click', function() {
+                const articleId = this.dataset.articleId;
+                const articleTitle = this.dataset.articleTitle;
 
                 Swal.fire({
-                    title: 'ยืนยันการลบบทความ',
-                    html: `คุณต้องการลบบทความ <strong>"${articleTitle}"</strong> หรือไม่?<br>
-                           <span class="text-danger">การกระทำนี้ไม่สามารถเรียกคืนได้</span>`,
+                    title: 'คุณต้องการลบบทความนี้ใช่หรือไม่?',
+                    text: `"${articleTitle}" จะถูกลบออกจากระบบและไม่สามารถกู้คืนได้`,
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
                     confirmButtonText: 'ลบบทความ',
-                    cancelButtonText: 'ยกเลิก',
-                    reverseButtons: true
+                    cancelButtonText: 'ยกเลิก'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Create and submit form for delete
+                        // Create form to submit deletion
                         const form = document.createElement('form');
                         form.method = 'POST';
-                        form.action = `{{ route('admin.health-articles.destroy', '') }}/${articleId}`;
-                        form.style.display = 'none';
+                        form.action = `/admin/health-articles/${articleId}`;
 
                         const csrfToken = document.createElement('input');
                         csrfToken.type = 'hidden';
@@ -433,15 +506,79 @@
                         csrfToken.value = '{{ csrf_token() }}';
                         form.appendChild(csrfToken);
 
-                        const methodField = document.createElement('input');
-                        methodField.type = 'hidden';
-                        methodField.name = '_method';
-                        methodField.value = 'DELETE';
-                        form.appendChild(methodField);
+                        const method = document.createElement('input');
+                        method.type = 'hidden';
+                        method.name = '_method';
+                        method.value = 'DELETE';
+                        form.appendChild(method);
 
                         document.body.appendChild(form);
                         form.submit();
                     }
+                });
+            });
+        }
+
+        // Delete comment buttons
+        const deleteCommentBtns = document.querySelectorAll('.delete-comment-btn');
+        deleteCommentBtns.forEach(button => {
+            button.addEventListener('click', function() {
+                const commentId = this.dataset.commentId;
+
+                Swal.fire({
+                    title: 'ลบความคิดเห็นนี้?',
+                    html: `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            คำเตือน: การลบความคิดเห็นไม่สามารถเรียกคืนได้
+                        </div>
+                        <p>คุณต้องการลบความคิดเห็นนี้หรือไม่?</p>
+                    `,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="fas fa-trash me-1"></i> ลบความคิดเห็น',
+                    cancelButtonText: 'ยกเลิก',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Create form to submit deletion
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/admin/article-comments/${commentId}`;
+
+                        const csrfToken = document.createElement('input');
+                        csrfToken.type = 'hidden';
+                        csrfToken.name = '_token';
+                        csrfToken.value = '{{ csrf_token() }}';
+                        form.appendChild(csrfToken);
+
+                        const method = document.createElement('input');
+                        method.type = 'hidden';
+                        method.name = '_method';
+                        method.value = 'DELETE';
+                        form.appendChild(method);
+
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            });
+        });
+
+        // View all comments button
+        const viewAllCommentsBtn = document.querySelector('.view-all-comments');
+        if (viewAllCommentsBtn) {
+            viewAllCommentsBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                // You can implement a modal or redirect to a comments management page
+                Swal.fire({
+                    title: 'ความคิดเห็นทั้งหมด',
+                    text: 'หน้ารายละเอียดความคิดเห็นกำลังถูกพัฒนา',
+                    icon: 'info',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'ตกลง'
                 });
             });
         }

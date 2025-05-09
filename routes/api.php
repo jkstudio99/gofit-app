@@ -17,3 +17,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+// Health Articles Search API for Admin
+Route::middleware(['auth:sanctum'])->group(function() {
+    Route::get('/admin/health-articles/search', [App\Http\Controllers\Admin\HealthArticleSearchController::class, 'apiSearch']);
+});

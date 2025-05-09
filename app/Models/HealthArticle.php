@@ -99,10 +99,16 @@ class HealthArticle extends Model
      */
     public function tags()
     {
-        return $this->belongsToMany(ArticleTag::class, 'tb_health_article_tag', 'article_id', 'tag_id')
-                    ->withTimestamps()
-                    ->withPivot(['created_at', 'updated_at'])
-                    ->using(ArticleTagPivot::class);
+        // Use a query builder to prevent the ambiguous table alias issue
+        return $this->belongsToMany(
+                ArticleTag::class,
+                'tb_health_article_tag',
+                'article_id',
+                'tag_id'
+            )
+            ->withPivot(['created_at', 'updated_at'])
+            ->withTimestamps()
+            ->using(ArticleTagPivot::class);
     }
 
     /**
@@ -130,9 +136,15 @@ class HealthArticle extends Model
      * @param int $userId
      * @return bool
      */
-    public function isLikedByUser($userId)
+    public function isLikedByUser($userId = null)
     {
-        return $this->likes()->where('user_id', $userId)->exists();
+        if ($userId === null && auth()->guest()) {
+            return false;
+        }
+
+        $userId = $userId ?: auth()->id();
+
+        return $this->likes()->where('tb_health_article_likes.user_id', $userId)->exists();
     }
 
     /**
@@ -141,9 +153,15 @@ class HealthArticle extends Model
      * @param int $userId
      * @return bool
      */
-    public function isSavedByUser($userId)
+    public function isSavedByUser($userId = null)
     {
-        return $this->savedBy()->where('user_id', $userId)->exists();
+        if ($userId === null && auth()->guest()) {
+            return false;
+        }
+
+        $userId = $userId ?: auth()->id();
+
+        return $this->savedBy()->where('tb_health_article_saved.user_id', $userId)->exists();
     }
 
     /**

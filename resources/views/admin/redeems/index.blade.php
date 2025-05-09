@@ -11,7 +11,7 @@
         z-index: 999999 !important;
     }
     .search-box {
-        border-radius: 20px;
+        border-radius:8px;
         border: 1px solid #e0e0e0;
         padding-left: 20px;
     }
@@ -200,7 +200,7 @@
                 if (statusFilter) {
                     statusFilter.value = status;
                 }
-                // อัพเดต UI ของ badges
+                // อัปเดต UI ของ badges
                 statusFilterBadges.forEach(b => {
                     b.classList.remove('bg-primary', 'bg-warning', 'bg-success', 'bg-danger');
                     b.classList.add('bg-light', 'text-dark');
@@ -257,16 +257,16 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // อัพเดต redeems list
+                        // อัปเดต redeems list
                         document.getElementById('redeems-list-container').innerHTML = data.html;
 
-                        // อัพเดต pagination
+                        // อัปเดต pagination
                         document.getElementById('pagination-container').innerHTML = data.pagination;
 
-                        // อัพเดต count
+                        // อัปเดต count
                         document.getElementById('total-count').textContent = data.count + ' รายการ';
 
-                        // ติดตั้ง event listeners สำหรับปุ่มอัพเดตสถานะ
+                        // ติดตั้ง event listeners สำหรับปุ่มอัปเดตสถานะ
                         setupStatusButtons();
                     }
                 })
@@ -295,16 +295,16 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // อัพเดต redeems list
+                        // อัปเดต redeems list
                         document.getElementById('redeems-list-container').innerHTML = data.html;
 
-                        // อัพเดต pagination
+                        // อัปเดต pagination
                         document.getElementById('pagination-container').innerHTML = data.pagination;
 
-                        // อัพเดต count
+                        // อัปเดต count
                         document.getElementById('total-count').textContent = data.count + ' รายการ';
 
-                        // ติดตั้ง event listeners สำหรับปุ่มอัพเดตสถานะ
+                        // ติดตั้ง event listeners สำหรับปุ่มอัปเดตสถานะ
                         setupStatusButtons();
                     }
                 })
@@ -323,7 +323,7 @@
                 });
         }
 
-        // ฟังก์ชันตั้งค่า event listeners สำหรับปุ่มอัพเดตสถานะ
+        // ฟังก์ชันตั้งค่า event listeners สำหรับปุ่มอัปเดตสถานะ
         function setupStatusButtons() {
             // ใช้ SweetAlert แทน Modal
             document.querySelectorAll('.btn-update-status').forEach(button => {
@@ -407,7 +407,7 @@
             });
         }
 
-        // ตั้งค่า event listeners สำหรับปุ่มอัพเดตสถานะเมื่อโหลดหน้าครั้งแรก
+        // ตั้งค่า event listeners สำหรับปุ่มอัปเดตสถานะเมื่อโหลดหน้าครั้งแรก
         setupStatusButtons();
 
         // Show flash message if exists

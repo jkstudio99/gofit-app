@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class RedeemController extends Controller
 {
@@ -112,6 +113,9 @@ class RedeemController extends Controller
      */
     public function adminIndex(Request $request)
     {
+        // ตั้งค่าภาษาไทยสำหรับ Carbon
+        Carbon::setLocale('th');
+
         $query = Redeem::with(['user', 'reward']);
 
         // Search
@@ -192,6 +196,9 @@ class RedeemController extends Controller
      */
     public function apiSearch(Request $request)
     {
+        // ตั้งค่าภาษาไทยสำหรับ Carbon
+        Carbon::setLocale('th');
+
         $query = Redeem::with(['user', 'reward'])
             ->select('tb_redeem.*');
 

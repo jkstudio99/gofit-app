@@ -2,6 +2,36 @@
 
 @section('title', 'สถิติบทความสุขภาพ - GoFit')
 
+@php
+function getThaiMonth($month)
+{
+    $thaiMonths = [
+        1 => 'ม.ค.',
+        2 => 'ก.พ.',
+        3 => 'มี.ค.',
+        4 => 'เม.ย.',
+        5 => 'พ.ค.',
+        6 => 'มิ.ย.',
+        7 => 'ก.ค.',
+        8 => 'ส.ค.',
+        9 => 'ก.ย.',
+        10 => 'ต.ค.',
+        11 => 'พ.ย.',
+        12 => 'ธ.ค.'
+    ];
+    return $thaiMonths[$month];
+}
+
+function formatThaiDate($date)
+{
+    $day = date('j', strtotime($date));
+    $month = getThaiMonth(date('n', strtotime($date)));
+    $year = (date('Y', strtotime($date)) + 543);
+    $shortYear = substr($year, -2);
+    return "$day $month $shortYear";
+}
+@endphp
+
 @section('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
 <style>
@@ -229,7 +259,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-xl-2 col-md-6 mb-4">
             <div class="card stat-card">
                 <div class="card-body">
                     <div class="stat-icon bg-like">
@@ -242,7 +272,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-xl-2 col-md-6 mb-4">
             <div class="card stat-card">
                 <div class="card-body">
                     <div class="stat-icon bg-comment">
@@ -251,6 +281,19 @@
                     <div class="stat-info">
                         <div class="stat-value">{{ number_format($totalComments ?? 0) }}</div>
                         <div class="stat-label">ความคิดเห็นทั้งหมด</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-6 mb-4">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="stat-icon" style="background-color: rgba(13, 110, 253, 0.1); color: #0d6efd;">
+                        <i class="fas fa-bookmark"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value">{{ number_format($totalSaved ?? 0) }}</div>
+                        <div class="stat-label">ยอดบันทึกทั้งหมด</div>
                     </div>
                 </div>
             </div>
@@ -330,7 +373,7 @@
                             <div class="top-list-content">
                                 <div class="top-list-title">{{ $article->title }}</div>
                                 <div class="top-list-stats">
-                                    <span><i class="fas fa-calendar-alt"></i> {{ $article->created_at->format('d/m/Y') }}</span>
+                                    <span><i class="fas fa-calendar-alt"></i> {{ formatThaiDate($article->created_at) }}</span>
                                     <span><i class="fas fa-folder"></i> {{ $article->category->category_name }}</span>
                                 </div>
                             </div>
@@ -373,12 +416,12 @@
                             <div class="top-list-content">
                                 <div class="top-list-title">{{ $article->title }}</div>
                                 <div class="top-list-stats">
-                                    <span><i class="fas fa-calendar-alt"></i> {{ $article->created_at->format('d/m/Y') }}</span>
+                                    <span><i class="fas fa-calendar-alt"></i> {{ formatThaiDate($article->created_at) }}</span>
                                     <span><i class="fas fa-folder"></i> {{ $article->category->category_name }}</span>
                                 </div>
                             </div>
                             <div class="top-list-value">
-                                {{ number_format($article->like_count) }}
+                                {{ number_format($article->likes()->count()) }}
                             </div>
                         </li>
                         @endforeach
@@ -395,6 +438,49 @@
     </div>
 
     <div class="row">
+        <!-- Most Saved Articles -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-bookmark me-1"></i>
+                    บทความที่ถูกบันทึกมากที่สุด
+                </div>
+                <div class="card-body">
+                    @if(isset($mostSavedArticles) && count($mostSavedArticles) > 0)
+                    <ul class="top-list">
+                        @foreach($mostSavedArticles as $index => $article)
+                        <li class="top-list-item">
+                            <div class="top-list-rank">{{ $index + 1 }}</div>
+                            @if($article->thumbnail)
+                            <img src="{{ asset('storage/' . $article->thumbnail) }}" alt="{{ $article->title }}" class="top-list-img">
+                            @else
+                            <div class="top-list-img bg-light d-flex align-items-center justify-content-center">
+                                <i class="fas fa-image text-muted"></i>
+                            </div>
+                            @endif
+                            <div class="top-list-content">
+                                <div class="top-list-title">{{ $article->title }}</div>
+                                <div class="top-list-stats">
+                                    <span><i class="fas fa-calendar-alt"></i> {{ formatThaiDate($article->created_at) }}</span>
+                                    <span><i class="fas fa-folder"></i> {{ $article->category->category_name }}</span>
+                                </div>
+                            </div>
+                            <div class="top-list-value">
+                                {{ number_format($article->saved_count) }}
+                            </div>
+                        </li>
+                        @endforeach
+                    </ul>
+                    @else
+                    <div class="text-center py-4">
+                        <i class="fas fa-bookmark fa-3x text-muted mb-3"></i>
+                        <p>ไม่มีข้อมูลการบันทึกในช่วงเวลาที่เลือก</p>
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
         <!-- Recent Articles -->
         <div class="col-md-6">
             <div class="card mb-4">
@@ -423,7 +509,7 @@
                                 </div>
                             </div>
                             <div class="top-list-value">
-                                {{ $article->created_at->format('d/m/Y') }}
+                                {{ formatThaiDate($article->created_at) }}
                             </div>
                         </li>
                         @endforeach
@@ -437,7 +523,9 @@
                 </div>
             </div>
         </div>
+    </div>
 
+    <div class="row">
         <!-- Most Commented Articles -->
         <div class="col-md-6">
             <div class="card mb-4">
@@ -461,12 +549,12 @@
                             <div class="top-list-content">
                                 <div class="top-list-title">{{ $article->title }}</div>
                                 <div class="top-list-stats">
-                                    <span><i class="fas fa-calendar-alt"></i> {{ $article->created_at->format('d/m/Y') }}</span>
+                                    <span><i class="fas fa-calendar-alt"></i> {{ formatThaiDate($article->created_at) }}</span>
                                     <span><i class="fas fa-folder"></i> {{ $article->category->category_name }}</span>
                                 </div>
                             </div>
                             <div class="top-list-value">
-                                {{ number_format($article->comments_count) }}
+                                {{ number_format($article->comments()->count()) }}
                             </div>
                         </li>
                         @endforeach

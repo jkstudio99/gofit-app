@@ -3,6 +3,8 @@
 @section('title', $article->title . ' - GoFit')
 
 @section('styles')
+<!-- SweetAlert2 CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
 <style>
     .article-header {
         position: relative;
@@ -255,6 +257,13 @@
         border-radius: 0.5rem;
         margin-bottom: 1.5rem;
         background-color: #f8f9fa;
+        border-left: 3px solid #e9ecef;
+        transition: all 0.2s ease;
+    }
+
+    .comment-item:hover {
+        border-left-color: #2DC679;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
     .comment-header {
@@ -274,11 +283,14 @@
         border-radius: 50%;
         object-fit: cover;
         margin-right: 0.75rem;
+        border: 2px solid #e9ecef;
     }
 
     .comment-author-name {
         font-weight: 600;
         font-size: 0.95rem;
+        display: flex;
+        align-items: center;
     }
 
     .comment-date {
@@ -295,6 +307,10 @@
         margin: 0;
         font-size: 0.95rem;
         line-height: 1.6;
+        background-color: #ffffff;
+        padding: 10px 15px;
+        border-radius: 8px;
+        color: #333;
     }
 
     .comment-actions {
@@ -472,6 +488,50 @@
             font-size: 1rem;
         }
     }
+
+    /* Add CSS for animations */
+    .animate-count {
+        animation: pulse 0.5s ease-in-out;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+
+    .fade-out {
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .notification-container {
+        z-index: 1050;
+    }
+
+    /* User Avatar Styling */
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        transition: all 0.3s ease;
+    }
+
+    /* Delete comment button */
+    .delete-comment-btn {
+        background: none;
+        border: none;
+        color: #dc3545;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .delete-comment-btn:hover {
+        color: #bd2130;
+    }
 </style>
 @endsection
 
@@ -493,7 +553,7 @@
                 <div class="article-meta">
                     <span class="article-meta-item">
                         <i class="fas fa-calendar-alt"></i>
-                        {{ \Carbon\Carbon::parse($article->published_at)->locale('th')->format('d M Y H:i') }}
+                        {{ \Carbon\Carbon::parse($article->published_at)->locale('th')->thaiFormat('j M y H:i') }} น.
                     </span>
                     <span class="article-meta-item">
                         <i class="fas fa-eye"></i>
@@ -528,13 +588,8 @@
                     <i class="fas fa-bookmark"></i>
                 </button>
                 <div class="article-action-counter" id="save-counter">
-                    {{ $article->saves->count() }}
+                    {{ $article->savedBy->count() }}
                 </div>
-
-                <!-- Share Button -->
-                <button class="article-action-btn" id="share-btn-desktop">
-                    <i class="fas fa-share-alt"></i>
-                </button>
 
                 <!-- Comment Button (scrolls to comments) -->
                 <a href="#comments" class="article-action-btn">
@@ -564,7 +619,7 @@
                         <div class="fw-bold">{{ $article->author->name }}</div>
                         <div class="text-muted small">
                             <i class="fas fa-calendar-alt me-1"></i>
-                            {{ \Carbon\Carbon::parse($article->published_at)->locale('th')->diffForHumans() }}
+                            {{ \Carbon\Carbon::parse($article->published_at)->locale('th')->thaiFormat('j M y H:i') }} น.
                         </div>
                     </div>
                 </div>
@@ -576,7 +631,15 @@
             </div>
 
             <!-- Tags -->
-            @if(count($article->tags) > 0)
+            @php
+                $hasTags = false;
+                try {
+                    $hasTags = $article->tags && count($article->tags) > 0;
+                } catch (\Exception $e) {
+                    $hasTags = false;
+                }
+            @endphp
+            @if($hasTags)
             <div class="tags-container">
                 @foreach($article->tags as $tag)
                 <a href="{{ route('health-articles.index', ['tag' => $tag->tag_id]) }}" class="tag-badge">
@@ -604,10 +667,19 @@
                 <!-- Comment Form -->
                 @auth
                 <div class="comment-form">
-                    <form action="{{ route('health-articles.comment.store', $article->article_id) }}" method="POST">
+                    <div class="d-flex mb-3">
+                        <img src="{{ asset('profile_images/' . (Auth::user()->profile_image ?? 'default-profile.png')) }}"
+                             class="user-avatar me-2"
+                             alt="{{ Auth::user()->firstname ?? Auth::user()->username ?? 'ผู้ใช้งาน' }}">
+                        <div class="flex-grow-1">
+                            <div class="fw-bold">{{ Auth::user()->firstname ?? Auth::user()->username ?? 'ผู้ใช้งาน' }}</div>
+                            <div class="text-muted small">แสดงความคิดเห็นในฐานะผู้ใช้นี้</div>
+                        </div>
+                    </div>
+                    <form action="{{ route('health-articles.comment', $article->article_id) }}" method="POST">
                         @csrf
                         <div class="mb-3">
-                            <textarea class="form-control" id="comment" name="content" rows="3" placeholder="แสดงความคิดเห็นของคุณ..."></textarea>
+                            <textarea class="form-control" id="comment" name="content" rows="3" placeholder="แสดงความคิดเห็นของคุณ..." required></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary">โพสต์ความคิดเห็น</button>
                     </form>
@@ -625,27 +697,41 @@
                     <div class="comment-item">
                         <div class="comment-header">
                             <div class="comment-author">
-                                <img src="{{ $comment->user->profile_image ? asset('storage/' . $comment->user->profile_image) : asset('images/default-profile.png') }}"
+                                @if($comment->user)
+                                <img src="{{ asset('profile_images/' . ($comment->user->profile_image ?? 'default-profile.png')) }}"
                                      class="comment-author-image"
-                                     alt="{{ $comment->user->name }}">
+                                     alt="{{ $comment->user->firstname ?? 'ผู้ใช้งาน' }}">
                                 <div>
-                                    <div class="comment-author-name">{{ $comment->user->name }}</div>
-                                    <div class="comment-date">{{ \Carbon\Carbon::parse($comment->created_at)->locale('th')->diffForHumans() }}</div>
+                                    <div class="comment-author-name">
+                                        {{ $comment->user->firstname ?? 'ผู้ใช้งาน' }}
+                                        @if($comment->user->user_type_id == 2)
+                                            <span class="badge bg-success ms-1">Admin</span>
+                                        @endif
+                                    </div>
+                                @else
+                                <img src="{{ asset('images/default-profile.png') }}"
+                                     class="comment-author-image"
+                                     alt="ผู้ใช้งาน">
+                                <div>
+                                    <div class="comment-author-name">ผู้ใช้งาน</div>
+                                @endif
+                                    <div class="comment-date">{{ \Carbon\Carbon::parse($comment->created_at)->locale('th')->thaiFormat('j M y H:i') }} น.</div>
                                 </div>
                             </div>
                             <div class="comment-meta">
-                                @if(Auth::check() && (Auth::id() == $comment->user_id || Auth::user()->isAdmin()))
-                                <form action="{{ route('health-articles.comment.destroy', $comment->comment_id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm text-danger p-0 border-0" onclick="return confirm('คุณต้องการลบความคิดเห็นนี้ใช่หรือไม่?')">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </form>
+                                @if(Auth::check() && (Auth::id() == $comment->user_id || Auth::user()->user_type_id == 2))
+                                <button type="button" class="delete-comment-btn"
+                                        data-comment-id="{{ $comment->comment_id }}"
+                                        data-bs-toggle="tooltip"
+                                        title="ลบความคิดเห็นนี้">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
                                 @endif
                             </div>
                         </div>
-                        <p class="comment-content">{{ $comment->content }}</p>
+                        <div class="comment-content mt-2">
+                            {{ $comment->comment_text ?? $comment->content }}
+                        </div>
                     </div>
                     @empty
                     <div class="text-center py-4">
@@ -682,7 +768,7 @@
                             <h6 class="related-article-title">{{ $relatedArticle->title }}</h6>
                             <div class="related-article-meta">
                                 <i class="fas fa-calendar-alt me-1"></i>
-                                {{ \Carbon\Carbon::parse($relatedArticle->published_at)->locale('th')->format('d M Y') }}
+                                {{ \Carbon\Carbon::parse($relatedArticle->published_at)->locale('th')->thaiFormat('j M y') }}
                             </div>
                         </div>
                     </div>
@@ -713,68 +799,18 @@
         <i class="fas fa-bookmark"></i>
         <span>บันทึก</span>
     </button>
-
-    <!-- Share Button -->
-    <button class="mobile-action-btn" id="share-btn-mobile">
-        <i class="fas fa-share-alt"></i>
-        <span>แชร์</span>
-
-        <!-- Share Options Dropdown -->
-        <div class="share-dropdown" id="share-dropdown-mobile">
-            <div class="share-option" data-platform="facebook">
-                <i class="fab fa-facebook-f text-primary"></i>
-                <span class="share-option-text">Facebook</span>
-            </div>
-            <div class="share-option" data-platform="twitter">
-                <i class="fab fa-twitter text-info"></i>
-                <span class="share-option-text">Twitter</span>
-            </div>
-            <div class="share-option" data-platform="line">
-                <i class="fab fa-line text-success"></i>
-                <span class="share-option-text">Line</span>
-            </div>
-            <div class="share-option" data-platform="copy">
-                <i class="fas fa-link text-secondary"></i>
-                <span class="share-option-text">คัดลอกลิงก์</span>
-            </div>
-        </div>
-    </button>
 </div>
 
-<!-- Desktop Share Dropdown -->
-<div class="share-dropdown" id="share-dropdown-desktop" style="position: fixed;">
-    <div class="share-option" data-platform="facebook">
-        <i class="fab fa-facebook-f text-primary"></i>
-        <span class="share-option-text">Facebook</span>
-    </div>
-    <div class="share-option" data-platform="twitter">
-        <i class="fab fa-twitter text-info"></i>
-        <span class="share-option-text">Twitter</span>
-    </div>
-    <div class="share-option" data-platform="line">
-        <i class="fab fa-line text-success"></i>
-        <span class="share-option-text">Line</span>
-    </div>
-    <div class="share-option" data-platform="copy">
-        <i class="fas fa-link text-secondary"></i>
-        <span class="share-option-text">คัดลอกลิงก์</span>
-    </div>
-</div>
-
-<!-- Toast for Copy Link Success -->
-<div class="toast-container position-fixed bottom-0 end-0 p-3">
-    <div id="copyLinkToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-            <div class="toast-body">
-                <i class="fas fa-check-circle me-2"></i>คัดลอกลิงก์เรียบร้อยแล้ว
-            </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-    </div>
-</div>
+<!-- Comment Delete Form (Hidden) -->
+<form id="delete-comment-form" action="" method="POST" style="display: none;">
+    @csrf
+    @method('DELETE')
+</form>
 @endsection
 
 @section('scripts')
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Generate Table of Contents
@@ -858,27 +894,43 @@
         function toggleLike(button) {
             const articleId = button.dataset.articleId;
 
+            // Disable the button temporarily to prevent multiple clicks
+            button.disabled = true;
+
+            // Create form data with CSRF token
+            const formData = new FormData();
+            formData.append('_token', '{{ csrf_token() }}');
+
             fetch(`/health-articles/${articleId}/like`, {
                 method: 'POST',
+                body: formData,
                 headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                credentials: 'same-origin'
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
-                    // Update active state for both buttons
+                    // Update button state
                     likeBtn.classList.toggle('active');
                     likeBtnMobile.classList.toggle('active');
 
                     // Update counter
-                    likeCounter.textContent = data.likes_count;
+                    likeCounter.textContent = data.likesCount;
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+            })
+            .finally(() => {
+                // Re-enable the button
+                button.disabled = false;
+            });
         }
 
         if (likeBtn) {
@@ -897,19 +949,29 @@
         function toggleSave(button) {
             const articleId = button.dataset.articleId;
 
+            // Disable the button temporarily to prevent multiple clicks
+            button.disabled = true;
+
+            // Create form data with CSRF token
+            const formData = new FormData();
+            formData.append('_token', '{{ csrf_token() }}');
+
             fetch(`/health-articles/${articleId}/save`, {
                 method: 'POST',
+                body: formData,
                 headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                credentials: 'same-origin'
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
-                    // Update active state for both buttons
+                    // Update button state
                     saveBtn.classList.toggle('active');
                     saveBtnMobile.classList.toggle('active');
 
@@ -917,7 +979,13 @@
                     saveCounter.textContent = data.saves_count;
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+            })
+            .finally(() => {
+                // Re-enable the button
+                button.disabled = false;
+            });
         }
 
         if (saveBtn) {
@@ -928,92 +996,40 @@
             saveBtnMobile.addEventListener('click', () => toggleSave(saveBtnMobile));
         }
 
-        // Share functionality
-        const shareBtnDesktop = document.getElementById('share-btn-desktop');
-        const shareBtnMobile = document.getElementById('share-btn-mobile');
-        const shareDropdownDesktop = document.getElementById('share-dropdown-desktop');
-        const shareDropdownMobile = document.getElementById('share-dropdown-mobile');
-        const shareOptions = document.querySelectorAll('.share-option');
+        // Handle delete comment buttons with SweetAlert
+        const deleteCommentButtons = document.querySelectorAll('.delete-comment-btn');
+        const deleteCommentForm = document.getElementById('delete-comment-form');
 
-        function toggleShareDropdown(dropdown, button) {
-            const isActive = dropdown.classList.contains('active');
+        deleteCommentButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const commentId = this.dataset.commentId;
 
-            // Close any open dropdowns
-            shareDropdownDesktop.classList.remove('active');
-            shareDropdownMobile.classList.remove('active');
-
-            if (!isActive) {
-                dropdown.classList.add('active');
-
-                // Position the desktop dropdown near the button
-                if (dropdown === shareDropdownDesktop) {
-                    const buttonRect = button.getBoundingClientRect();
-                    dropdown.style.left = `${buttonRect.left - 70}px`;
-                    dropdown.style.top = `${buttonRect.top - 10}px`;
-                }
-            }
-        }
-
-        if (shareBtnDesktop) {
-            shareBtnDesktop.addEventListener('click', () => {
-                toggleShareDropdown(shareDropdownDesktop, shareBtnDesktop);
-            });
-        }
-
-        if (shareBtnMobile) {
-            shareBtnMobile.addEventListener('click', () => {
-                toggleShareDropdown(shareDropdownMobile, shareBtnMobile);
-            });
-        }
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('#share-btn-desktop') &&
-                !event.target.closest('#share-dropdown-desktop') &&
-                !event.target.closest('#share-btn-mobile') &&
-                !event.target.closest('#share-dropdown-mobile')) {
-                shareDropdownDesktop.classList.remove('active');
-                shareDropdownMobile.classList.remove('active');
-            }
-        });
-
-        // Handle share options
-        shareOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                const platform = this.dataset.platform;
-                const articleUrl = window.location.href;
-                const articleTitle = '{{ $article->title }}';
-
-                let shareUrl;
-
-                switch(platform) {
-                    case 'facebook':
-                        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(articleUrl)}`;
-                        window.open(shareUrl, '_blank');
-                        break;
-                    case 'twitter':
-                        shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(articleUrl)}&text=${encodeURIComponent(articleTitle)}`;
-                        window.open(shareUrl, '_blank');
-                        break;
-                    case 'line':
-                        shareUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(articleUrl)}`;
-                        window.open(shareUrl, '_blank');
-                        break;
-                    case 'copy':
-                        // Copy to clipboard
-                        navigator.clipboard.writeText(articleUrl).then(() => {
-                            // Show toast notification
-                            const toast = new bootstrap.Toast(document.getElementById('copyLinkToast'));
-                            toast.show();
-                        });
-                        break;
-                }
-
-                // Close dropdowns
-                shareDropdownDesktop.classList.remove('active');
-                shareDropdownMobile.classList.remove('active');
+                Swal.fire({
+                    title: 'คุณต้องการลบความคิดเห็นนี้ใช่หรือไม่?',
+                    text: 'การกระทำนี้ไม่สามารถย้อนกลับได้',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'ลบความคิดเห็น',
+                    cancelButtonText: 'ยกเลิก'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Set the form action URL
+                        deleteCommentForm.action = `/health-articles/comments/${commentId}`;
+                        // Submit the form
+                        deleteCommentForm.submit();
+                    }
+                });
             });
         });
+
+        // Comment form submission with regular form submit to avoid AJAX issues
+        const commentForm = document.querySelector('.comment-form form');
+        if (commentForm) {
+            // Keep standard form submission for now to avoid AJAX issues
+            // This will cause a page refresh but prevent the JSON parsing errors
+        }
     });
 </script>
 @endsection

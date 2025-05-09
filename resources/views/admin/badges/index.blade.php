@@ -457,13 +457,13 @@
                                 <span class="visually-hidden">กำลังโหลด...</span>
                             </div>
                             <p class="mt-2">กำลังโหลดข้อมูล...</p>
-                        </div>
-                    </div>
+                                                </div>
+                                            </div>
 
                     <!-- Badges list container -->
                     <div id="badges-list-container">
                         @include('admin.badges.partials.badge_list')
-                    </div>
+                                                            </div>
                 </div>
 
                 <div class="card-footer bg-white py-3">
@@ -610,13 +610,13 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // อัพเดต badges list
+                        // อัปเดต badges list
                         document.getElementById('badges-list-container').innerHTML = data.html;
 
-                        // อัพเดต pagination
+                        // อัปเดต pagination
                         document.getElementById('pagination-container').innerHTML = data.pagination;
 
-                        // อัพเดต count ถ้ามี
+                        // อัปเดต count ถ้ามี
                         const totalCountElement = document.getElementById('total-count');
                         if (totalCountElement) {
                             totalCountElement.textContent = data.count || 0;
@@ -670,10 +670,10 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // อัพเดต badges list
+                        // อัปเดต badges list
                         document.getElementById('badges-list-container').innerHTML = data.html;
 
-                        // อัพเดต pagination
+                        // อัปเดต pagination
                         document.getElementById('pagination-container').innerHTML = data.pagination;
 
                         // ติดตั้ง event listeners สำหรับปุ่มลบ
@@ -720,52 +720,52 @@
         // ฟังก์ชันตั้งค่า event listeners สำหรับปุ่มลบ
         function setupDeleteButtons() {
             document.querySelectorAll('.delete-badge').forEach(button => {
-                button.addEventListener('click', function() {
-                    const badgeId = this.getAttribute('data-badge-id');
-                    const badgeName = this.getAttribute('data-badge-name');
+            button.addEventListener('click', function() {
+                const badgeId = this.getAttribute('data-badge-id');
+                const badgeName = this.getAttribute('data-badge-name');
                     const usersCount = parseInt(this.getAttribute('data-users-count') || '0');
 
                     let confirmMessage = `คุณต้องการลบเหรียญตรา "${badgeName}" ใช่หรือไม่?`;
-                    if (usersCount > 0) {
+                if (usersCount > 0) {
                         confirmMessage += `<br><br><span class="text-danger">เหรียญตรานี้มีผู้ใช้ได้รับแล้ว ${usersCount} คน การลบจะทำให้ผู้ใช้เหล่านั้นเสียเหรียญตรานี้ไป</span>`;
-                    }
+                }
 
-                    Swal.fire({
+                Swal.fire({
                         title: 'ยืนยันการลบ',
                         html: confirmMessage,
-                        icon: 'warning',
-                        showCancelButton: true,
+                    icon: 'warning',
+                    showCancelButton: true,
                         confirmButtonColor: '#d33',
                         cancelButtonColor: '#3085d6',
                         confirmButtonText: 'ลบ',
-                        cancelButtonText: 'ยกเลิก',
+                    cancelButtonText: 'ยกเลิก',
                         showLoaderOnConfirm: false // ปิดการแสดง loading
-                    }).then((result) => {
-                        if (result.isConfirmed) {
+                }).then((result) => {
+                    if (result.isConfirmed) {
                             // Create form for deletion
-                            const form = document.createElement('form');
-                            form.method = 'POST';
+                        const form = document.createElement('form');
+                        form.method = 'POST';
                             form.action = `{{ url('admin/badges') }}/${badgeId}`;
                             form.style.display = 'none';
 
-                            const csrfToken = document.createElement('input');
-                            csrfToken.type = 'hidden';
-                            csrfToken.name = '_token';
-                            csrfToken.value = '{{ csrf_token() }}';
+                        const csrfToken = document.createElement('input');
+                        csrfToken.type = 'hidden';
+                        csrfToken.name = '_token';
+                        csrfToken.value = '{{ csrf_token() }}';
 
                             const method = document.createElement('input');
                             method.type = 'hidden';
                             method.name = '_method';
                             method.value = 'DELETE';
 
-                            form.appendChild(csrfToken);
+                        form.appendChild(csrfToken);
                             form.appendChild(method);
-                            document.body.appendChild(form);
-                            form.submit();
-                        }
-                    });
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
                 });
             });
+        });
         }
 
         // Initialize tooltips on page load

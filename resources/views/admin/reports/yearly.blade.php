@@ -94,15 +94,13 @@
             <div class="card border-0 shadow-sm rounded-3">
                 <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
                     <h5 class="m-0 fw-bold">สรุปข้อมูลรายเดือน ปี {{ $currentYear + 543 }}</h5>
-                    <div class="d-flex justify-content-end mb-4">
-                        <div class="btn-group">
-                            <button id="export-excel" class="btn btn-sm btn-success">
-                                <i class="fas fa-file-excel me-1"></i> ส่งออก Excel
-                            </button>
-                            <button id="export-csv" class="btn btn-sm btn-primary">
-                                <i class="fas fa-file-csv me-1"></i> ส่งออก CSV
-                            </button>
-                        </div>
+                    <div class="d-flex justify-content-end gap-2 mb-3">
+                        <a href="#" id="export-excel" class="btn btn-primary">
+                            <i class="fas fa-file-excel me-1"></i> ส่งออก Excel
+                        </a>
+                        <a href="#" id="export-csv" class="btn btn-primary">
+                            <i class="fas fa-file-csv me-1"></i> ส่งออก CSV
+                        </a>
                     </div>
                 </div>
                 <div class="card-body">

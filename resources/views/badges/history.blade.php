@@ -48,7 +48,18 @@
                     </div>
                     <div>
                         <h6 class="text-muted mb-1">วันที่ได้รับเหรียญล่าสุด</h6>
-                        <h4 class="mb-0">{{ $badgeHistory->isNotEmpty() ? \Carbon\Carbon::parse($badgeHistory->first()->earned_at)->format('d/m/Y') : '-' }}</h4>
+                        <h4 class="mb-0">
+                            @if($badgeHistory->isNotEmpty())
+                                @php
+                                    $lastBadgeDate = \Carbon\Carbon::parse($badgeHistory->first()->earned_at);
+                                    $thaiYear = $lastBadgeDate->year + 543;
+                                    $formattedDate = $lastBadgeDate->locale('th')->translatedFormat('j M').' '.substr($thaiYear, 2);
+                                @endphp
+                                {{ $formattedDate }}
+                            @else
+                                -
+                            @endif
+                        </h4>
                     </div>
                 </div>
             </div>
@@ -91,7 +102,12 @@
                             </div>
                             <div class="badge-timeline-card">
                                 <div class="badge-timeline-date">
-                                    {{ \Carbon\Carbon::parse($badge->earned_at)->format('d M Y, H:i') }}
+                                    @php
+                                        $earnedDate = \Carbon\Carbon::parse($badge->earned_at);
+                                        $thaiYear = $earnedDate->year + 543;
+                                        $formattedDate = $earnedDate->locale('th')->translatedFormat('j M').' '.substr($thaiYear, 2).' '.$earnedDate->format('H:i').' น.';
+                                    @endphp
+                                    {{ $formattedDate }}
                                 </div>
                                 <div class="badge-timeline-content">
                                     <div class="row">

@@ -10,6 +10,7 @@ use App\Models\SavedArticle;
 use App\Models\ArticleShare;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class HealthArticleController extends Controller
 {
@@ -21,11 +22,22 @@ class HealthArticleController extends Controller
      */
     public function index(Request $request)
     {
-        $query = HealthArticle::published()->with('category', 'author');
+        $query = HealthArticle::published()->with(['category', 'author']);
 
         // Filter by category if provided
         if ($request->has('category') && $request->category !== 'all') {
             $query->where('category_id', $request->category);
+        }
+
+        // Filter by tag if provided
+        if ($request->has('tag') && !empty($request->tag)) {
+            $tagId = $request->tag;
+            $query->whereExists(function ($query) use ($tagId) {
+                $query->select(DB::raw(1))
+                      ->from('tb_health_article_tag')
+                      ->whereColumn('tb_health_article_tag.article_id', 'tb_health_articles.article_id')
+                      ->where('tb_health_article_tag.tag_id', $tagId);
+            });
         }
 
         // Search by keyword if provided
@@ -46,10 +58,36 @@ class HealthArticleController extends Controller
             $categories = ArticleCategory::all();
         }
 
+        // Try to get popular tags
+        try {
+            $popularTags = DB::table('tb_health_article_tag')
+                ->selectRaw('tag_id, COUNT(*) as articles_count')
+                ->groupBy('tag_id')
+                ->orderBy('articles_count', 'desc')
+                ->limit(5)
+                ->get();
+
+            // Get tag names in a separate query to avoid self-join
+            $tagIds = $popularTags->pluck('tag_id')->toArray();
+            $tagNames = DB::table('tb_health_article_tag')
+                ->whereIn('tag_id', $tagIds)
+                ->select('tag_id', 'tag_name')
+                ->get()
+                ->keyBy('tag_id');
+
+            // Combine the data
+            $popularTags = $popularTags->map(function($tag) use ($tagNames) {
+                $tag->tag_name = $tagNames[$tag->tag_id]->tag_name ?? '';
+                return $tag;
+            });
+        } catch (\Exception $e) {
+            $popularTags = collect();
+        }
+
         // Get the articles with pagination
         $articles = $query->orderBy('published_at', 'desc')->paginate(9);
 
-        return view('health-articles.index', compact('articles', 'categories'));
+        return view('health-articles.index', compact('articles', 'categories', 'popularTags'));
     }
 
     /**
@@ -81,6 +119,21 @@ class HealthArticleController extends Controller
         $article = HealthArticle::published()
                     ->with(['category', 'author', 'comments.user'])
                     ->findOrFail($id);
+
+        // Manually load tags using a raw query to avoid join issues
+        try {
+            $tags = DB::table('tb_health_article_tag as pivot')
+                ->join('tb_health_article_tag as tags', 'pivot.tag_id', '=', 'tags.tag_id')
+                ->where('pivot.article_id', $id)
+                ->select('tags.tag_id', 'tags.tag_name')
+                ->get();
+
+            // Add the tags to the article
+            $article->setRelation('tags', $tags);
+        } catch (\Exception $e) {
+            // If there's an error, set an empty collection
+            $article->setRelation('tags', collect([]));
+        }
 
         // Increment view count
         $article->incrementViewCount();
@@ -116,17 +169,32 @@ class HealthArticleController extends Controller
     public function storeComment(Request $request, $id)
     {
         $request->validate([
-            'comment_text' => 'required|string|max:500',
+            'content' => 'required|string|max:500',
         ]);
 
         $article = HealthArticle::published()->findOrFail($id);
 
         $comment = new ArticleComment([
             'user_id' => Auth::id(),
-            'comment_text' => $request->comment_text,
+            'article_id' => $id,
+            'comment_text' => $request->content,
         ]);
 
-        $article->comments()->save($comment);
+        $comment->save();
+
+        // Load the user relationship for the new comment
+        $comment->load('user');
+
+        // Add the can_delete flag
+        $comment->can_delete = true;
+
+        if ($request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') == 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'comment' => $comment,
+                'comments_count' => $article->comments()->count()
+            ]);
+        }
 
         return redirect()->back()->with('success', 'ความคิดเห็นของคุณถูกเพิ่มเรียบร้อยแล้ว');
     }
@@ -208,6 +276,7 @@ class HealthArticleController extends Controller
             return response()->json([
                 'success' => true,
                 'saved' => $isSaved,
+                'saves_count' => $article->savedBy()->count()
             ]);
         }
 
@@ -253,10 +322,14 @@ class HealthArticleController extends Controller
      */
     public function savedArticles()
     {
-        $savedArticles = Auth::user()->savedArticles()
-                           ->with('category')
-                           ->orderBy('saved_articles.created_at', 'desc')
-                           ->paginate(9);
+        $savedArticleIds = SavedArticle::where('user_id', Auth::id())
+            ->where('is_filter', false)
+            ->pluck('article_id');
+
+        $savedArticles = HealthArticle::whereIn('article_id', $savedArticleIds)
+            ->with('category')
+            ->orderBy('published_at', 'desc')
+            ->paginate(9);
 
         return view('health-articles.saved', compact('savedArticles'));
     }
@@ -270,14 +343,57 @@ class HealthArticleController extends Controller
     public function deleteComment($commentId)
     {
         $comment = ArticleComment::findOrFail($commentId);
+        $article = HealthArticle::findOrFail($comment->article_id);
 
-        // Check if the user is the owner of the comment
-        if ($comment->user_id !== Auth::id()) {
-            abort(403, 'คุณไม่มีสิทธิ์ลบความคิดเห็นนี้');
+        // Check if the user is authorized to delete this comment
+        $isOwner = Auth::id() === $comment->user_id;
+
+        if (!$isOwner) {
+            if (request()->ajax() || request()->wantsJson() || request()->header('X-Requested-With') == 'XMLHttpRequest') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'คุณไม่มีสิทธิ์ลบความคิดเห็นนี้'
+                ], 403);
+            }
+            return redirect()->back()->with('error', 'คุณไม่มีสิทธิ์ลบความคิดเห็นนี้');
         }
 
         $comment->delete();
 
+        if (request()->ajax() || request()->wantsJson() || request()->header('X-Requested-With') == 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'comments_count' => $article->comments()->count()
+            ]);
+        }
+
         return redirect()->back()->with('success', 'ลบความคิดเห็นเรียบร้อยแล้ว');
+    }
+
+    /**
+     * Save filter preferences for the user.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function saveFilter(Request $request)
+    {
+        $request->validate([
+            'filter_name' => 'required|string|max:100',
+            'filter_data' => 'required|string',
+        ]);
+
+        // Use SavedArticle model to store filter data
+        // We repurpose the saved article functionality to store filters
+        SavedArticle::create([
+            'article_id' => 0, // Using 0 as a placeholder for filter
+            'user_id' => Auth::id(),
+            'filter_name' => $request->filter_name,
+            'filter_data' => $request->filter_data,
+            'is_filter' => true // Add a flag to identify this as a filter, not an article
+        ]);
+
+        return redirect()->route('health-articles.index')
+            ->with('success', 'บันทึกตัวกรองเรียบร้อยแล้ว');
     }
 }

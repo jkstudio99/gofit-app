@@ -25,14 +25,14 @@
                     <td>{{ $redeems->firstItem() + $key }}</td>
                     <td>
                         <div class="d-flex align-items-center">
-                            @if($redeem->user->profile_image)
-                                <img src="{{ asset('storage/' . $redeem->user->profile_image) }}"
+                            @if(!empty($redeem->user->profile_image) && file_exists(public_path('profile_images/' . $redeem->user->profile_image)))
+                                <img src="{{ asset('profile_images/' . $redeem->user->profile_image) }}"
                                      class="rounded-circle me-2" width="40" height="40"
-                                     alt="{{ $redeem->user->username }}">
+                                     alt="{{ $redeem->user->username }}" style="object-fit: cover;">
                             @else
-                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2"
+                                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center me-2"
                                      style="width: 40px; height: 40px; color: white;">
-                                    {{ substr($redeem->user->username, 0, 1) }}
+                                    <i class="fas fa-user"></i>
                                 </div>
                             @endif
                             <div>
@@ -71,7 +71,14 @@
                             </span>
                         @endif
                     </td>
-                    <td>{{ $redeem->created_at->format('d/m/Y H:i') }}</td>
+                    <td>
+                        @php
+                            $redeemDate = \Carbon\Carbon::parse($redeem->created_at);
+                            $thaiYear = $redeemDate->year + 543;
+                            $formattedDate = $redeemDate->locale('th')->translatedFormat('j M').' '.substr($thaiYear, 2).' '.$redeemDate->format('H:i').' น.';
+                        @endphp
+                        {{ $formattedDate }}
+                    </td>
                     <td>{{ $redeem->note ?? '-' }}</td>
                     <td>
                         <div class="d-flex">
