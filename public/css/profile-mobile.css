@@ -1,0 +1,171 @@
+/**
+ * GoFit - Profile Mobile Responsiveness
+ * Version 1.0.0
+ */
+
+/* Main container adjustments */
+@media (max-width: 767.98px) {
+  .container.py-4 {
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+  }
+
+  .card {
+    border-radius: 12px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .card-body {
+    padding: 16px !important;
+  }
+}
+
+/* Profile image responsiveness */
+@media (max-width: 575.98px) {
+  .profile-image-container {
+    width: 100px !important;
+    height: 100px !important;
+  }
+
+  .profile-image, .profile-placeholder {
+    width: 100px !important;
+    height: 100px !important;
+  }
+
+  .profile-placeholder i {
+    font-size: 2.5rem !important;
+  }
+}
+
+/* Form and field adjustments */
+@media (max-width: 767.98px) {
+  .form-label {
+    margin-bottom: 0.25rem !important;
+    font-size: 0.9rem !important;
+  }
+
+  .form-control {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.95rem !important;
+  }
+
+  .btn {
+    padding: 0.5rem 1rem !important;
+  }
+
+  .text-muted.small {
+    font-size: 0.8rem !important;
+  }
+}
+
+/* Profile show page responsiveness */
+@media (max-width: 767.98px) {
+  .col-md-8 h4.fw-bold {
+    font-size: 1.25rem !important;
+    margin-top: 0.5rem !important;
+    text-align: center !important;
+  }
+
+  .col-md-8 p.text-muted {
+    text-align: center !important;
+  }
+
+  .d-flex.flex-wrap.gap-2 {
+    justify-content: center !important;
+    margin-top: 1rem !important;
+  }
+
+  .row.g-3 .col-md-6 {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+}
+
+/* Card header adjustments */
+@media (max-width: 767.98px) {
+  .card-header {
+    padding: 0.75rem 1rem !important;
+  }
+
+  .card-header h5 {
+    font-size: 1.1rem !important;
+  }
+}
+
+/* Responsive margins for stacked columns */
+@media (max-width: 767.98px) {
+  .row .col-md-6:first-child .card {
+    margin-bottom: 24px !important;
+  }
+}
+
+/* Tablet improvements */
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .container.py-4 {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+
+  .col-md-8 {
+    width: 90% !important;
+    max-width: 90% !important;
+    flex: 0 0 90% !important;
+  }
+}
+
+/* Button styling - ensure icons and text on hover are white */
+.btn-primary, .btn-primary:hover, .btn-primary:focus {
+  color: #fff !important;
+}
+
+.btn-primary i, .btn-primary:hover i {
+  color: #fff !important;
+}
+
+.btn-outline-primary:hover {
+  color: #fff !important;
+}
+
+.btn-outline-primary:hover i {
+  color: #fff !important;
+}
+
+.btn-danger, .btn-danger:hover, .btn-danger:focus {
+  color: #fff !important;
+}
+
+.btn-danger i, .btn-danger:hover i {
+  color: #fff !important;
+}
+
+.btn-secondary, .btn-secondary:hover, .btn-secondary:focus {
+  color: #fff !important;
+}
+
+.btn-secondary i, .btn-secondary:hover i {
+  color: #fff !important;
+}
+
+.btn-outline-danger:hover {
+  color: #fff !important;
+}
+
+.btn-outline-danger:hover i {
+  color: #fff !important;
+}
+
+.restart-tour-btn:hover {
+  color: white !important;
+}
+
+.restart-tour-btn:hover i {
+  color: white !important;
+}
+
+#reset-all-tours {
+  color: white !important;
+}
+
+#reset-all-tours i {
+  color: white !important;
+}

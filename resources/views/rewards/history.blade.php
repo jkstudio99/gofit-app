@@ -19,24 +19,20 @@
     </div>
     @endif
 
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <h2 class="mb-0">ประวัติการแลกรางวัล</h2>
-            <p class="text-muted">ติดตามรางวัลที่คุณเคยแลกและสถานะการจัดส่ง</p>
-        </div>
-        <div class="col-md-6 text-md-end">
-            <a href="{{ route('rewards.index') }}" class="btn btn-outline-primary">
-                <i class="fas fa-gift me-1"></i> กลับไปยังหน้ารางวัล
-            </a>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">ประวัติการแลกรางวัล</h2>
+        <a href="{{ route('rewards.index') }}" class="btn btn-outline-primary mobile-history-btn">
+            <i class="fas fa-arrow-left me-1"></i> <span class="d-none d-md-inline">กลับไปยังหน้ารางวัล</span><span class="d-inline d-md-none">กลับ</span>
+        </a>
     </div>
+    <p class="text-muted mb-3">ติดตามรางวัลที่คุณเคยแลกและสถานะการจัดส่ง</p>
 
     <!-- Stats Cards -->
     <div class="row mb-4">
-        <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card h-100 shadow-sm border-0 redeem-stat-card">
+        <div class="col-6 col-md-3 mb-3">
+            <div class="card h-100 shadow-sm border-0 reward-stat-card">
                 <div class="card-body d-flex align-items-center">
-                    <div class="redeem-stat-icon bg-primary bg-opacity-10 me-3">
+                    <div class="reward-stat-icon bg-primary bg-opacity-10 me-3">
                         <i class="fas fa-exchange-alt text-primary"></i>
                     </div>
                     <div>
@@ -46,10 +42,10 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card h-100 shadow-sm border-0 redeem-stat-card">
+        <div class="col-6 col-md-3 mb-3">
+            <div class="card h-100 shadow-sm border-0 reward-stat-card">
                 <div class="card-body d-flex align-items-center">
-                    <div class="redeem-stat-icon bg-warning bg-opacity-10 me-3">
+                    <div class="reward-stat-icon bg-warning bg-opacity-10 me-3">
                         <i class="fas fa-clock text-warning"></i>
                     </div>
                     <div>
@@ -59,10 +55,10 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card h-100 shadow-sm border-0 redeem-stat-card">
+        <div class="col-6 col-md-3 mb-3">
+            <div class="card h-100 shadow-sm border-0 reward-stat-card">
                 <div class="card-body d-flex align-items-center">
-                    <div class="redeem-stat-icon bg-success bg-opacity-10 me-3">
+                    <div class="reward-stat-icon bg-success bg-opacity-10 me-3">
                         <i class="fas fa-check-circle text-success"></i>
                     </div>
                     <div>
@@ -72,10 +68,10 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card h-100 shadow-sm border-0 redeem-stat-card">
+        <div class="col-6 col-md-3 mb-3">
+            <div class="card h-100 shadow-sm border-0 reward-stat-card">
                 <div class="card-body d-flex align-items-center">
-                    <div class="redeem-stat-icon bg-danger bg-opacity-10 me-3">
+                    <div class="reward-stat-icon bg-danger bg-opacity-10 me-3">
                         <i class="fas fa-times-circle text-danger"></i>
                     </div>
                     <div>
@@ -114,10 +110,10 @@
 
     <!-- Redemption History Table/Cards -->
     <div class="card shadow-sm">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap">
             <h5 class="mb-0">รายการแลกรางวัล</h5>
-            <div class="d-flex align-items-center">
-                <select class="form-select form-select-sm me-2" style="width: 150px;" onchange="window.location.href=this.value">
+            <div class="d-flex align-items-center mt-2 mt-sm-0">
+                <select class="form-select form-select-sm" style="width: 150px;" onchange="window.location.href=this.value">
                     <option value="{{ route('rewards.history', array_merge(request()->except('sort'), ['sort' => 'newest'])) }}"
                             {{ request('sort', 'newest') == 'newest' ? 'selected' : '' }}>ล่าสุด</option>
                     <option value="{{ route('rewards.history', array_merge(request()->except('sort'), ['sort' => 'oldest'])) }}"
@@ -132,7 +128,9 @@
         <div class="card-body">
             @if($redeems->isEmpty())
                 <div class="text-center py-5">
-                    <img src="{{ asset('images/empty-history.svg') }}" alt="ไม่มีประวัติ" class="img-fluid mb-3" style="max-width: 200px;">
+                    <div class="mb-4">
+                        <i class="fas fa-history fa-5x text-muted"></i>
+                    </div>
                     <h5>ยังไม่มีประวัติการแลกรางวัล</h5>
                     <p class="text-muted mb-4">คุณยังไม่เคยแลกรางวัลใดๆ</p>
                     <a href="{{ route('rewards.index') }}" class="btn btn-primary">
@@ -144,36 +142,37 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th scope="col">#</th>
+                                <th scope="col" class="d-none d-md-table-cell">#</th>
                                 <th scope="col">รางวัล</th>
-                                <th scope="col">คะแนนที่ใช้</th>
-                                <th scope="col">วันที่แลก</th>
+                                <th scope="col">คะแนน</th>
+                                <th scope="col" class="d-none d-md-table-cell">วันที่แลก</th>
                                 <th scope="col">สถานะ</th>
-                                <th scope="col">หมายเหตุ</th>
+                                <th scope="col" class="d-none d-md-table-cell">หมายเหตุ</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($redeems as $index => $redeem)
                                 <tr>
-                                    <td>{{ $index + 1 }}</td>
+                                    <td class="d-none d-md-table-cell">{{ $index + 1 }}</td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="reward-img-small me-2">
                                                 @if($redeem->reward->image_path)
                                                     <img src="{{ asset('storage/' . $redeem->reward->image_path) }}" alt="{{ $redeem->reward->name }}"
-                                                        style="width: 40px; height: 40px; object-fit: contain;">
+                                                        class="reward-history-img">
                                                 @else
                                                     <i class="fas fa-gift fa-2x text-primary"></i>
                                                 @endif
                                             </div>
                                             <div>
                                                 <div class="fw-bold">{{ $redeem->reward->name }}</div>
-                                                <div class="small text-muted">{{ Str::limit($redeem->reward->description, 50) }}</div>
+                                                <div class="small text-muted d-md-block d-none">{{ Str::limit($redeem->reward->description, 50) }}</div>
+                                                <div class="small text-muted d-md-none">{{ $redeem->created_at->format('d/m/Y') }}</div>
                                             </div>
                                         </div>
                                     </td>
                                     <td><span class="badge bg-warning text-dark"><i class="fas fa-coins me-1"></i> {{ $redeem->points_used ?? $redeem->reward->points_required }}</span></td>
-                                    <td>{{ $redeem->created_at->format('d/m/Y H:i') }}</td>
+                                    <td class="d-none d-md-table-cell">{{ $redeem->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
                                         @if($redeem->status == 'pending')
                                             <span class="badge bg-warning">รอดำเนินการ</span>
@@ -183,7 +182,7 @@
                                             <span class="badge bg-danger">ยกเลิก</span>
                                         @endif
                                     </td>
-                                    <td>{{ $redeem->note ?? '-' }}</td>
+                                    <td class="d-none d-md-table-cell">{{ $redeem->note ?? '-' }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -195,7 +194,7 @@
 
     <!-- Instructions Card -->
     <div class="card shadow-sm mt-4">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header bg-primary">
             <h5 class="mb-0">ข้อมูลการแลกรางวัล</h5>
         </div>
         <div class="card-body">
@@ -259,17 +258,17 @@
     }
 
     /* Stats Cards */
-    .redeem-stat-card {
+    .reward-stat-card {
         border-radius: 10px;
         transition: all 0.3s ease;
     }
 
-    .redeem-stat-card:hover {
+    .reward-stat-card:hover {
         transform: translateY(-3px);
         box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
     }
 
-    .redeem-stat-icon {
+    .reward-stat-icon {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -284,6 +283,16 @@
         padding: 0.75rem;
     }
 
+    /* Image styles */
+    .reward-history-img {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        border-radius: 6px;
+        background-color: #f8f9fa;
+        padding: 3px;
+    }
+
     /* Accordion styles */
     .accordion-button:not(.collapsed) {
         background-color: rgba(45, 198, 121, 0.1);
@@ -293,6 +302,139 @@
     .accordion-button:focus {
         border-color: #2DC679;
         box-shadow: 0 0 0 0.25rem rgba(45, 198, 121, 0.25);
+    }
+
+    /* Card styles */
+    .card {
+        border-radius: 12px !important;
+        overflow: hidden;
+        border: none !important;
+    }
+
+    .card-header {
+        background-color: white !important;
+        border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+    }
+
+    /* Mobile & Tablet Responsive Adjustments */
+    @media (max-width: 991.98px) {
+        .container {
+            padding-left: 20px !important;
+            padding-right: 20px !important;
+        }
+
+        .d-flex.justify-content-between.align-items-center {
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        h2.mb-0 {
+            font-size: 1.6rem;
+            margin-bottom: 0.5rem !important;
+        }
+
+        .mobile-history-btn {
+            width: auto;
+            margin-left: auto;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        /* Table adjustments */
+        .table th, .table td {
+            white-space: nowrap;
+        }
+    }
+
+    /* Specific mobile adjustments */
+    @media (max-width: 575.98px) {
+        .container {
+            padding-left: 15px !important;
+            padding-right: 15px !important;
+        }
+
+        h2.mb-0 {
+            font-size: 1.5rem;
+        }
+
+        /* ปรับปุ่มกลับในโหมดมือถือ */
+        .mobile-history-btn {
+            font-size: 0.9rem;
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+        }
+
+        /* ปรับการแสดงผลการ์ดสถิติบนมือถือ */
+        .row.mb-4 {
+            margin-left: -8px;
+            margin-right: -8px;
+        }
+
+        .col-6.col-md-3.mb-3 {
+            padding-left: 8px;
+            padding-right: 8px;
+            margin-bottom: 16px;
+        }
+
+        .reward-stat-card {
+            border-radius: 12px;
+        }
+
+        .reward-stat-icon {
+            width: 45px !important;
+            height: 45px !important;
+            font-size: 20px;
+            margin-right: 10px !important;
+        }
+
+        .reward-stat-card .card-body {
+            padding: 15px !important;
+        }
+
+        .reward-stat-card h6 {
+            font-size: 0.85rem !important;
+            margin-bottom: 5px !important;
+        }
+
+        .reward-stat-card h4 {
+            font-size: 1.4rem !important;
+            font-weight: 600 !important;
+        }
+
+        /* ปรับหน้าตารางให้เหมาะกับมือถือ */
+        .table th, .table td {
+            padding: 0.5rem !important;
+            font-size: 0.9rem;
+        }
+
+        .reward-history-img {
+            width: 35px !important;
+            height: 35px !important;
+        }
+
+        .filter-badge {
+            font-size: 0.8rem;
+            padding: 0.3rem 0.7rem !important;
+        }
+
+        /* Card adjustments */
+        .card-body {
+            padding: 1rem !important;
+        }
+
+        .card-header {
+            padding: 0.75rem 1rem !important;
+        }
+
+        /* Form adjustments */
+        .form-select-sm {
+            font-size: 0.875rem;
+            padding: 0.25rem 1.5rem 0.25rem 0.5rem;
+        }
     }
 </style>
 @endsection

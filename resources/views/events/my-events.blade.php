@@ -8,6 +8,10 @@
         transition: all 0.3s ease;
         border-radius: 12px;
         overflow: hidden;
+        height: 100%;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        border: none !important;
+        position: relative;
     }
 
     .event-card:hover {
@@ -33,12 +37,14 @@
         display: flex;
         flex-wrap: wrap;
         gap: 5px;
+        z-index: 2;
     }
 
     .event-status {
         position: absolute;
         top: 10px;
         right: 10px;
+        z-index: 2;
     }
 
     .category-badge {
@@ -61,7 +67,7 @@
     }
 
     .empty-state {
-        padding: 80px 0;
+        padding: 50px 0;
         text-align: center;
     }
 
@@ -113,21 +119,23 @@
 
     /* Stats Cards Styles */
     .event-stat-card {
+        border-radius: 10px;
         transition: all 0.3s ease;
-        border-radius: 12px;
     }
 
     .event-stat-card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
     }
 
     .event-stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        font-size: 20px;
     }
 
     /* Tab Navigation Styles */
@@ -156,8 +164,120 @@
         border-bottom: none;
     }
 
-    .card-body {
-        padding-top: 0;
+    /* Search Box */
+    .search-box {
+        border-radius: 30px 0 0 30px;
+        padding-left: 15px;
+    }
+
+    .search-box:focus {
+        box-shadow: none;
+        border-color: #ced4da;
+    }
+
+    .search-box + .btn {
+        border-radius: 0 30px 30px 0;
+    }
+
+    /* Mobile & Tablet Responsive Adjustments */
+    @media (max-width: 991.98px) {
+        .container {
+            padding-left: 20px !important;
+            padding-right: 20px !important;
+        }
+
+        .d-flex.justify-content-between.align-items-center {
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        h2.mb-0 {
+            font-size: 1.6rem;
+            margin-bottom: 0.5rem !important;
+        }
+
+        .btn-action-group {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+        }
+
+        .event-card .card-img-top {
+            height: 150px;
+        }
+
+        .mobile-full-width {
+            width: 100%;
+        }
+    }
+
+    /* Specific mobile adjustments */
+    @media (max-width: 575.98px) {
+        .container {
+            padding-left: 15px !important;
+            padding-right: 15px !important;
+        }
+
+        h2.mb-0 {
+            font-size: 1.5rem;
+        }
+
+        /* ปรับการแสดงผลการ์ดสถิติบนมือถือ */
+        .row.mb-4 {
+            margin-left: -8px;
+            margin-right: -8px;
+        }
+
+        .col-6.col-md-3.mb-3 {
+            padding-left: 8px;
+            padding-right: 8px;
+            margin-bottom: 16px;
+        }
+
+        .event-stat-card {
+            border-radius: 12px;
+        }
+
+        .event-stat-icon {
+            width: 45px !important;
+            height: 45px !important;
+            font-size: 20px;
+            margin-right: 10px !important;
+        }
+
+        .event-stat-card .card-body {
+            padding: 15px !important;
+        }
+
+        .event-stat-card h6 {
+            font-size: 0.85rem !important;
+            margin-bottom: 5px !important;
+        }
+
+        .event-stat-card h4 {
+            font-size: 1.4rem !important;
+            font-weight: 600 !important;
+        }
+
+        .filter-badge {
+            font-size: 0.8rem;
+            padding: 0.3rem 0.7rem !important;
+        }
+
+        /* Make action buttons smaller on mobile */
+        .btn-sm-mobile {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .event-card .card-body {
+            padding: 0.7rem !important;
+        }
+
+        .card-header, .card-footer {
+            padding: 0.75rem 1rem !important;
+        }
     }
 
     /* Custom styling for cancel button hover state */
@@ -201,7 +321,7 @@
 
     <!-- Stats Cards -->
     <div class="row mb-4">
-        <div class="col-md-3 col-sm-6 mb-3">
+        <div class="col-6 col-md-3 mb-3">
             <div class="card h-100 shadow-sm border-0 event-stat-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="event-stat-icon bg-primary bg-opacity-10 me-3">
@@ -214,7 +334,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6 mb-3">
+        <div class="col-6 col-md-3 mb-3">
             <div class="card h-100 shadow-sm border-0 event-stat-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="event-stat-icon bg-success bg-opacity-10 me-3">
@@ -227,7 +347,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6 mb-3">
+        <div class="col-6 col-md-3 mb-3">
             <div class="card h-100 shadow-sm border-0 event-stat-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="event-stat-icon bg-warning bg-opacity-10 me-3">
@@ -240,7 +360,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6 mb-3">
+        <div class="col-6 col-md-3 mb-3">
             <div class="card h-100 shadow-sm border-0 event-stat-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="event-stat-icon bg-info bg-opacity-10 me-3">
@@ -289,13 +409,11 @@
 
             <!-- Search Bar -->
             <div class="mb-4">
-                <div class="d-flex">
-                    <div class="input-group">
-                        <input type="text" id="searchInput" class="form-control" placeholder="ค้นหากิจกรรมของฉัน...">
-                        <button class="btn btn-primary" type="button" id="searchButton">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
+                <div class="input-group">
+                    <input type="text" id="searchInput" class="form-control search-box" placeholder="ค้นหากิจกรรมของฉัน...">
+                    <button class="btn btn-primary" type="button" id="searchButton">
+                        <i class="fas fa-search"></i>
+                    </button>
                 </div>
             </div>
 
@@ -304,18 +422,20 @@
                 <!-- Tab: ทั้งหมด -->
                 <div class="tab-pane fade show active" id="all-events" role="tabpanel" aria-labelledby="all-tab">
                     @if ($registrations->isEmpty())
-                    <div class="empty-state bg-light rounded">
-                        <i class="fas fa-calendar-times"></i>
-                        <h4>ไม่มีกิจกรรม</h4>
-                        <p class="text-muted">คุณยังไม่มีกิจกรรมที่ลงทะเบียน</p>
+                    <div class="text-center py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-calendar-times fa-5x text-muted"></i>
+                        </div>
+                        <h5>ไม่มีกิจกรรม</h5>
+                        <p class="text-muted mb-4">คุณยังไม่มีกิจกรรมที่ลงทะเบียน</p>
                     </div>
                     @else
-                    <div class="row">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                         @foreach ($registrations as $registration)
                             @if ($registration->event->hasEnded())
                                 @continue
                             @endif
-                            <div class="col-lg-4 col-md-6 mb-4 event-card-container">
+                            <div class="col">
                                 <div class="card event-card h-100 shadow-sm">
                                     <!-- Event Image -->
                                     <div class="event-img-container">
@@ -413,15 +533,17 @@
                     @endphp
 
                     @if ($upcomingEvents->isEmpty())
-                    <div class="empty-state bg-light rounded">
-                        <i class="fas fa-calendar-times"></i>
-                        <h4>ไม่พบกิจกรรม</h4>
+                    <div class="text-center py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-hourglass fa-5x text-muted"></i>
+                        </div>
+                        <h5>ไม่พบกิจกรรม</h5>
                         <p class="text-muted">ไม่มีกิจกรรมที่กำลังจะมาถึง</p>
                     </div>
                     @else
-                    <div class="row">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                         @foreach ($upcomingEvents as $registration)
-                            <div class="col-lg-4 col-md-6 mb-4 event-card-container">
+                            <div class="col">
                                 <div class="card event-card h-100 shadow-sm">
                                     <!-- Event Image -->
                                     <div class="event-img-container">
@@ -497,15 +619,17 @@
                     @endphp
 
                     @if ($activeEvents->isEmpty())
-                    <div class="empty-state bg-light rounded">
-                        <i class="fas fa-calendar-times"></i>
-                        <h4>ไม่พบกิจกรรม</h4>
+                    <div class="text-center py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-running fa-5x text-muted"></i>
+                        </div>
+                        <h5>ไม่พบกิจกรรม</h5>
                         <p class="text-muted">ไม่มีกิจกรรมที่กำลังดำเนินการอยู่</p>
                     </div>
                     @else
-                    <div class="row">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                         @foreach ($activeEvents as $registration)
-                            <div class="col-lg-4 col-md-6 mb-4 event-card-container">
+                            <div class="col">
                                 <div class="card event-card h-100 shadow-sm">
                                     <!-- Event Image -->
                                     <div class="event-img-container">
@@ -573,15 +697,17 @@
                     @endphp
 
                     @if ($pastEvents->isEmpty())
-                    <div class="empty-state bg-light rounded">
-                        <i class="fas fa-calendar-times"></i>
-                        <h4>ไม่พบกิจกรรม</h4>
+                    <div class="text-center py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-history fa-5x text-muted"></i>
+                        </div>
+                        <h5>ไม่พบกิจกรรม</h5>
                         <p class="text-muted">ไม่มีกิจกรรมที่ผ่านมา</p>
                     </div>
                     @else
-                    <div class="row">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                         @foreach ($pastEvents as $registration)
-                            <div class="col-lg-4 col-md-6 mb-4 event-card-container">
+                            <div class="col">
                                 <div class="card event-card h-100 shadow-sm">
                                     <!-- Event Image -->
                                     <div class="event-img-container">
@@ -649,15 +775,17 @@
                     @endphp
 
                     @if ($cancelledEvents->isEmpty())
-                    <div class="empty-state bg-light rounded">
-                        <i class="fas fa-calendar-times"></i>
-                        <h4>ไม่พบกิจกรรม</h4>
+                    <div class="text-center py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-times-circle fa-5x text-muted"></i>
+                        </div>
+                        <h5>ไม่พบกิจกรรม</h5>
                         <p class="text-muted">ไม่มีกิจกรรมที่ยกเลิกแล้ว</p>
                     </div>
                     @else
-                    <div class="row">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                         @foreach ($cancelledEvents as $registration)
-                            <div class="col-lg-4 col-md-6 mb-4 event-card-container">
+                            <div class="col">
                                 <div class="card event-card h-100 shadow-sm">
                                     <!-- Event Image -->
                                     <div class="event-img-container">
@@ -763,7 +891,7 @@
             let foundEvents = false;
 
             // ซ่อนทุกการ์ดกิจกรรมก่อน
-            document.querySelectorAll('.event-card-container').forEach(container => {
+            document.querySelectorAll('.tab-pane.active .col').forEach(container => {
                 const card = container.querySelector('.event-card');
                 const title = card.querySelector('.card-title').textContent.toLowerCase();
                 const location = card.querySelector('.event-meta:nth-child(3) span').textContent.toLowerCase();
@@ -780,7 +908,7 @@
             });
 
             // แสดงข้อความเมื่อไม่พบกิจกรรม
-            document.querySelectorAll('.tab-pane.active .empty-state').forEach(emptyState => {
+            document.querySelectorAll('.tab-pane.active .text-center.py-5').forEach(emptyState => {
                 emptyState.style.display = !foundEvents ? '' : 'none';
             });
 
@@ -794,17 +922,17 @@
         tabEls.forEach(tab => {
             tab.addEventListener('shown.bs.tab', function() {
                 searchInput.value = '';
-                document.querySelectorAll('.event-card-container').forEach(card => {
+                document.querySelectorAll('.col').forEach(card => {
                     card.style.display = '';
                 });
 
                 // แสดง/ซ่อน empty state ให้ถูกต้อง
                 document.querySelectorAll('.tab-pane').forEach(pane => {
-                    const hasEvents = pane.querySelector('.row .event-card-container') !== null &&
+                    const hasEvents = pane.querySelector('.row .col') !== null &&
                                       pane.querySelector('.row').children.length > 0;
                     if (pane.classList.contains('active')) {
-                        if (pane.querySelector('.empty-state')) {
-                            pane.querySelector('.empty-state').style.display = hasEvents ? 'none' : '';
+                        if (pane.querySelector('.text-center.py-5')) {
+                            pane.querySelector('.text-center.py-5').style.display = hasEvents ? 'none' : '';
                         }
                         if (pane.querySelector('.row')) {
                             pane.querySelector('.row').style.display = hasEvents ? '' : 'none';

@@ -9,12 +9,12 @@
             <!-- การ์ดสำหรับการวิ่ง -->
             <div class="card gofit-card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">บันทึกกิจกรรมการวิ่ง <span id="simulationBadge" class="badge bg-info ms-2">โหมดจำลอง</span></h5>
-                    <div>
-                        <button id="toggleModeBtn" class="btn btn-sm btn-outline-primary rounded-pill me-2" data-mode="simulation">
+                    <h4 class="mb-0 fw-bold fs-5">บันทึกกิจกรรมการวิ่ง <span id="simulationBadge" class="badge bg-info ms-2">โหมดจำลอง</span></h4>
+                    <div class="d-flex flex-wrap justify-content-end gap-2">
+                        <button id="toggleModeBtn" class="btn btn-outline-primary rounded-pill px-3 py-2" data-mode="simulation">
                             <i class="fas fa-exchange-alt me-1"></i> <span id="toggleModeText">ใช้ GPS จริง</span>
                         </button>
-                        <a href="{{ route('run.history') }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                        <a href="{{ route('run.history') }}" class="btn btn-outline-primary rounded-pill px-3 py-2">
                             <i class="fas fa-history me-1"></i> ประวัติการวิ่ง
                         </a>
                     </div>

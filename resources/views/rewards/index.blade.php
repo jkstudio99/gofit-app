@@ -19,30 +19,28 @@
     </div>
     @endif
 
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <h2 class="mb-0">รางวัล</h2>
-            <p class="text-muted">แลกคะแนนจากการวิ่งเพื่อรับของรางวัลมากมาย!</p>
-        </div>
-        <div class="col-md-6 text-md-end">
-            <a href="{{ route('rewards.history') }}" class="btn btn-outline-primary me-2">
-                <i class="fas fa-history me-1"></i> ประวัติการแลกรางวัล
-            </a>
-            <div class="d-inline-block p-3 bg-light rounded-3 shadow-sm">
-                <div class="d-flex align-items-center">
-                    <div class="me-3">
-                        <strong class="fs-4">{{ auth()->user()->getAvailablePoints() }}</strong>
-                        <div class="small text-muted">คะแนนของคุณ</div>
-                    </div>
-                    <i class="fas fa-coins fs-3 text-warning"></i>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">รางวัล</h2>
+        <a href="{{ route('rewards.history') }}" class="btn btn-outline-primary mobile-history-btn">
+            <i class="fas fa-history me-1"></i> <span class="d-none d-md-inline">ประวัติการแลกรางวัล</span><span class="d-inline d-md-none">ประวัติ</span>
+        </a>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <p class="text-muted mb-0">แลกคะแนนจากการวิ่งเพื่อรับของรางวัลมากมาย!</p>
+        <div class="p-2 bg-light rounded-3 shadow-sm">
+            <div class="d-flex align-items-center">
+                <div class="me-2">
+                    <strong class="fs-5">{{ auth()->user()->getAvailablePoints() }}</strong>
+                    <div class="small text-muted">คะแนนของคุณ</div>
                 </div>
+                <i class="fas fa-coins fs-4 text-warning"></i>
             </div>
         </div>
     </div>
 
     <!-- Stats Cards -->
     <div class="row mb-4">
-        <div class="col-md-3 col-sm-6 mb-3">
+        <div class="col-6 col-md-3 mb-3">
             <div class="card h-100 shadow-sm border-0 reward-stat-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="reward-stat-icon bg-primary bg-opacity-10 me-3">
@@ -72,7 +70,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6 mb-3">
+        <div class="col-6 col-md-3 mb-3">
             <div class="card h-100 shadow-sm border-0 reward-stat-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="reward-stat-icon bg-success bg-opacity-10 me-3">
@@ -85,7 +83,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6 mb-3">
+        <div class="col-6 col-md-3 mb-3">
             <div class="card h-100 shadow-sm border-0 reward-stat-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="reward-stat-icon bg-warning bg-opacity-10 me-3">
@@ -98,7 +96,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6 mb-3">
+        <div class="col-6 col-md-3 mb-3">
             <div class="card h-100 shadow-sm border-0 reward-stat-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="reward-stat-icon bg-danger bg-opacity-10 me-3">
@@ -268,7 +266,7 @@
                                                                 <div class="reward-status badge bg-warning">คะแนนไม่พอ</div>
                                                             @endif
 
-                                                            <div class="reward-stock badge bg-secondary">เหลือ {{ $reward->quantity }} ชิ้น</div>
+                                                            <div class="reward-stock">เหลือ {{ $reward->quantity }} ชิ้น</div>
 
                                                             <div class="reward-img-container">
                                                                 @if($reward->image_path)
@@ -414,7 +412,7 @@
                                                                     <div class="reward-status badge bg-success">แลกได้</div>
                                                                 @endif
 
-                                                                <div class="reward-stock badge bg-secondary">เหลือ {{ $reward->quantity }} ชิ้น</div>
+                                                                <div class="reward-stock">เหลือ {{ $reward->quantity }} ชิ้น</div>
 
                                                                 <div class="reward-img-container">
                                                                     @if($reward->image_path)
@@ -502,7 +500,7 @@
                                                                     <div class="reward-status badge bg-warning">คะแนนไม่พอ</div>
                                                                 @endif
 
-                                                                <div class="reward-stock badge bg-secondary">เหลือ {{ $reward->quantity }} ชิ้น</div>
+                                                                <div class="reward-stock">เหลือ {{ $reward->quantity }} ชิ้น</div>
 
                                                                 <div class="reward-img-container">
                                                                     @if($reward->image_path)
@@ -634,38 +632,23 @@
 
 @section('styles')
 <style>
-    /* Search box */
-    .search-box {
-        border-radius: 20px;
-        border: 1px solid #e0e0e0;
-        padding-left: 20px;
-    }
-
-    .search-box:focus {
-        box-shadow: 0 0 0 0.2rem rgba(45, 198, 121, 0.25);
-        border-color: #2DC679;
-    }
-
     /* Reward Cards */
     .reward-card {
         transition: all 0.3s ease;
         border-radius: 10px;
         overflow: hidden;
         position: relative;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         border: none;
     }
 
     .reward-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-    }
-
-    .reward-card.locked:hover {
-        box-shadow: 0 10px 20px rgba(108,117,125,0.2) !important;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
 
     .reward-img-container {
-        height: 160px;
+        height: 150px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -674,48 +657,34 @@
     }
 
     .reward-img {
-        max-height: 130px;
-        max-width: 130px;
+        max-height: 120px;
+        max-width: 100%;
         object-fit: contain;
-        transition: all 0.3s ease;
     }
 
-    .reward-card:hover .reward-img {
-        transform: scale(1.1);
-    }
-
-    .filter-grayscale {
-        filter: grayscale(70%);
-    }
-
+    /* Status badges positioning and styling */
     .reward-status {
         position: absolute;
         top: 10px;
         right: 10px;
-        font-size: 0.7rem;
         z-index: 2;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 20px;
     }
 
     .reward-stock {
         position: absolute;
         top: 10px;
         left: 10px;
-        font-size: 0.7rem;
         z-index: 2;
-    }
-
-    /* Filter Badges */
-    .filter-badge {
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .filter-badge:hover {
-        background-color: #2DC679 !important;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 20px;
+        background-color: rgba(33, 37, 41, 0.8);
         color: white;
     }
 
-    /* Stats Cards */
     .reward-stat-card {
         border-radius: 10px;
         transition: all 0.3s ease;
@@ -736,96 +705,172 @@
         font-size: 20px;
     }
 
-    /* Progress animation */
-    @keyframes progress-animation {
-        0% { width: 0%; }
-    }
-
-    .progress-bar {
-        animation: progress-animation 1.5s ease-in-out;
-        border-radius: 4px;
-        background-image: linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent);
-        background-size: 1rem 1rem;
-    }
-
-    /* Progress animation */
-    @keyframes progress-bar-stripes {
-        0% { background-position: 1rem 0 }
-        100% { background-position: 0 0 }
-    }
-
-    /* Category Section Styling */
-    .reward-category-section {
-        border-radius: 10px;
-        overflow: hidden;
-    }
-
-    .reward-type-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-    }
-
-    .reward-type-header {
-        padding: 15px;
-        border-radius: 10px;
-        background-color: #f8f9fa;
-    }
-
-    /* Tab Styling */
-    .nav-tabs {
-        border-bottom: 1px solid #e9ecef;
-    }
-
-    .nav-tabs .nav-item {
-        margin-bottom: -1px;
-    }
-
-    .nav-tabs .nav-link {
-        border: none;
-        border-radius: 0;
-        color: #495057;
-        font-weight: 500;
-        padding: 12px 20px;
+    /* Filter Badge */
+    .filter-badge {
+        cursor: pointer;
         transition: all 0.2s ease;
-        position: relative;
     }
 
-    .nav-tabs .nav-link:hover {
-        background-color: rgba(45, 198, 121, 0.05);
-        border-color: transparent;
+    .filter-badge:hover {
+        filter: brightness(0.9);
     }
 
-    .nav-tabs .nav-link.active {
-        color: #2DC679;
-        background-color: white;
-        border-color: transparent;
+    /* Search Box */
+    .search-box {
+        border-radius: 30px 0 0 30px;
+        padding-left: 15px;
     }
 
-    .nav-tabs .nav-link.active::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background-color: #2DC679;
+    .search-box:focus {
+        box-shadow: none;
+        border-color: #ced4da;
     }
 
-    .card-header-custom {
-        font-weight: 500;
-        padding: 10px 15px;
+    .search-box + .btn {
+        border-radius: 0 30px 30px 0;
     }
 
-    .progress {
-        background-color: rgba(0,0,0,0.05);
-        height: 8px !important;
-        border-radius: 4px;
-        overflow: hidden;
+    /* Fix for grayscale on out of stock items */
+    .filter-grayscale {
+        filter: grayscale(100%);
+    }
+
+    /* Mobile & Tablet Responsive Adjustments */
+    @media (max-width: 991.98px) {
+        .container {
+            padding-left: 20px !important;
+            padding-right: 20px !important;
+        }
+
+        .d-flex.justify-content-between.align-items-center {
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        h2.mb-0 {
+            font-size: 1.6rem;
+            margin-bottom: 0.5rem !important;
+        }
+
+        .mobile-history-btn {
+            width: auto;
+            margin-left: auto;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .row.mb-4 {
+            margin-left: -10px;
+            margin-right: -10px;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .reward-img-container {
+            height: 120px;
+        }
+
+        .reward-img {
+            max-height: 100px;
+        }
+    }
+
+    /* Specific mobile adjustments */
+    @media (max-width: 575.98px) {
+        .container {
+            padding-left: 15px !important;
+            padding-right: 15px !important;
+        }
+
+        h2.mb-0 {
+            font-size: 1.5rem;
+        }
+
+        /* ปรับปุ่มประวัติในโหมดมือถือ */
+        .mobile-history-btn {
+            font-size: 0.9rem;
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+        }
+
+        /* ปรับการแสดงผลการ์ดสถิติบนมือถือ */
+        .row.mb-4 {
+            margin-left: -8px;
+            margin-right: -8px;
+        }
+
+        .col-6.col-md-3.mb-3 {
+            padding-left: 8px;
+            padding-right: 8px;
+            margin-bottom: 16px;
+        }
+
+        .reward-stat-card {
+            border-radius: 12px;
+        }
+
+        .reward-stat-icon {
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+            margin-right: 10px !important;
+        }
+
+        .reward-stat-card .card-body {
+            padding: 15px;
+        }
+
+        .reward-stat-card h6 {
+            font-size: 0.85rem;
+            margin-bottom: 5px !important;
+        }
+
+        .reward-stat-card h4 {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        /* ปรับค้นหาและตัวกรองบนมือถือ */
+        .card.shadow-sm.mb-4 .card-body {
+            padding: 10px;
+        }
+
+        .form-control, .form-select {
+            font-size: 0.9rem;
+        }
+
+        .filter-badge {
+            font-size: 0.8rem;
+            padding: 0.3rem 0.7rem !important;
+        }
+
+        /* ปรับรายการรางวัล */
+        .reward-img-container {
+            height: 100px;
+        }
+
+        .reward-img {
+            max-height: 80px;
+        }
+
+        .reward-card .card-body {
+            padding: 0.7rem;
+        }
+
+        .reward-card h5 {
+            font-size: 1rem;
+        }
+
+        .reward-card p {
+            font-size: 0.8rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
     }
 </style>
 @endsection

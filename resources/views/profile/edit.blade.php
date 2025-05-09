@@ -5,7 +5,7 @@
 @section('content')
 <div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-10 col-lg-8">
             <!-- ส่วนหัวโปรไฟล์ -->
             <div class="card border-0 shadow-sm rounded-3 mb-4">
                 <div class="card-body text-center py-4">
@@ -36,10 +36,10 @@
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row g-4">
                 <!-- ข้อมูลส่วนตัว -->
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm rounded-3 mb-4">
+                <div class="col-12 col-md-6">
+                    <div class="card border-0 shadow-sm rounded-3 h-100">
                         <div class="card-header bg-white border-0">
                             <h5 class="mb-0 fw-bold">
                                 <i class="fas fa-user-edit me-2 text-primary"></i>
@@ -102,8 +102,8 @@
                 </div>
 
                 <!-- เปลี่ยนรหัสผ่าน -->
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm rounded-3 mb-4" id="password">
+                <div class="col-12 col-md-6">
+                    <div class="card border-0 shadow-sm rounded-3 h-100" id="password">
                         <div class="card-header bg-white border-0">
                             <h5 class="mb-0 fw-bold">
                                 <i class="fas fa-lock me-2 text-primary"></i>
@@ -149,31 +149,31 @@
                             </form>
                         </div>
                     </div>
-
-                    <!-- เฉพาะผู้ใช้ทั่วไป -->
-                    @if($user->user_type_id == 1)
-                    <div class="card border-0 shadow-sm rounded-3">
-                        <div class="card-header bg-danger text-white border-0">
-                            <h5 class="mb-0 fw-bold">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                การจัดการบัญชี
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <h6 class="card-subtitle mb-3">ลบบัญชีของคุณ</h6>
-                            <p class="text-muted mb-3">
-                                เมื่อคุณลบบัญชีของคุณ ข้อมูลทั้งหมดของคุณจะถูกลบออกจากระบบอย่างถาวร
-                            </p>
-                            <div class="d-grid">
-                                <a href="{{ route('profile.delete.confirm') }}" class="btn btn-outline-danger">
-                                    <i class="fas fa-trash-alt me-1"></i> ลบบัญชีของฉัน
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    @endif
                 </div>
             </div>
+
+            <!-- เฉพาะผู้ใช้ทั่วไป -->
+            @if($user->user_type_id == 1)
+            <div class="card border-0 shadow-sm rounded-3 mt-4">
+                <div class="card-header bg-danger text-white border-0">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        การจัดการบัญชี
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-3">ลบบัญชีของคุณ</h6>
+                    <p class="text-muted mb-3">
+                        เมื่อคุณลบบัญชีของคุณ ข้อมูลทั้งหมดของคุณจะถูกลบออกจากระบบอย่างถาวร
+                    </p>
+                    <div class="d-grid">
+                        <a href="{{ route('profile.delete.confirm') }}" class="btn btn-outline-danger">
+                            <i class="fas fa-trash-alt me-1"></i> ลบบัญชีของฉัน
+                        </a>
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </div>
@@ -207,6 +207,7 @@
 
     .card {
         border-radius: 0.75rem;
+        overflow: hidden;
     }
 
     .badge.bg-primary {
@@ -220,6 +221,46 @@
     .card-header {
         border-bottom: 1px solid rgba(0,0,0,0.08);
         padding: 1rem 1.25rem;
+    }
+
+    .profile-upload-icon {
+        border: none;
+        width: 36px;
+        height: 36px;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background-color: #2196F3;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        transition: all 0.2s ease;
+    }
+
+    .profile-upload-icon:hover {
+        transform: scale(1.1);
+        background-color: #0d6efd;
+    }
+
+    /* Button styling - ensure icons and hover text are white */
+    .btn-primary, .btn-primary:hover, .btn-primary:focus {
+        color: #fff !important;
+    }
+
+    .btn-primary i, .btn-primary:hover i {
+        color: #fff !important;
+    }
+
+    .btn-outline-danger:hover {
+        color: #fff !important;
+    }
+
+    .btn-outline-danger:hover i {
+        color: #fff !important;
     }
 </style>
 @endsection

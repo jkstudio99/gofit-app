@@ -204,8 +204,8 @@
         border-bottom: none;
     }
 
-    /* Mobile optimizations */
-    @media (max-width: 767.98px) {
+    /* Mobile and tablet optimizations */
+    @media (max-width: 991.98px) {
         .welcome-header {
             padding: 1.5rem;
             margin-bottom: 1.5rem;
@@ -217,6 +217,15 @@
 
         .welcome-text {
             max-width: 100%;
+        }
+
+        .run-btn {
+            width: 100%;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 9999px !important; /* แคปซูลแบบสมบูรณ์ */
+            font-weight: 600;
         }
 
         .desktop-stats {
@@ -331,6 +340,41 @@
         font-weight: 600;
         white-space: nowrap;
     }
+
+    /* Mobile adjustments for weekly details */
+    @media (max-width: 767.98px) {
+        .weekly-details {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .weekly-detail-item {
+            margin: 0;
+            padding: 10px;
+            flex-wrap: nowrap;
+            justify-content: space-between;
+        }
+
+        .weekly-detail-label {
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+
+        .weekly-detail-value {
+            font-size: 0.9rem;
+            white-space: nowrap;
+            text-align: right;
+        }
+    }
+
+    /* Desktop specific rules */
+    @media (min-width: 992px) {
+        .run-btn {
+            width: auto;
+            display: inline-block;
+            border-radius: 9999px !important; /* ขอบแคปซูลสำหรับ desktop */
+        }
+    }
 </style>
 @endsection
 
@@ -340,9 +384,11 @@
     <div class="welcome-header">
         <h2>สวัสดี, {{ Auth::user()->firstname }}</h2>
         <p class="welcome-text">ยินดีต้อนรับกลับมาที่ GoFit! เริ่มต้นการวิ่งวันนี้เพื่อสุขภาพที่ดีขึ้น</p>
-        <a href="{{ route('run.index') }}" class="btn btn-light btn-lg px-5 py-3 shadow-sm" style="font-weight: 600; font-size: 1.1rem; transition: all 0.3s ease; border-radius: 50px;">
-            <i class="fas fa-running me-2"></i> เริ่มวิ่งเลย
-        </a>
+        <div class="text-center text-lg-start">
+            <a href="{{ route('run.index') }}" class="btn btn-light btn-lg px-5 py-3 shadow-sm run-btn" style="font-weight: 600; font-size: 1.1rem; transition: all 0.3s ease; border-radius: 50px;">
+                <i class="fas fa-running me-2"></i> เริ่มวิ่งเลย
+            </a>
+        </div>
     </div>
 
     <!-- Mobile Stats (3-column) -->
@@ -357,7 +403,7 @@
                 <div class="stat-icon">
                     <i class="fas fa-road" style="color: #2ecc71;"></i>
                 </div>
-                <div class="stat-value">{{ number_format($totalDistance, 1) }}</div>
+                <div class="stat-value">{{ number_format($totalDistance ?? 0, 1) }}</div>
                 <div class="stat-label">กิโลเมตรสะสม</div>
             </div>
         </div>
@@ -367,7 +413,7 @@
                 <div class="stat-icon">
                     <i class="fas fa-fire" style="color: #ff5e57;"></i>
                 </div>
-                <div class="stat-value">{{ number_format($totalCalories) }}</div>
+                <div class="stat-value">{{ number_format($totalCalories ?? 0) }}</div>
                 <div class="stat-label">แคลอรี่ที่เผาผลาญ</div>
             </div>
         </div>
@@ -446,7 +492,7 @@
                 </div>
             </div>
         @else
-        <div class="alert alert-info mt-3">
+        <div class="alert alert-success mt-3">
             <div class="d-flex align-items-center">
                 <i class="fas fa-info-circle fa-2x me-3"></i>
                 <div>

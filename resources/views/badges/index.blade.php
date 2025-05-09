@@ -4,17 +4,17 @@
 
 @section('content')
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="mb-0">เหรียญตราของฉัน</h2>
-        <a href="{{ route('badges.history') }}" class="btn btn-outline-primary">
-            <i class="fas fa-history me-1"></i> ประวัติการรับเหรียญตรา
+        <a href="{{ route('badges.history') }}" class="btn btn-outline-primary mobile-history-btn">
+            <i class="fas fa-history me-1"></i> <span class="d-none d-md-inline">ประวัติการรับเหรียญตรา</span><span class="d-inline d-md-none">ประวัติ</span>
         </a>
     </div>
-    <p class="text-muted">รวบรวมเหรียญตราความสำเร็จจากการวิ่งของคุณ</p>
+    <p class="text-muted mb-3">รวบรวมเหรียญตราความสำเร็จจากการวิ่งของคุณ</p>
 
     <!-- Stats Cards -->
     <div class="row mb-4">
-        <div class="col-md-3 col-sm-6 mb-3">
+        <div class="col-6 col-md-3 mb-3">
             <div class="card h-100 shadow-sm border-0 badge-stat-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="badge-stat-icon bg-primary bg-opacity-10 me-3">
@@ -27,7 +27,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6 mb-3">
+        <div class="col-6 col-md-3 mb-3">
             <div class="card h-100 shadow-sm border-0 badge-stat-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="badge-stat-icon bg-success bg-opacity-10 me-3">
@@ -40,7 +40,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6 mb-3">
+        <div class="col-6 col-md-3 mb-3">
             <div class="card h-100 shadow-sm border-0 badge-stat-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="badge-stat-icon bg-warning bg-opacity-10 me-3">
@@ -53,7 +53,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6 mb-3">
+        <div class="col-6 col-md-3 mb-3">
             <div class="card h-100 shadow-sm border-0 badge-stat-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="badge-stat-icon bg-info bg-opacity-10 me-3">
@@ -735,6 +735,185 @@
             text-decoration: none !important;
             border: none !important;
         }
+
+        /* Mobile & Tablet Responsive Adjustments */
+        @media (max-width: 991.98px) {
+            .container {
+                padding-left: 20px !important;
+                padding-right: 20px !important;
+            }
+
+            .d-flex.justify-content-between.align-items-center {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            h2.mb-0 {
+                font-size: 1.6rem;
+                margin-bottom: 0.5rem !important;
+            }
+
+            .btn-outline-primary {
+                width: auto;
+                margin-left: auto;
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+
+            .row.mb-4 {
+                margin-left: -10px;
+                margin-right: -10px;
+            }
+
+            .col-md-3.col-sm-6 {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+
+            .nav-tabs {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                scrollbar-width: none; /* Firefox */
+                -ms-overflow-style: none; /* IE and Edge */
+                padding-bottom: 5px;
+            }
+
+            .nav-tabs::-webkit-scrollbar {
+                display: none; /* Chrome, Safari and Opera */
+            }
+
+            .nav-tabs .nav-link {
+                white-space: nowrap;
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+
+            .badge-type-header {
+                padding: 12px;
+            }
+
+            .badge-type-header h4 {
+                font-size: 1.3rem;
+            }
+
+            .card-header-custom {
+                padding: 8px 12px;
+            }
+
+            .row-cols-2 {
+                margin-left: -8px;
+                margin-right: -8px;
+            }
+
+            .row-cols-2 > .col {
+                padding-left: 8px;
+                padding-right: 8px;
+            }
+
+            .badge-img-container {
+                height: 100px;
+                padding: 10px;
+            }
+
+            .badge-img {
+                max-height: 80px;
+                max-width: 80px;
+            }
+
+            .card-body {
+                padding: 1rem;
+            }
+
+            .card-title {
+                font-size: 0.95rem;
+            }
+
+            .card-text.badge-requirement {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Specific mobile adjustments */
+        @media (max-width: 575.98px) {
+            .container {
+                padding-left: 15px !important;
+                padding-right: 15px !important;
+            }
+
+            h2.mb-0 {
+                font-size: 1.5rem;
+            }
+
+            /* ปรับปุ่มประวัติในโหมดมือถือ */
+            .mobile-history-btn {
+                font-size: 0.9rem;
+                padding: 0.4rem 1rem;
+                border-radius: 30px;
+            }
+
+            /* ปรับการแสดงผลการ์ดสถิติบนมือถือ */
+            .row.mb-4 {
+                margin-left: -8px;
+                margin-right: -8px;
+            }
+
+            .col-6.col-md-3.mb-3 {
+                padding-left: 8px;
+                padding-right: 8px;
+                margin-bottom: 16px;
+            }
+
+            .badge-stat-card {
+                border-radius: 12px;
+            }
+
+            .badge-stat-icon {
+                width: 45px;
+                height: 45px;
+                font-size: 20px;
+                margin-right: 10px !important;
+            }
+
+            .badge-stat-card .card-body {
+                padding: 15px;
+            }
+
+            .badge-stat-card h6 {
+                font-size: 0.85rem;
+                margin-bottom: 5px !important;
+            }
+
+            .badge-stat-card h4 {
+                font-size: 1.4rem;
+                font-weight: 600;
+            }
+
+            .badge-img-container {
+                height: 90px;
+            }
+
+            .badge-img {
+                max-height: 70px;
+                max-width: 70px;
+            }
+
+            .card-body {
+                padding: 0.75rem;
+            }
+
+            .card-title {
+                font-size: 0.9rem;
+            }
+
+            .table-responsive {
+                border-radius: 10px;
+                overflow: hidden;
+            }
+
+            .table th, .table td {
+                padding: 0.75rem;
+            }
+        }
     </style>
 @endsection
 
@@ -818,64 +997,4 @@
 
                 // Find the correct form to submit - check both formats of form IDs
                 const form = document.getElementById(`unlock-form-${badgeId}`) ||
-                             document.querySelector(`form[id^="unlock-form-"][id$="-${badgeId}"]`);
-
-                if (form) {
-                    form.submit();
-                } else {
-                    console.error('Form not found for badge ID: ' + badgeId);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'เกิดข้อผิดพลาด',
-                        text: 'ไม่พบฟอร์มสำหรับปลดล็อคเหรียญตรานี้'
-                    });
-                }
-            }
-        });
-    }
-
-    // Handle error message if there is one
-    document.addEventListener('DOMContentLoaded', function() {
-        @if(session('error'))
-            Swal.fire({
-                icon: 'error',
-                title: 'เกิดข้อผิดพลาด',
-                text: "{{ session('error') }}",
-                confirmButtonColor: '#28a745',
-                confirmButtonText: 'ตกลง',
-                footer: session('error') == 'คุณยังไม่บรรลุเงื่อนไขในการปลดล็อคเหรียญตรานี้' ?
-                    'คุณต้องทำกิจกรรมให้ครบตามเงื่อนไขก่อน จึงจะสามารถปลดล็อคได้' : ''
-            });
-        @endif
-
-        @if(session('success'))
-            Swal.fire({
-                icon: 'success',
-                title: 'สำเร็จ!',
-                text: "{{ session('success') }}",
-                confirmButtonColor: '#28a745'
-            });
-        @endif
-
-        @if(session('badge_unlocked'))
-            Swal.fire({
-                title: 'ยินดีด้วย!',
-                html: `
-                    <div class="text-center mb-4">
-                        <img src="{{ asset('storage/' . session('badge_unlocked.image')) }}"
-                             alt="{{ session('badge_unlocked.badge_name') }}"
-                             style="max-height: 120px; max-width: 120px; margin-bottom: 15px;">
-                        <h5 class="mb-2">ปลดล็อคเหรียญ "{{ session('badge_unlocked.badge_name') }}"</h5>
-                        <div class="text-success mt-3">
-                            <i class="fas fa-coins text-warning me-1"></i> <strong>+{{ session('badge_unlocked.points') }} คะแนน</strong>
-                        </div>
-                    </div>
-                `,
-                icon: false,
-                confirmButtonColor: '#28a745',
-                confirmButtonText: 'ยอดเยี่ยม!'
-            });
-        @endif
-    });
-</script>
-@endsection
+                             document.querySelector(`

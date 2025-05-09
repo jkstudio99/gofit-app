@@ -82,11 +82,85 @@
         color: #2ecc71;
         font-size: 1.5rem;
     }
+
+    /* Responsive fixes */
+    @media (max-width: 767.98px) {
+        .goals-container {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .form-container {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .goal-type-card .icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
+            margin-right: 10px;
+        }
+
+        /* Improved mobile layout */
+        .py-4 {
+            padding-left: 15px !important;
+            padding-right: 15px !important;
+        }
+
+        .container {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+
+        .d-flex.justify-content-between a {
+            margin-top: 1rem;
+            align-self: flex-start;
+        }
+
+        /* Better form field spacing */
+        .card-body {
+            padding: 15px;
+        }
+
+        .mb-4 {
+            margin-bottom: 15px !important;
+        }
+
+        /* Better goal type card layout */
+        .col-md-6.col-lg-3 {
+            margin-bottom: 10px;
+        }
+    }
+
+    /* Tablet responsiveness */
+    @media (min-width: 768px) and (max-width: 991.98px) {
+        .goals-container {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .form-container {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .py-4 {
+            padding-left: 15px !important;
+            padding-right: 15px !important;
+        }
+    }
 </style>
 @endsection
 
 @section('content')
-<div class="container py-4">
+<div class="container">
+    <div class="py-4">
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="d-flex justify-content-between align-items-center">
@@ -98,7 +172,7 @@
         </div>
     </div>
 
-    <div class="row">
+        <div class="row form-container">
         <div class="col-md-12">
                     <form action="{{ route('goals.store') }}" method="POST">
                         @csrf
@@ -248,15 +322,18 @@
 
                                 <div class="d-grid gap-2 mt-4">
                                     <button type="submit" class="btn btn-primary btn-lg">
-                                        <i class="fas fa-save me-2"></i> บันทึกเป้าหมาย
+                                            <i class="fas fa-save me-2"></i>บันทึกเป้าหมาย
                                     </button>
-                                    <a href="{{ route('goals.index') }}" class="btn btn-outline-secondary">ยกเลิก</a>
+                                        <a href="{{ route('goals.index') }}" class="btn btn-outline-secondary">
+                                            <i class="fas fa-times me-2"></i>ยกเลิกและกลับ
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         </div>
+                </form>
                 </div>
-            </form>
         </div>
     </div>
 </div>
@@ -264,41 +341,108 @@
 
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/th.js"></script>
 <script>
-    // Global variable for selectGoalType function
+document.addEventListener('DOMContentLoaded', function() {
+    // Configure Flatpickr for date inputs
+    flatpickr(".flatpickr-date", {
+        locale: "th",
+        dateFormat: "Y-m-d",
+        allowInput: true,
+        disableMobile: "true"
+    });
+
+    // Initial unit label setup
+    updateUnitLabel(document.getElementById('type').value || 'distance');
+
+    // Type selection
+    const goalTypeCards = document.querySelectorAll('.goal-type-card');
+    const endDateContainer = document.getElementById('end_date_container');
+
+    // Handle activity type change
+    const activityTypeSelect = document.getElementById('activity_type');
+    const activityTypeOtherContainer = document.getElementById('activity_type_other_container');
+
+    activityTypeSelect.addEventListener('change', function() {
+        if (this.value === 'other') {
+            activityTypeOtherContainer.style.display = 'block';
+        } else {
+            activityTypeOtherContainer.style.display = 'none';
+        }
+    });
+
+    // Initialize the activity_type_other field visibility
+    if (activityTypeSelect.value === 'other') {
+        activityTypeOtherContainer.style.display = 'block';
+    }
+
+    // Handle period change
+    const periodSelect = document.getElementById('period');
+
+    periodSelect.addEventListener('change', function() {
+        if (this.value === 'custom') {
+            endDateContainer.classList.remove('d-none');
+            document.getElementById('end_date').setAttribute('required', 'required');
+        } else {
+            // ไม่ต้องซ่อน container เพราะเราแสดงคำอธิบายเพิ่มเติม
+            document.getElementById('end_date').removeAttribute('required');
+        }
+    });
+
+    // Initialize based on currently selected period
+    if (periodSelect.value === 'custom') {
+        endDateContainer.classList.remove('d-none');
+        document.getElementById('end_date').setAttribute('required', 'required');
+    }
+
+    // Select any pre-selected goal type from validation errors
+    const typeValue = document.getElementById('type').value;
+    if (typeValue) {
+        goalTypeCards.forEach(card => {
+            if (card.querySelector('.icon i').classList.contains(`fa-${getIconForType(typeValue)}`)) {
+                card.classList.add('selected');
+            }
+        });
+    }
+});
+
+// Function to select goal type
     function selectGoalType(type) {
         document.getElementById('type').value = type;
+
+    // Update visual feedback
         document.querySelectorAll('.goal-type-card').forEach(card => {
             card.classList.remove('selected');
         });
 
-        // Find the card with the matching icon
-        document.querySelectorAll('.goal-type-card').forEach(card => {
-            if (card.innerHTML.includes(getIconClass(type))) {
+    // Find the clicked card and mark it as selected
+    const cards = document.querySelectorAll('.goal-type-card');
+    cards.forEach(card => {
+        const icon = card.querySelector('.icon i');
+        if (icon.classList.contains(`fa-${getIconForType(type)}`)) {
                 card.classList.add('selected');
             }
         });
 
         // Update unit label
-        updateUnitLabel();
+    updateUnitLabel(type);
     }
 
-    function getIconClass(type) {
+// Helper function to get icon for goal type
+function getIconForType(type) {
         switch(type) {
-            case 'distance': return 'fa-road';
-            case 'duration': return 'fa-clock';
-            case 'calories': return 'fa-fire';
-            case 'frequency': return 'fa-redo';
-            default: return '';
+        case 'distance': return 'road';
+        case 'duration': return 'clock';
+        case 'calories': return 'fire';
+        case 'frequency': return 'redo';
+        default: return 'bullseye';
         }
     }
 
-    function updateUnitLabel() {
-        const selectedType = document.getElementById('type').value;
+// Function to update unit label based on goal type
+function updateUnitLabel(type) {
         const unitLabel = document.getElementById('unit-label');
-
-        switch(selectedType) {
+    switch(type) {
             case 'distance':
                 unitLabel.textContent = 'กิโลเมตร';
                 break;
@@ -315,65 +459,5 @@
                 unitLabel.textContent = 'หน่วย';
         }
     }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // ตั้งค่า Flatpickr สำหรับปฏิทินไทย
-        flatpickr(".flatpickr-date", {
-            dateFormat: "Y-m-d",
-            locale: "th",
-            altFormat: "j F Y",
-            altInput: true,
-            allowInput: true,
-            yearOffset: 543 // เพิ่มปี พ.ศ.
-        });
-
-        const periodSelect = document.getElementById('period');
-        const endDateContainer = document.getElementById('end_date_container');
-        const endDateInput = document.getElementById('end_date');
-
-        // แสดง/ซ่อนฟิลด์กรอกรายละเอียดเพิ่มเติมสำหรับประเภทกิจกรรมอื่นๆ
-        function toggleActivityTypeOther() {
-            const activityTypeSelect = document.getElementById('activity_type');
-            const activityTypeOtherContainer = document.getElementById('activity_type_other_container');
-            const activityTypeOtherInput = document.getElementById('activity_type_other');
-
-            if (activityTypeSelect.value === 'running_other') {
-                activityTypeOtherContainer.style.display = 'block';
-                activityTypeOtherInput.setAttribute('required', 'required');
-            } else {
-                activityTypeOtherContainer.style.display = 'none';
-                activityTypeOtherInput.removeAttribute('required');
-            }
-        }
-
-        // อัพเดทการแสดงผล end_date ตามช่วงเวลาที่เลือก
-        function toggleEndDateVisibility() {
-            if (periodSelect.value === 'custom') {
-                endDateContainer.classList.remove('d-none');
-                endDateInput.setAttribute('required', 'required');
-            } else {
-                // ไม่ต้องซ่อน container เพราะเราแสดงคำอธิบายเพิ่มเติม
-                endDateInput.removeAttribute('required');
-            }
-        }
-
-        // เรียกใช้ฟังก์ชันเมื่อมีการเปลี่ยนแปลง
-        periodSelect.addEventListener('change', toggleEndDateVisibility);
-        document.getElementById('activity_type').addEventListener('change', toggleActivityTypeOther);
-
-        // ตั้งค่าเริ่มต้น
-        const typeInput = document.getElementById('type');
-        if (typeInput.value) {
-            document.querySelectorAll('.goal-type-card').forEach(card => {
-                if (card.innerHTML.includes(getIconClass(typeInput.value))) {
-                    card.classList.add('selected');
-                }
-            });
-        }
-
-        toggleActivityTypeOther();
-        toggleEndDateVisibility();
-        updateUnitLabel();
-    });
 </script>
 @endsection

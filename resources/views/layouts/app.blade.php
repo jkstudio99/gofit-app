@@ -28,6 +28,9 @@
     <link href="{{ asset('css/dropdown-fix.css') }}" rel="stylesheet">
     <link href="{{ asset('css/mobile-first.css') }}" rel="stylesheet">
     <link href="{{ asset('css/app-tour.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/rewards-mobile.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/events-mobile.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/profile-mobile.css') }}" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
@@ -339,6 +342,91 @@
             /* Adjust dropdown positioning */
             .navbar-expand-md .navbar-nav .dropdown-menu {
                 position: absolute;
+            }
+        }
+
+        /* Mid-size screens (tablets and small desktops) optimization */
+        @media (min-width: 768px) and (max-width: 1160px) {
+            /* Uniform styling for ALL nav items */
+            .desktop-nav .nav-link,
+            .desktop-nav .nav-item > a,
+            .desktop-nav .dropdown > a {
+                padding: 0.5rem 0.6rem !important;
+                margin: 0 0.1rem !important;
+                font-size: 0.85rem !important;
+                text-align: center !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                height: 40px !important;
+            }
+
+            /* Override any specific styling for nav items */
+            .desktop-nav .nav-link.dropdown-toggle,
+            .nav-link.dropdown-toggle {
+                padding: 0.5rem 0.6rem !important;
+            }
+
+            /* Ensure navbar doesn't overflow */
+            .navbar > .container {
+                padding-left: 0.5rem !important;
+                padding-right: 0.5rem !important;
+                justify-content: flex-start !important;
+                gap: 5px !important;
+            }
+
+            /* Make logo visible and properly sized */
+            .navbar-brand {
+                margin-right: 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                padding-right: 0.5rem !important;
+                min-width: 95px !important;
+            }
+
+            .navbar-brand img {
+                height: 26px !important;
+                display: block !important;
+                visibility: visible !important;
+            }
+
+            /* Adjust user dropdown - always consistent */
+            #userDropdown {
+                padding: 0.5rem 0.6rem !important;
+                margin-left: auto !important;
+            }
+
+            /* Ensure no text wrapping and proper alignment */
+            .navbar-nav .nav-link {
+                white-space: nowrap !important;
+                overflow: visible !important;
+            }
+
+            /* Better spacing for navbar elements */
+            .navbar-expand-md .navbar-nav {
+                gap: 0 !important;
+                display: flex !important;
+                align-items: center !important;
+            }
+
+            /* Force consistent styling on all nav items */
+            .desktop-nav {
+                margin-left: 0 !important;
+                flex-wrap: nowrap !important;
+                align-items: center !important;
+            }
+
+            /* Icons inside nav items */
+            .desktop-nav .nav-link i {
+                margin-right: 4px !important;
+                font-size: 0.9rem !important;
+            }
+
+            /* Ensuring ALL nav-items are identical */
+            .desktop-nav .nav-item {
+                display: flex !important;
+                align-items: center !important;
+                height: 40px !important;
             }
         }
 
@@ -1420,17 +1508,7 @@
                                         <i class="fas fa-bullseye me-2"></i> เป้าหมาย
                                     </a>
                                 </li>
-                                <li class="nav-item d-md-none">
-                                    <a class="nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}" href="{{ route('profile.edit') }}">
-                                        <i class="fas fa-user-edit me-2"></i> ข้อมูลส่วนตัว
-                                    </a>
-                                </li>
-                                <li class="nav-item d-md-none mt-2">
-                                    <hr>
-                                    <a class="nav-link text-danger" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                        <i class="fas fa-sign-out-alt me-2"></i> ออกจากระบบ
-                                    </a>
-                                </li>
+
                             @endauth
                         </ul>
 

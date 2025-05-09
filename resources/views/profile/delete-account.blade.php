@@ -5,7 +5,7 @@
 @section('content')
 <div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-10 col-lg-8">
             <div class="card border-0 shadow-sm rounded-3 mb-4">
                 <div class="card-header bg-danger text-white border-0">
                     <h5 class="mb-0 fw-bold">
@@ -50,8 +50,8 @@
                             </label>
                         </div>
 
-                        <div class="d-flex">
-                            <a href="{{ route('profile.edit') }}" class="btn btn-secondary me-2">
+                        <div class="d-flex flex-column flex-sm-row">
+                            <a href="{{ route('profile.edit') }}" class="btn btn-secondary mb-2 mb-sm-0 me-sm-2">
                                 <i class="fas fa-arrow-left me-1"></i> ยกเลิก
                             </a>
                             <button type="submit" class="btn btn-danger">
@@ -71,6 +71,7 @@
     /* Card styling */
     .card {
         border-radius: 0.75rem;
+        overflow: hidden;
     }
 
     /* Light border color */
@@ -82,6 +83,46 @@
     .card-header {
         border-bottom: 1px solid rgba(0,0,0,0.08);
         padding: 1rem 1.25rem;
+    }
+
+    /* Button styling - ensure icons and hover text are white */
+    .btn-danger, .btn-danger:hover, .btn-danger:focus {
+        color: #fff !important;
+    }
+
+    .btn-danger i, .btn-danger:hover i {
+        color: #fff !important;
+    }
+
+    .btn-secondary, .btn-secondary:hover, .btn-secondary:focus {
+        color: #fff !important;
+    }
+
+    .btn-secondary i, .btn-secondary:hover i {
+        color: #fff !important;
+    }
+
+    .btn-outline-danger:hover {
+        color: #fff !important;
+    }
+
+    .btn-outline-danger:hover i {
+        color: #fff !important;
+    }
+
+    /* Alert responsiveness */
+    @media (max-width: 767.98px) {
+        .alert ul {
+            padding-left: 1.5rem;
+        }
+
+        .alert ul li {
+            margin-bottom: 0.25rem;
+        }
+
+        .form-check-label {
+            font-size: 0.9rem;
+        }
     }
 </style>
 @endsection

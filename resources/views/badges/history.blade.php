@@ -6,16 +6,16 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="mb-0">ประวัติการรับเหรียญตรา</h2>
-        <a href="{{ route('badges.index') }}" class="btn btn-outline-primary">
-            <i class="fas fa-arrow-left me-1"></i> กลับไปหน้าเหรียญตรา
+        <a href="{{ route('badges.index') }}" class="btn btn-outline-primary mobile-history-btn">
+            <i class="fas fa-arrow-left me-1"></i> <span class="d-none d-md-inline">กลับไปหน้าเหรียญตรา</span><span class="d-inline d-md-none">กลับ</span>
         </a>
     </div>
-    <p class="text-muted">ประวัติเหรียญตราที่คุณได้รับทั้งหมด เรียงตามลำดับล่าสุด</p>
+    <p class="text-muted mb-3">ประวัติเหรียญตราที่คุณได้รับทั้งหมด เรียงตามลำดับล่าสุด</p>
 
     <!-- Stats overview -->
     <div class="row mb-4">
-        <div class="col-md-4 mb-3">
-            <div class="card h-100 shadow-sm border-0">
+        <div class="col-6 col-md-4 mb-3">
+            <div class="card h-100 shadow-sm border-0 badge-stat-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="badge-stat-icon bg-primary bg-opacity-10 me-3">
                         <i class="fas fa-medal text-primary"></i>
@@ -27,8 +27,8 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card h-100 shadow-sm border-0">
+        <div class="col-6 col-md-4 mb-3">
+            <div class="card h-100 shadow-sm border-0 badge-stat-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="badge-stat-icon bg-success bg-opacity-10 me-3">
                         <i class="fas fa-award text-success"></i>
@@ -40,8 +40,8 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card h-100 shadow-sm border-0">
+        <div class="col-12 col-md-4 mb-3">
+            <div class="card h-100 shadow-sm border-0 badge-stat-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="badge-stat-icon bg-info bg-opacity-10 me-3">
                         <i class="fas fa-calendar-check text-info"></i>
@@ -95,12 +95,12 @@
                                 </div>
                                 <div class="badge-timeline-content">
                                     <div class="row">
-                                        <div class="col-md-2 text-center mb-3 mb-md-0">
+                                        <div class="col-4 col-md-2 text-center mb-3 mb-md-0">
                                             <img src="{{ asset('storage/' . $badge->badge_image) }}"
                                                 alt="{{ $badge->badge_name }}"
                                                 class="badge-timeline-image">
                                         </div>
-                                        <div class="col-md-7 mb-3 mb-md-0">
+                                        <div class="col-8 col-md-7 mb-3 mb-md-0">
                                             <h5 class="badge-timeline-title">{{ $badge->badge_name }}</h5>
                                             <p class="badge-timeline-desc">{{ $badge->badge_desc }}</p>
                                             <div class="badge-type-pill
@@ -123,7 +123,7 @@
                                                 @endif
                                             </div>
                                         </div>
-                                        <div class="col-md-3 text-center">
+                                        <div class="col-12 col-md-3 text-center mt-2 mt-md-0">
                                             <div class="badge-timeline-points">
                                                 @if(isset($pointsHistory[$badge->badge_id]))
                                                     <div class="badge-point-value">+{{ $pointsHistory[$badge->badge_id]->points }}</div>
@@ -289,6 +289,168 @@
     .badge-point-label {
         font-size: 14px;
         color: #6c757d;
+    }
+
+    /* Stats Cards */
+    .badge-stat-card {
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .badge-stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+    }
+
+    /* Mobile & Tablet Responsive Adjustments */
+    @media (max-width: 991.98px) {
+        .container {
+            padding-left: 20px !important;
+            padding-right: 20px !important;
+        }
+
+        .d-flex.justify-content-between.align-items-center {
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        h2.mb-0 {
+            font-size: 1.6rem;
+            margin-bottom: 0.5rem !important;
+        }
+
+        .mobile-history-btn {
+            width: auto;
+            margin-left: auto;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .row.mb-4 {
+            margin-left: -10px;
+            margin-right: -10px;
+        }
+
+        .badge-timeline {
+            padding-left: 30px;
+        }
+
+        .badge-timeline:before {
+            left: 14px;
+        }
+
+        .badge-timeline-point {
+            left: -30px;
+            width: 30px;
+            height: 30px;
+            font-size: 14px;
+        }
+
+        .badge-timeline-item {
+            margin-bottom: 20px;
+        }
+    }
+
+    /* Specific mobile adjustments */
+    @media (max-width: 575.98px) {
+        .container {
+            padding-left: 15px !important;
+            padding-right: 15px !important;
+        }
+
+        h2.mb-0 {
+            font-size: 1.5rem;
+        }
+
+        /* ปรับปุ่มกลับในโหมดมือถือ */
+        .mobile-history-btn {
+            font-size: 0.9rem;
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+        }
+
+        /* ปรับการแสดงผลการ์ดสถิติบนมือถือ */
+        .row.mb-4 {
+            margin-left: -8px;
+            margin-right: -8px;
+        }
+
+        .col-6.col-md-4.mb-3, .col-12.col-md-4.mb-3 {
+            padding-left: 8px;
+            padding-right: 8px;
+            margin-bottom: 16px;
+        }
+
+        .badge-stat-card {
+            border-radius: 12px;
+        }
+
+        .badge-stat-icon {
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+            margin-right: 10px !important;
+        }
+
+        .badge-stat-card .card-body {
+            padding: 15px;
+        }
+
+        .badge-stat-card h6 {
+            font-size: 0.85rem;
+            margin-bottom: 5px !important;
+        }
+
+        .badge-stat-card h4 {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        /* ปรับการแสดงผล Timeline บนมือถือ */
+        .badge-timeline {
+            padding-left: 25px;
+        }
+
+        .badge-timeline:before {
+            left: 12px;
+        }
+
+        .badge-timeline-point {
+            left: -25px;
+            width: 25px;
+            height: 25px;
+            font-size: 12px;
+        }
+
+        .badge-timeline-date {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .badge-timeline-content {
+            padding: 10px;
+        }
+
+        .badge-timeline-title {
+            font-size: 16px;
+        }
+
+        .badge-timeline-desc {
+            font-size: 13px;
+        }
+
+        .badge-timeline-image {
+            max-width: 60px;
+            max-height: 60px;
+        }
+
+        .badge-point-value {
+            font-size: 20px;
+        }
+
+        .badge-point-label {
+            font-size: 12px;
+        }
     }
 </style>
 @endsection

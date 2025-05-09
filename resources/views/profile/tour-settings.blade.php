@@ -7,7 +7,7 @@
     .tour-settings-container {
         max-width: 800px;
         margin: 0 auto;
-        padding: 2rem 1rem;
+        padding: 2rem 0.75rem;
     }
 
     .tour-card {
@@ -21,7 +21,7 @@
     .tour-card-header {
         background: linear-gradient(135deg, #3498db, #2ecc71);
         color: white;
-        padding: 1.5rem;
+        padding: 1.5rem 1.25rem;
     }
 
     .tour-card-header h3 {
@@ -31,7 +31,7 @@
     }
 
     .tour-card-body {
-        padding: 1.5rem;
+        padding: 1.5rem 1.25rem;
     }
 
     .page-tour-item {
@@ -48,15 +48,14 @@
 
     .page-tour-header {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        flex-direction: column;
         margin-bottom: 1rem;
     }
 
     .page-tour-title {
         font-size: 1.1rem;
         font-weight: 600;
-        margin: 0;
+        margin: 0 0 0.5rem 0;
     }
 
     .page-tour-status {
@@ -65,6 +64,7 @@
         border-radius: 30px;
         font-size: 0.8rem;
         font-weight: 500;
+        align-self: flex-start;
     }
 
     .status-completed {
@@ -84,14 +84,14 @@
 
     .page-tour-actions {
         margin-top: 1rem;
-    }
-
-    .page-tour-actions .btn {
-        margin-right: 0.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
     }
 
     .reset-all-button {
-        margin-top: 1rem;
+        margin-top: 1.5rem;
     }
 
     /* Button styling to match GoFit */
@@ -103,14 +103,23 @@
 
     .restart-tour-btn:hover {
         background-color: #2ecc71;
-        color: white;
+        color: white !important;
         border-color: #2ecc71;
+    }
+
+    .restart-tour-btn:hover i {
+        color: white !important;
     }
 
     #reset-all-tours {
         border-radius: 50px;
         background-color: #f39c12;
         border-color: #f39c12;
+        color: white !important;
+    }
+
+    #reset-all-tours i {
+        color: white !important;
     }
 
     #reset-all-tours:hover {
@@ -123,11 +132,47 @@
         background-color: #2ecc71;
         border-color: #2ecc71;
     }
+
+    /* Mobile responsiveness */
+    @media (min-width: 576px) {
+        .page-tour-header {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-tour-title {
+            margin: 0;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .tour-card-header {
+            padding: 1.25rem 1rem;
+        }
+
+        .tour-card-header h3 {
+            font-size: 1.3rem;
+        }
+
+        .tour-card-body {
+            padding: 1.25rem 1rem;
+        }
+
+        .page-tour-actions {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .form-check.form-switch {
+            margin-left: 0 !important;
+        }
+    }
 </style>
 @endsection
 
 @section('content')
-<div class="container">
+<div class="container py-3">
     <div class="tour-settings-container">
         <div class="tour-card">
             <div class="tour-card-header">
