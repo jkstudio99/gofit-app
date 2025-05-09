@@ -104,6 +104,7 @@
         padding: 0.35rem 0.75rem;
         font-weight: 500;
         font-size: 0.8rem;
+        color: white;
     }
 
     /* Dashboard style icon container */
@@ -114,6 +115,25 @@
         align-items: center;
         justify-content: center;
     }
+
+    /* Hover effects for buttons */
+    .btn-outline-primary:hover,
+    .btn-outline-success:hover,
+    .btn-outline-info:hover,
+    .btn-outline-danger:hover,
+    .btn-outline-secondary:hover,
+    .btn-outline-warning:hover {
+        color: white !important;
+    }
+
+    .btn-outline-primary:hover i,
+    .btn-outline-success:hover i,
+    .btn-outline-info:hover i,
+    .btn-outline-danger:hover i,
+    .btn-outline-secondary:hover i,
+    .btn-outline-warning:hover i {
+        color: white !important;
+    }
 </style>
 @endsection
 
@@ -121,8 +141,8 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">สถิติและการวิเคราะห์เหรียญตรา</h2>
-        <div>
-            <a href="{{ route('admin.badges.history') }}" class="btn btn-outline-info me-2">
+        <div class="d-flex justify-content-end">
+            <a href="{{ route('admin.badges.history') }}" class="btn btn-outline-info me-3">
                 <i class="fas fa-history me-1"></i> ประวัติการได้รับ
             </a>
             <a href="{{ route('admin.badges.index') }}" class="btn btn-primary">
@@ -447,7 +467,7 @@
     <div class="row g-4 mb-4">
         <!-- Top Users with Badges -->
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm rounded-3">
+            <div class="card border-0 shadow-sm h-100 rounded-3">
                 <div class="card-header bg-white py-3 border-0">
                     <h5 class="card-title mb-0 fw-bold">
                         <i class="fas fa-users text-primary me-2"></i>ผู้ใช้ที่มีเหรียญตรามากที่สุด
@@ -555,12 +575,12 @@
         // Badge Type Distribution Chart
         const badgeTypeData = @json($badgesByType);
         const badgeTypeColors = [
-            'rgba(0, 123, 255, 0.8)',  // Blue
-            'rgba(220, 53, 69, 0.8)',   // Red
-            'rgba(255, 193, 7, 0.8)',   // Yellow
-            'rgba(40, 167, 69, 0.8)',   // Green
-            'rgba(23, 162, 184, 0.8)',  // Cyan
-            'rgba(108, 117, 125, 0.8)'  // Gray
+            'rgba(45, 198, 121, 0.8)',  // Primary Green
+            'rgba(40, 167, 69, 0.8)',   // Dark Green
+            'rgba(38, 222, 129, 0.8)',  // Light Green
+            'rgba(0, 184, 148, 0.8)',   // Teal Green
+            'rgba(85, 239, 196, 0.8)',  // Mint Green
+            'rgba(120, 224, 143, 0.8)'  // Pastel Green
         ];
 
         const badgeDistributionCtx = document.getElementById('badgeDistributionChart').getContext('2d');
@@ -585,7 +605,8 @@
                         labels: {
                             usePointStyle: true,
                             boxWidth: 15,
-                            padding: 15
+                            padding: 15,
+                            color: '#2DC679'
                         }
                     },
                     tooltip: {
@@ -597,7 +618,13 @@
                                 const percentage = Math.round((context.raw / total) * 100);
                                 return `${label}: ${value} (${percentage}%)`;
                             }
-                        }
+                        },
+                        backgroundColor: 'rgba(45, 198, 121, 0.8)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#ffffff',
+                        borderColor: '#2DC679',
+                        borderWidth: 1,
+                        displayColors: true
                     }
                 }
             }
@@ -640,6 +667,19 @@
                     legend: {
                         display: true,
                         position: 'top'
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(45, 198, 121, 0.8)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#ffffff',
+                        borderColor: '#2DC679',
+                        borderWidth: 1,
+                        displayColors: true,
+                        callbacks: {
+                            label: function(context) {
+                                return `จำนวน: ${context.formattedValue} ครั้ง`;
+                            }
+                        }
                     }
                 }
             }

@@ -2,6 +2,74 @@
 
 @section('title', 'เพิ่มผู้ใช้ใหม่')
 
+@section('styles')
+<style>
+    /* Button styling for action buttons - matching badges style */
+    .btn-info.badge-action-btn {
+        background-color: #3B82F6 !important;
+        border-color: #3B82F6 !important;
+        color: white !important;
+    }
+
+    .btn-info.badge-action-btn:hover {
+        background-color: #2563EB !important;
+        border-color: #2563EB !important;
+    }
+
+    .btn-warning.badge-action-btn {
+        background-color: #F59E0B !important;
+        border-color: #F59E0B !important;
+    }
+
+    .btn-warning.badge-action-btn:hover {
+        background-color: #D97706 !important;
+        border-color: #D97706 !important;
+    }
+
+    .btn-secondary.badge-action-btn {
+        background-color: #6B7280 !important;
+        border-color: #6B7280 !important;
+    }
+
+    .btn-secondary.badge-action-btn:hover {
+        background-color: #4B5563 !important;
+        border-color: #4B5563 !important;
+    }
+
+    .btn-danger.badge-action-btn {
+        background-color: #EF4444 !important;
+        border-color: #EF4444 !important;
+    }
+
+    .btn-danger.badge-action-btn:hover {
+        background-color: #DC2626 !important;
+        border-color: #DC2626 !important;
+    }
+
+    .btn-danger i, .btn-danger.badge-action-btn i,
+    .btn-info.badge-action-btn i,
+    .btn-secondary.badge-action-btn i {
+        color: white !important;
+    }
+
+    /* Make buttons circular and ensure proper icon alignment */
+    .badge-action-btn {
+        border-radius: 50% !important;
+        width: 36px !important;
+        height: 36px !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 3px !important;
+    }
+
+    .badge-action-btn i {
+        font-size: 0.875rem !important;
+    }
+</style>
+@endsection
+
 @section('content_header')
     <h1>เพิ่มผู้ใช้ใหม่</h1>
 @stop

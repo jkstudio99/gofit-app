@@ -178,6 +178,50 @@
         background-color: #2563EB !important;
         border-color: #2563EB !important;
     }
+
+    /* NEW: Make sure all buttons have white text and icons on hover */
+    .btn:hover, .btn:hover i {
+        color: white !important;
+    }
+
+    .btn-outline-primary:hover, .btn-outline-secondary:hover,
+    .btn-outline-success:hover, .btn-outline-danger:hover,
+    .btn-outline-warning:hover, .btn-outline-info:hover {
+        color: white !important;
+    }
+
+    .btn-outline-primary:hover i, .btn-outline-secondary:hover i,
+    .btn-outline-success:hover i, .btn-outline-danger:hover i,
+    .btn-outline-warning:hover i, .btn-outline-info:hover i {
+        color: white !important;
+    }
+
+    /* Specific styling for colored outline buttons */
+    .btn-outline-primary:hover {
+        background-color: #2DC679 !important;
+        border-color: #2DC679 !important;
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: #6c757d !important;
+        border-color: #6c757d !important;
+    }
+
+    .btn-outline-warning:hover {
+        background-color: #ffc107 !important;
+        border-color: #ffc107 !important;
+        color: #212529 !important;
+    }
+
+    .btn-outline-danger:hover {
+        background-color: #dc3545 !important;
+        border-color: #dc3545 !important;
+    }
+
+    .btn-outline-info:hover {
+        background-color: #3B82F6 !important;
+        border-color: #3B82F6 !important;
+    }
 </style>
 @endsection
 

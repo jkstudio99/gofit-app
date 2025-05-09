@@ -125,6 +125,15 @@
         margin-right: 0.5rem;
         text-align: center;
     }
+
+    /* ปุ่มบันทึกบทความให้เป็นสีขาวเสมอ */
+    .btn-success, .btn-success:hover, .btn-success:active, .btn-success:focus {
+        color: white !important;
+    }
+
+    .btn-success i, .btn-success:hover i, .btn-success:active i, .btn-success:focus i {
+        color: white !important;
+    }
 </style>
 @endsection
 

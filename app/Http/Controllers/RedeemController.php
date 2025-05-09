@@ -183,4 +183,51 @@ class RedeemController extends Controller
 
         return view('rewards.show', compact('redeem'));
     }
+
+    /**
+     * API endpoint for AJAX search
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function apiSearch(Request $request)
+    {
+        $query = Redeem::with(['user', 'reward'])
+            ->select('tb_redeem.*');
+
+        // Filter by text search
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->whereHas('user', function($q) use ($search) {
+                $q->where('username', 'like', "%{$search}%")
+                  ->orWhere('firstname', 'like', "%{$search}%")
+                  ->orWhere('lastname', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            })->orWhereHas('reward', function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by status
+        if ($request->has('status') && !empty($request->status)) {
+            $query->where('status', $request->status);
+        }
+
+        // Sorting
+        if ($request->has('sort') && $request->sort == 'oldest') {
+            $query->orderBy('created_at', 'asc');
+        } else {
+            $query->orderBy('created_at', 'desc'); // Default: newest first
+        }
+
+        // Paginate results
+        $redeems = $query->paginate(10);
+
+        return response()->json([
+            'success' => true,
+            'html' => view('admin.redeems.partials.redeems_list', compact('redeems'))->render(),
+            'pagination' => view('admin.redeems.partials.pagination', compact('redeems'))->render(),
+            'count' => $redeems->total()
+        ]);
+    }
 }

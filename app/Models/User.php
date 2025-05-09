@@ -64,6 +64,14 @@ class User extends Authenticatable
         return $this->hasMany(Activity::class, 'user_id', 'user_id');
     }
 
+    /**
+     * Get the runs for the user
+     */
+    public function runs(): HasMany
+    {
+        return $this->hasMany(Run::class, 'user_id', 'user_id');
+    }
+
     public function badges()
     {
         return $this->belongsToMany(Badge::class, 'tb_user_badge', 'user_id', 'badge_id', 'user_id', 'badge_id')

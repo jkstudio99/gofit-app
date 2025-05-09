@@ -36,6 +36,7 @@ class Reward extends Model
         'stock',
         'image_url',
         'is_enabled',
+        'is_active',
     ];
 
     /**

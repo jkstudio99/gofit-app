@@ -254,7 +254,11 @@ class RewardController extends Controller
         $redeemedCount = Redeem::where('reward_id', $reward->reward_id)->count();
 
         if ($redeemedCount > 0) {
-            return redirect()->route('admin.rewards')->with('error', 'ไม่สามารถลบรางวัลที่มีการแลกแล้วได้');
+            // ปิดการใช้งานแทนการลบ เมื่อรางวัลมีประวัติการแลกแล้ว
+            $reward->is_enabled = 0;
+            $reward->save();
+
+            return redirect()->route('admin.rewards')->with('success', 'รางวัลถูกปิดการใช้งานแล้วเนื่องจากมีประวัติการแลก หากต้องการลบให้ปิดการใช้งานแทน');
         }
 
         // Delete reward image if exists
@@ -291,6 +295,9 @@ class RewardController extends Controller
             } elseif ($request->status === 'disabled') {
                 $query->where('is_enabled', 0);
             }
+        } else {
+            // เมื่อไม่ได้ระบุ status ให้แสดงเฉพาะรางวัลที่เปิดใช้งาน (Default: แถบ "ทั้งหมด")
+            $query->where('is_enabled', 1);
         }
 
         // Filter by points
@@ -412,6 +419,104 @@ class RewardController extends Controller
             'redeemStatuses',
             'recentRedeems'
         ));
+    }
+
+    /**
+     * API endpoint for rewards search (AJAX)
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function apiSearch(Request $request)
+    {
+        $query = Reward::query();
+
+        // Search by name or description
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by status
+        if ($request->has('status') && !empty($request->status)) {
+            if ($request->status === 'enabled') {
+                $query->where('is_enabled', true);
+            } elseif ($request->status === 'disabled') {
+                $query->where('is_enabled', false);
+            }
+        } else {
+            // เมื่อไม่ได้ระบุ status ให้แสดงเฉพาะรางวัลที่เปิดใช้งาน (Default: แถบ "ทั้งหมด")
+            $query->where('is_enabled', true);
+        }
+
+        // Filter by points
+        if ($request->has('min_points') && is_numeric($request->min_points)) {
+            $query->where('points_required', '>=', $request->min_points);
+        }
+
+        if ($request->has('max_points') && is_numeric($request->max_points)) {
+            $query->where('points_required', '<=', $request->max_points);
+        }
+
+        // Filter by stock
+        if ($request->has('stock')) {
+            if ($request->stock === 'in_stock') {
+                $query->where('quantity', '>', 0);
+            } elseif ($request->stock === 'low_stock') {
+                $query->where('quantity', '>', 0)->where('quantity', '<=', 10);
+            } elseif ($request->stock === 'out_of_stock') {
+                $query->where('quantity', 0);
+            }
+        }
+
+        // Sort options
+        if ($request->has('sort')) {
+            switch ($request->sort) {
+                case 'points-asc':
+                    $query->orderBy('points_required', 'asc');
+                    break;
+                case 'points-desc':
+                    $query->orderBy('points_required', 'desc');
+                    break;
+                case 'newest':
+                    $query->orderBy('created_at', 'desc');
+                    break;
+                case 'oldest':
+                    $query->orderBy('created_at', 'asc');
+                    break;
+                default:
+                    $query->orderBy('created_at', 'desc');
+            }
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $rewards = $query->paginate(12);
+
+        return response()->json([
+            'success' => true,
+            'html' => view('admin.rewards.partials.reward_list', compact('rewards'))->render(),
+            'pagination' => view('admin.rewards.partials.pagination', compact('rewards'))->render(),
+            'count' => $rewards->total()
+        ]);
+    }
+
+    /**
+     * Toggle the active status of a reward
+     *
+     * @param Reward $reward
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function toggleActive(Reward $reward)
+    {
+        $reward->is_enabled = !$reward->is_enabled;
+        $reward->save();
+
+        $status = $reward->is_enabled ? 'เปิด' : 'ปิด';
+        return redirect()->route('admin.rewards')->with('success', "รางวัล {$reward->name} ถูก{$status}การใช้งานแล้ว");
     }
 }
 

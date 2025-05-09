@@ -275,7 +275,7 @@ class AdminController extends Controller
             $query->where('user_type_id', $request->type);
         }
 
-        $users = $query->orderBy('created_at', 'desc')->paginate(20);
+        $users = $query->orderBy('user_id', 'asc')->paginate(20);
         $userTypes = \App\Models\MasterUserType::all();
         $userStatuses = \App\Models\MasterUserStatus::all();
 
@@ -420,6 +420,45 @@ class AdminController extends Controller
 
         return redirect()->route('admin.users.show', $user)
             ->with('success', 'รีเซ็ตรหัสผ่านสำเร็จแล้ว');
+    }
+
+    /**
+     * API endpoint สำหรับค้นหาผู้ใช้แบบ AJAX (Live Search)
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function apiUsers(Request $request)
+    {
+        $query = User::query()->with(['userType', 'userStatus']);
+
+        // ค้นหาตามชื่อหรืออีเมล
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('username', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('firstname', 'like', "%{$search}%")
+                  ->orWhere('lastname', 'like', "%{$search}%");
+            });
+        }
+
+        // กรองตามสถานะ
+        if ($request->has('status') && $request->status != 'all') {
+            $query->where('user_status_id', $request->status);
+        }
+
+        // กรองตามประเภทผู้ใช้
+        if ($request->has('type') && $request->type != 'all') {
+            $query->where('user_type_id', $request->type);
+        }
+
+        $users = $query->orderBy('user_id', 'asc')->paginate(20);
+
+        return response()->json([
+            'success' => true,
+            'users' => $users
+        ]);
     }
 
     /**

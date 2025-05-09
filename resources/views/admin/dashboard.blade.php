@@ -227,7 +227,7 @@
                                                 <div class="rounded-circle bg-light p-2 me-2" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
                                                     <i class="fas fa-user fa-lg text-secondary"></i>
                                                 </div>
-                                                <div>{{ $user->firstname }} {{ $user->lastname }}</div>
+                                                <div>{{ $user->firstname }}</div>
                                             </div>
                                         </td>
                                         <td>{{ $user->activity_count }}</td>
@@ -280,7 +280,13 @@
                                 @foreach($latestRuns ?? [] as $run)
                                     @if($count < 5)
                                     <tr>
-                                        <td class="ps-3">{{ $run->user->username ?? 'ไม่ระบุชื่อ' }}</td>
+                                        <td class="ps-3">
+                                            @if(isset($run->user) && $run->user->firstname)
+                                                {{ $run->user->firstname }}
+                                            @else
+                                                ไม่ระบุชื่อ
+                                            @endif
+                                        </td>
                                         <td>{{ number_format($run->distance, 2) }} กม.</td>
                                         <td>{{ number_format($run->calories_burned) }} kcal</td>
                                         <td class="text-end pe-3">
@@ -408,7 +414,7 @@
                                         <div class="rounded-circle bg-light p-2 me-2" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
                                             <i class="fas fa-user text-secondary"></i>
                                         </div>
-                                        <div>{{ $user->firstname }} {{ $user->lastname }}</div>
+                                        <div>{{ $user->firstname }}</div>
                                     </div>
                                 </td>
                                 <td>{{ $user->activity_count }}</td>
@@ -468,7 +474,13 @@
                         @if(isset($latestRuns) && count($latestRuns) > 0)
                             @foreach($latestRuns as $run)
                             <tr>
-                                <td class="ps-3">{{ $run->user->username ?? 'ไม่ระบุชื่อ' }}</td>
+                                <td class="ps-3">
+                                    @if(isset($run->user) && $run->user->firstname)
+                                        {{ $run->user->firstname }}
+                                    @else
+                                        ไม่ระบุชื่อ
+                                    @endif
+                                </td>
                                 <td>{{ number_format($run->distance, 2) }} กม.</td>
                                 <td>{{ number_format($run->calories_burned) }} kcal</td>
                                 <td class="text-end pe-3">

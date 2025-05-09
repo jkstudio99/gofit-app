@@ -488,13 +488,13 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Chart configuration
+        // การตั้งค่ากราฟทั่วไป
         Chart.defaults.font.family = 'Sarabun, sans-serif';
         Chart.defaults.color = '#6c757d';
         Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(0, 0, 0, 0.7)';
         Chart.defaults.plugins.legend.labels.usePointStyle = true;
 
-        // Views trend chart
+        // กราฟแนวโน้มการเข้าชมบทความ
         const viewsChartCtx = document.getElementById('viewsChart').getContext('2d');
         new Chart(viewsChartCtx, {
             type: 'line',
@@ -510,8 +510,8 @@
                         tension: 0.3,
                         fill: true,
                         pointBackgroundColor: '#2DC679',
-                        pointRadius: 3,
-                        pointHoverRadius: 5
+                        pointRadius: 4,
+                        pointHoverRadius: 6
                     }
                 ]
             },
@@ -523,11 +523,34 @@
                         beginAtZero: true,
                         grid: {
                             color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString('th-TH');
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'จำนวนการเข้าชม',
+                            font: {
+                                size: 14,
+                                weight: 'normal'
+                            },
+                            padding: {top: 10, bottom: 10}
                         }
                     },
                     x: {
                         grid: {
                             display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'วันที่',
+                            font: {
+                                size: 14,
+                                weight: 'normal'
+                            },
+                            padding: {top: 10, bottom: 10}
                         }
                     }
                 },
@@ -536,17 +559,29 @@
                         display: false
                     },
                     tooltip: {
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        padding: 12,
                         callbacks: {
                             label: function(context) {
-                                return `ยอดเข้าชม: ${context.parsed.y.toLocaleString()} ครั้ง`;
+                                return `ยอดเข้าชม: ${context.parsed.y.toLocaleString('th-TH')} ครั้ง`;
                             }
                         }
                     }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
                 }
             }
         });
 
-        // Category distribution chart
+        // กราฟสัดส่วนบทความตามหมวดหมู่
         const categoryChartCtx = document.getElementById('categoryChart').getContext('2d');
         new Chart(categoryChartCtx, {
             type: 'doughnut',
@@ -564,21 +599,36 @@
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        display: false
+                        display: false,
+                        position: 'bottom',
+                        labels: {
+                            padding: 16,
+                            font: {
+                                size: 13
+                            }
+                        }
                     },
                     tooltip: {
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        padding: 12,
                         callbacks: {
                             label: function(context) {
                                 const index = context.dataIndex;
                                 const count = context.raw;
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                 const percentage = ((count / total) * 100).toFixed(1);
-                                return `${context.label}: ${count} (${percentage}%)`;
+                                return `${context.label}: ${count.toLocaleString('th-TH')} บทความ (${percentage}%)`;
                             }
                         }
                     }
                 },
-                cutout: '60%'
+                cutout: '65%'
             }
         });
     });

@@ -342,6 +342,11 @@
                                         </a>
                                     </li>
                                     <li>
+                                        <a class="dropdown-item {{ request()->routeIs('admin.run.stats') ? 'active' : '' }}" href="{{ route('admin.run.stats') }}">
+                                            <i class="fas fa-running me-1"></i> สถิติการวิ่ง
+                                        </a>
+                                    </li>
+                                    <li>
                                         <a class="dropdown-item {{ request()->routeIs('admin.badges.statistics') ? 'active' : '' }}" href="{{ route('admin.badges.statistics') }}">
                                             <i class="fas fa-medal me-1"></i> สถิติเหรียญตรา
                                         </a>
@@ -349,11 +354,6 @@
                                     <li>
                                         <a class="dropdown-item {{ request()->routeIs('admin.rewards.statistics') ? 'active' : '' }}" href="{{ route('admin.rewards.statistics') }}">
                                             <i class="fas fa-gift me-1"></i> สถิติรางวัล
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item {{ request()->routeIs('admin.run.stats') ? 'active' : '' }}" href="{{ route('admin.run.stats') }}">
-                                            <i class="fas fa-running me-1"></i> สถิติการวิ่ง
                                         </a>
                                     </li>
                                     <li>

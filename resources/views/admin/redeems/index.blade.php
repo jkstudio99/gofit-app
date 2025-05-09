@@ -51,13 +51,28 @@
     .status-cancelled {
         background-color: #dc3545;
     }
+
+    /* Loading indicator */
+    .loading-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        border-radius: 10px;
+    }
 </style>
 @endsection
 
 @section('content')
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">จัดการการแลกรางวัล</h1>
+        <h1 class="h3 mb-0">ประวัติการแลกรางวัลล่าสุด</h1>
         <a href="{{ route('admin.rewards') }}" class="btn btn-outline-primary">
             <i class="fas fa-gift me-1"></i> จัดการรางวัล
         </a>
@@ -66,18 +81,18 @@
     <!-- Search and Filter -->
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <form action="{{ route('admin.redeems') }}" method="GET" class="row g-3">
+            <div class="row g-3">
                 <div class="col-md-6">
                     <div class="input-group">
-                        <input type="text" name="search" class="form-control search-box"
+                        <input type="text" id="search-input" class="form-control search-box"
                                placeholder="ค้นหาตามชื่อผู้ใช้หรือรางวัล..." value="{{ request('search') }}">
-                        <button class="btn btn-primary" type="submit">
+                        <button class="btn btn-primary" id="search-button" type="button">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <select name="status" class="form-select" onchange="this.form.submit()">
+                    <select id="status-filter" class="form-select">
                         <option value="">สถานะทั้งหมด</option>
                         <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>รอดำเนินการ</option>
                         <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>เสร็จสิ้น</option>
@@ -85,37 +100,33 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <select name="sort" class="form-select" onchange="this.form.submit()">
+                    <select id="sort-filter" class="form-select">
                         <option value="newest" {{ request('sort', 'newest') == 'newest' ? 'selected' : '' }}>เรียง: ล่าสุด</option>
                         <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>เรียง: เก่าสุด</option>
                     </select>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 
     <!-- Status Filter Tags -->
     <div class="mb-4">
         <div class="d-flex flex-wrap gap-2">
-            <a href="{{ route('admin.redeems', request()->except('status')) }}"
-               class="badge bg-{{ request('status') ? 'light text-dark' : 'primary' }} py-2 px-3 filter-badge">
+            <span class="badge bg-{{ request('status') ? 'light text-dark' : 'primary' }} py-2 px-3 filter-badge status-filter" data-status="">
                 <i class="fas fa-list me-1"></i> ทั้งหมด
-            </a>
+            </span>
 
-            <a href="{{ route('admin.redeems', array_merge(request()->except('status'), ['status' => 'pending'])) }}"
-               class="badge bg-{{ request('status') == 'pending' ? 'warning' : 'light text-dark' }} py-2 px-3 filter-badge">
+            <span class="badge bg-{{ request('status') == 'pending' ? 'warning' : 'light text-dark' }} py-2 px-3 filter-badge status-filter" data-status="pending">
                 <i class="fas fa-clock me-1"></i> รอดำเนินการ
-            </a>
+            </span>
 
-            <a href="{{ route('admin.redeems', array_merge(request()->except('status'), ['status' => 'completed'])) }}"
-               class="badge bg-{{ request('status') == 'completed' ? 'success' : 'light text-dark' }} py-2 px-3 filter-badge">
+            <span class="badge bg-{{ request('status') == 'completed' ? 'success' : 'light text-dark' }} py-2 px-3 filter-badge status-filter" data-status="completed">
                 <i class="fas fa-check-circle me-1"></i> เสร็จสิ้น
-            </a>
+            </span>
 
-            <a href="{{ route('admin.redeems', array_merge(request()->except('status'), ['status' => 'cancelled'])) }}"
-               class="badge bg-{{ request('status') == 'cancelled' ? 'danger' : 'light text-dark' }} py-2 px-3 filter-badge">
+            <span class="badge bg-{{ request('status') == 'cancelled' ? 'danger' : 'light text-dark' }} py-2 px-3 filter-badge status-filter" data-status="cancelled">
                 <i class="fas fa-times-circle me-1"></i> ยกเลิก
-            </a>
+            </span>
         </div>
     </div>
 
@@ -123,115 +134,28 @@
     <div class="card shadow-sm">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0">รายการแลกรางวัลทั้งหมด</h5>
-            <span class="badge bg-primary">{{ $redeems->total() }} รายการ</span>
+            <span class="badge bg-primary" id="total-count">{{ $redeems->total() }} รายการ</span>
         </div>
-        <div class="card-body">
-            @if($redeems->isEmpty())
-                <div class="text-center py-5">
-                    <img src="{{ asset('images/empty-redeem.svg') }}" alt="ไม่มีรายการ" class="img-fluid mb-3" style="max-width: 200px;">
-                    <h5>ไม่พบรายการแลกรางวัล</h5>
-                    <p class="text-muted">ยังไม่มีรายการแลกรางวัลในระบบ</p>
+        <div class="card-body position-relative">
+            <!-- Loading spinner -->
+            <div id="loading-spinner" class="loading-container d-none">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">กำลังโหลด...</span>
+                    </div>
+                    <p class="mt-2">กำลังโหลดข้อมูล...</p>
                 </div>
-            @else
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>ผู้ใช้</th>
-                                <th>รางวัล</th>
-                                <th>คะแนนที่ใช้</th>
-                                <th>สถานะ</th>
-                                <th>วันที่แลก</th>
-                                <th>หมายเหตุ</th>
-                                <th>การจัดการ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($redeems as $key => $redeem)
-                            <tr>
-                                <td>{{ $redeems->firstItem() + $key }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        @if($redeem->user->profile_image)
-                                            <img src="{{ asset('storage/' . $redeem->user->profile_image) }}"
-                                                 class="rounded-circle me-2" width="40" height="40"
-                                                 alt="{{ $redeem->user->username }}">
-                                        @else
-                                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2"
-                                                 style="width: 40px; height: 40px; color: white;">
-                                                {{ substr($redeem->user->username, 0, 1) }}
-                                            </div>
-                                        @endif
-                                        <div>
-                                            <div class="fw-bold">{{ $redeem->user->username }}</div>
-                                            <div class="small text-muted">{{ $redeem->user->email }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="reward-img-small me-2">
-                                            @if($redeem->reward->image_path)
-                                                <img src="{{ asset('storage/' . $redeem->reward->image_path) }}"
-                                                     style="width: 40px; height: 40px; object-fit: contain;"
-                                                     alt="{{ $redeem->reward->name }}">
-                                            @else
-                                                <i class="fas fa-gift fa-2x text-primary"></i>
-                                            @endif
-                                        </div>
-                                        <div>{{ $redeem->reward->name }}</div>
-                                    </div>
-                                </td>
-                                <td><span class="badge bg-warning text-dark">{{ $redeem->points_used ?? $redeem->reward->points_required }} คะแนน</span></td>
-                                <td>
-                                    @if($redeem->status == 'pending')
-                                        <span class="badge bg-warning">
-                                            <span class="status-indicator status-pending"></span>รอดำเนินการ
-                                        </span>
-                                    @elseif($redeem->status == 'completed')
-                                        <span class="badge bg-success">
-                                            <span class="status-indicator status-completed"></span>เสร็จสิ้น
-                                        </span>
-                                    @elseif($redeem->status == 'cancelled')
-                                        <span class="badge bg-danger">
-                                            <span class="status-indicator status-cancelled"></span>ยกเลิก
-                                        </span>
-                                    @endif
-                                </td>
-                                <td>{{ $redeem->created_at->format('d/m/Y H:i') }}</td>
-                                <td>{{ $redeem->note ?? '-' }}</td>
-                                <td>
-                                    <div class="d-flex">
-                                        @if($redeem->status == 'pending')
-                                            <button type="button"
-                                                    class="btn btn-success btn-sm me-1 btn-update-status"
-                                                    data-redeem-id="{{ $redeem->redeem_id }}"
-                                                    data-status="completed">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                            <button type="button"
-                                                    class="btn btn-danger btn-sm btn-update-status"
-                                                    data-redeem-id="{{ $redeem->redeem_id }}"
-                                                    data-status="cancelled">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        @else
-                                            <button type="button" class="btn btn-secondary btn-sm" disabled>
-                                                <i class="fas fa-lock"></i>
-                                            </button>
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+            </div>
+
+            <!-- Redeems list container -->
+            <div id="redeems-list-container">
+                @include('admin.redeems.partials.redeems_list')
+            </div>
         </div>
         <div class="card-footer clearfix">
-            {{ $redeems->links() }}
+            <div id="pagination-container">
+                {{ $redeems->links() }}
+            </div>
         </div>
     </div>
 </div>
@@ -242,169 +166,280 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 <script>
-    // แก้ไข SweetAlert z-index เพื่อให้แสดงด้านหน้าเสมอ
     document.addEventListener('DOMContentLoaded', function() {
-        // กำหนดค่า z-index ให้ SweetAlert เป็นค่าสูงสุด
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: 'กำลังโหลด...',
-                text: 'กรุณารอสักครู่',
-                timer: 300,
-                showConfirmButton: false,
-                willOpen: () => {
-                    // ปรับแต่ง z-index ของ SweetAlert container
-                    document.querySelector('.swal2-container').style.zIndex = "999999";
-                }
-            });
-        }
-        // ตรวจสอบว่ามี Bootstrap Modal ในหน้านี้หรือไม่
-        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-            console.log('Bootstrap Modal is loaded');
-        } else {
-            console.error('Bootstrap Modal is not loaded!');
-        }
         // Handle filter badge clicks
-        document.querySelectorAll('.filter-badge').forEach(badge => {
-            badge.addEventListener('click', function(e) {
-                document.querySelectorAll('.filter-badge').forEach(b => {
-                    b.classList.remove('active');
+        const statusFilterBadges = document.querySelectorAll('.status-filter');
+        const searchInput = document.getElementById('search-input');
+        const statusFilter = document.getElementById('status-filter');
+        const sortFilter = document.getElementById('sort-filter');
+        const searchButton = document.getElementById('search-button');
+
+        // Timer สำหรับ debounce
+        let typingTimer;
+        const doneTypingInterval = 500; // เวลารอ 500 ms หลังจากพิมพ์เสร็จ
+
+        // Event สำหรับ debounce การพิมพ์
+        searchInput.addEventListener('keyup', function() {
+            clearTimeout(typingTimer);
+            if (searchInput.value) {
+                typingTimer = setTimeout(fetchRedeems, doneTypingInterval);
+            }
+        });
+
+        // ให้ทุก element ที่เป็นตัวกรองทำงานแบบ live search
+        statusFilter.addEventListener('change', fetchRedeems);
+        sortFilter.addEventListener('change', fetchRedeems);
+
+        // ปุ่มค้นหา
+        searchButton.addEventListener('click', fetchRedeems);
+
+        // Status filter badges
+        statusFilterBadges.forEach(badge => {
+            badge.addEventListener('click', function() {
+                const status = this.getAttribute('data-status');
+                if (statusFilter) {
+                    statusFilter.value = status;
+                }
+                // อัพเดต UI ของ badges
+                statusFilterBadges.forEach(b => {
+                    b.classList.remove('bg-primary', 'bg-warning', 'bg-success', 'bg-danger');
+                    b.classList.add('bg-light', 'text-dark');
                 });
-                this.classList.add('active');
+
+                // กำหนดสีตาม status
+                if (status === '') {
+                    this.classList.remove('bg-light', 'text-dark');
+                    this.classList.add('bg-primary');
+                } else if (status === 'pending') {
+                    this.classList.remove('bg-light', 'text-dark');
+                    this.classList.add('bg-warning');
+                } else if (status === 'completed') {
+                    this.classList.remove('bg-light', 'text-dark');
+                    this.classList.add('bg-success');
+                } else if (status === 'cancelled') {
+                    this.classList.remove('bg-light', 'text-dark');
+                    this.classList.add('bg-danger');
+                }
+
+                fetchRedeems();
             });
         });
 
-        // ใช้ SweetAlert แทน Modal
-        document.querySelectorAll('.btn-update-status').forEach(button => {
-            button.addEventListener('click', function() {
-                const redeemId = this.getAttribute('data-redeem-id');
-                const status = this.getAttribute('data-status');
-                const isCompleted = status === 'completed';
-                const title = isCompleted ? 'ยืนยันการจัดส่งรางวัล' : 'ยกเลิกการแลกรางวัล';
-                const confirmButtonText = isCompleted ? 'ยืนยันการจัดส่ง' : 'ยกเลิกรางวัล';
-                const confirmButtonColor = isCompleted ? '#28a745' : '#dc3545';
-                const icon = isCompleted ? 'success' : 'warning';
-
-                console.log("กำลังแสดง SweetAlert สำหรับ redeem_id:", redeemId);
-
-                Swal.fire({
-                    title: title,
-                    icon: icon,
-                    html: `
-                        <form id="updateStatusForm">
-                            <div class="mb-3 text-start">
-                                <label for="note" class="form-label">หมายเหตุ (ถ้ามี)</label>
-                                <textarea id="swal-note" class="form-control" rows="3"></textarea>
-                            </div>
-                            <div class="text-start">
-                                <small class="text-muted">รหัสรายการแลกรางวัล: ${redeemId}</small>
-                            </div>
-                        </form>
-                    `,
-                    showCancelButton: true,
-                    confirmButtonColor: '#2DC679',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: confirmButtonText,
-                    cancelButtonText: 'ยกเลิก',
-                    focusConfirm: false,
-                    customClass: {
-                        container: 'my-swal-container'
-                    },
-                    didOpen: () => {
-                        document.querySelector('.my-swal-container').style.zIndex = "999999";
-                    },
-                    preConfirm: () => {
-                        return {
-                            note: document.getElementById('swal-note').value
-                        };
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // สร้าง form เพื่อส่งข้อมูล
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        // สร้าง URL ด้วย string template แทน
-                        form.action = `{{ url('admin/redeems') }}/${redeemId}/status`;
-                        form.style.display = 'none';
-
-                        // CSRF Token
-                        const csrfToken = document.createElement('input');
-                        csrfToken.type = 'hidden';
-                        csrfToken.name = '_token';
-                        csrfToken.value = "{{ csrf_token() }}";
-
-                        // Status
-                        const statusInput = document.createElement('input');
-                        statusInput.type = 'hidden';
-                        statusInput.name = 'status';
-                statusInput.value = status;
-
-                        // Note
-                        const noteInput = document.createElement('input');
-                        noteInput.type = 'hidden';
-                        noteInput.name = 'note';
-                        noteInput.value = result.value.note;
-
-                        // เพิ่ม input เข้าไปใน form
-                        form.appendChild(csrfToken);
-                        form.appendChild(statusInput);
-                        form.appendChild(noteInput);
-
-                        // เพิ่ม form เข้าไปใน document และส่งข้อมูล
-                        document.body.appendChild(form);
-                        form.submit();
-
-                        // แสดงข้อความกำลังดำเนินการ
-                        Swal.fire({
-                            title: 'กำลังดำเนินการ...',
-                            text: 'โปรดรอสักครู่',
-                            icon: 'info',
-                            allowOutsideClick: false,
-                            showConfirmButton: false,
-                            didOpen: () => {
-                                Swal.showLoading();
+        // Pagination จะถูกจัดการใน fetchRedeems และจะเป็นแบบ Ajax ด้วย
+        document.addEventListener('click', function(e) {
+            // ตรวจสอบว่า element ที่ click เป็นลิงก์หน้าหรือไม่
+            if (e.target.closest('.pagination a')) {
+                e.preventDefault();
+                const href = e.target.closest('a').getAttribute('href');
+                if (href) {
+                    fetchRedeemsFromUrl(href);
                 }
+            }
+        });
+
+        // ฟังก์ชันดึงรายการแลกรางวัลจากพารามิเตอร์ปัจจุบัน
+        function fetchRedeems() {
+            const searchValue = searchInput.value.trim();
+            const statusValue = statusFilter ? statusFilter.value : '';
+            const sortValue = sortFilter ? sortFilter.value : 'newest';
+
+            // แสดง loading spinner
+            document.getElementById('loading-spinner').classList.remove('d-none');
+
+            // สร้าง URL พร้อม query parameters
+            const url = new URL('{{ route("admin.redeems.api.search") }}');
+            if (searchValue) url.searchParams.append('search', searchValue);
+            if (statusValue) url.searchParams.append('status', statusValue);
+            if (sortValue) url.searchParams.append('sort', sortValue);
+
+            // ส่ง AJAX request
+            fetch(url.toString())
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // อัพเดต redeems list
+                        document.getElementById('redeems-list-container').innerHTML = data.html;
+
+                        // อัพเดต pagination
+                        document.getElementById('pagination-container').innerHTML = data.pagination;
+
+                        // อัพเดต count
+                        document.getElementById('total-count').textContent = data.count + ' รายการ';
+
+                        // ติดตั้ง event listeners สำหรับปุ่มอัพเดตสถานะ
+                        setupStatusButtons();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching redeems:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด!',
+                        text: 'ไม่สามารถดึงข้อมูลรายการแลกรางวัลได้ กรุณาลองใหม่อีกครั้ง',
+                        confirmButtonColor: '#dc3545'
+                    });
+                })
+                .finally(() => {
+                    // ซ่อน loading spinner
+                    document.getElementById('loading-spinner').classList.add('d-none');
+                });
+        }
+
+        // ฟังก์ชันดึงรายการแลกรางวัลจาก URL ที่กำหนด (สำหรับ pagination)
+        function fetchRedeemsFromUrl(url) {
+            // แสดง loading spinner
+            document.getElementById('loading-spinner').classList.remove('d-none');
+
+            // ส่ง AJAX request
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // อัพเดต redeems list
+                        document.getElementById('redeems-list-container').innerHTML = data.html;
+
+                        // อัพเดต pagination
+                        document.getElementById('pagination-container').innerHTML = data.pagination;
+
+                        // อัพเดต count
+                        document.getElementById('total-count').textContent = data.count + ' รายการ';
+
+                        // ติดตั้ง event listeners สำหรับปุ่มอัพเดตสถานะ
+                        setupStatusButtons();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching redeems:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด!',
+                        text: 'ไม่สามารถดึงข้อมูลรายการแลกรางวัลได้ กรุณาลองใหม่อีกครั้ง',
+                        confirmButtonColor: '#dc3545'
+                    });
+                })
+                .finally(() => {
+                    // ซ่อน loading spinner
+                    document.getElementById('loading-spinner').classList.add('d-none');
+                });
+        }
+
+        // ฟังก์ชันตั้งค่า event listeners สำหรับปุ่มอัพเดตสถานะ
+        function setupStatusButtons() {
+            // ใช้ SweetAlert แทน Modal
+            document.querySelectorAll('.btn-update-status').forEach(button => {
+                button.addEventListener('click', function() {
+                    const redeemId = this.getAttribute('data-redeem-id');
+                    const status = this.getAttribute('data-status');
+                    const isCompleted = status === 'completed';
+                    const title = isCompleted ? 'ยืนยันการจัดส่งรางวัล' : 'ยกเลิกการแลกรางวัล';
+                    const confirmButtonText = isCompleted ? 'ยืนยันการจัดส่ง' : 'ยกเลิกรางวัล';
+                    const confirmButtonColor = isCompleted ? '#28a745' : '#dc3545';
+                    const icon = isCompleted ? 'success' : 'warning';
+
+                    Swal.fire({
+                        title: title,
+                        icon: icon,
+                        html: `
+                            <form id="updateStatusForm">
+                                <div class="mb-3 text-start">
+                                    <label for="note" class="form-label">หมายเหตุ (ถ้ามี)</label>
+                                    <textarea id="swal-note" class="form-control" rows="3"></textarea>
+                                </div>
+                                <div class="text-start">
+                                    <small class="text-muted">รหัสรายการแลกรางวัล: ${redeemId}</small>
+                                </div>
+                            </form>
+                        `,
+                        showCancelButton: true,
+                        confirmButtonColor: '#2DC679',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: confirmButtonText,
+                        cancelButtonText: 'ยกเลิก',
+                        focusConfirm: false,
+                        customClass: {
+                            container: 'my-swal-container'
+                        },
+                        didOpen: () => {
+                            document.querySelector('.my-swal-container').style.zIndex = "999999";
+                        },
+                        preConfirm: () => {
+                            return {
+                                note: document.getElementById('swal-note').value
+                            };
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // สร้าง form เพื่อส่งข้อมูล
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = `{{ url('admin/redeems') }}/${redeemId}/status`;
+                            form.style.display = 'none';
+
+                            // CSRF Token
+                            const csrfToken = document.createElement('input');
+                            csrfToken.type = 'hidden';
+                            csrfToken.name = '_token';
+                            csrfToken.value = "{{ csrf_token() }}";
+
+                            // Status
+                            const statusInput = document.createElement('input');
+                            statusInput.type = 'hidden';
+                            statusInput.name = 'status';
+                            statusInput.value = status;
+
+                            // Note
+                            const noteInput = document.createElement('input');
+                            noteInput.type = 'hidden';
+                            noteInput.name = 'note';
+                            noteInput.value = result.value.note;
+
+                            // เพิ่ม input เข้าไปใน form
+                            form.appendChild(csrfToken);
+                            form.appendChild(statusInput);
+                            form.appendChild(noteInput);
+
+                            // เพิ่ม form เข้าไปใน document และส่งข้อมูล
+                            document.body.appendChild(form);
+                            form.submit();
+                        }
+                    });
+                });
             });
         }
-                });
-            });
-        });
+
+        // ตั้งค่า event listeners สำหรับปุ่มอัพเดตสถานะเมื่อโหลดหน้าครั้งแรก
+        setupStatusButtons();
 
         // Show flash message if exists
         @if(session('success'))
-            setTimeout(function() {
             Swal.fire({
                 icon: 'success',
                 title: 'สำเร็จ!',
                 text: "{{ session('success') }}",
-                    confirmButtonColor: '#28a745',
-                    customClass: {
-                        container: 'my-swal-container'
-                    },
-                    didOpen: () => {
-                        document.querySelector('.my-swal-container').style.zIndex = "999999";
-                    }
+                confirmButtonColor: '#28a745',
+                customClass: {
+                    container: 'my-swal-container'
+                },
+                didOpen: () => {
+                    document.querySelector('.my-swal-container').style.zIndex = "999999";
+                }
             });
-            }, 500);
         @endif
 
         @if(session('error'))
-            setTimeout(function() {
             Swal.fire({
                 icon: 'error',
                 title: 'เกิดข้อผิดพลาด!',
                 text: "{{ session('error') }}",
-                    confirmButtonColor: '#dc3545',
-                    customClass: {
-                        container: 'my-swal-container'
-                    },
-                    didOpen: () => {
-                        document.querySelector('.my-swal-container').style.zIndex = "999999";
-                    }
+                confirmButtonColor: '#dc3545',
+                customClass: {
+                    container: 'my-swal-container'
+                },
+                didOpen: () => {
+                    document.querySelector('.my-swal-container').style.zIndex = "999999";
+                }
             });
-            }, 500);
         @endif
-
-
     });
 </script>
 @endsection

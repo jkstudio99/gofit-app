@@ -77,11 +77,11 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="text-center align-middle">{{ number_format($user->activities_count) }}</td>
+                                    <td class="text-center align-middle">{{ number_format($user->runs_count) }}</td>
                                     <td class="text-end pe-3 align-middle">
                                         @php
-                                            $maxCount = $activeUsers->max('activities_count');
-                                            $percentage = ($maxCount > 0) ? ($user->activities_count / $maxCount * 100) : 0;
+                                            $maxCount = $activeUsers->max('runs_count');
+                                            $percentage = ($maxCount > 0) ? ($user->runs_count / $maxCount * 100) : 0;
                                         @endphp
                                         <div class="progress" style="height: 8px;">
                                             <div class="progress-bar bg-success" role="progressbar" style="width: {{ $percentage }}%"></div>
@@ -125,7 +125,7 @@
                                     <td>{{ $user->email }}</td>
                                     <td>{{ $user->firstname }} {{ $user->lastname }}</td>
                                     <td>{{ $user->created_at->format('d/m/Y') }}</td>
-                                    <td>{{ number_format($user->activities_count) }}</td>
+                                    <td>{{ number_format($user->runs_count) }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>

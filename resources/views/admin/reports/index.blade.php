@@ -2,6 +2,32 @@
 
 @section('title', 'รายงานและสถิติ')
 
+@section('styles')
+<style>
+    /* ทำให้ข้อความและไอคอนกลายเป็นสีขาวเมื่อ hover */
+    .btn-outline-primary:hover,
+    .btn-outline-success:hover,
+    .btn-outline-info:hover,
+    .btn-outline-danger:hover,
+    .btn-outline-secondary:hover {
+        color: white !important;
+    }
+
+    .btn-outline-primary:hover i,
+    .btn-outline-success:hover i,
+    .btn-outline-info:hover i,
+    .btn-outline-danger:hover i,
+    .btn-outline-secondary:hover i {
+        color: white !important;
+    }
+
+    /* เพิ่มเอฟเฟกต์การเปลี่ยนสีที่นุ่มนวลขึ้น */
+    .btn i, .btn {
+        transition: all 0.3s ease;
+    }
+</style>
+@endsection
+
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="m-0">รายงานและสถิติ</h1>
@@ -38,12 +64,6 @@
                                     <i class="fas fa-chevron-right text-muted"></i>
                                 </a>
                             </li>
-                            <li class="list-group-item border-0 px-0 py-2">
-                                <a href="{{ route('admin.run.heatmap') }}" class="text-decoration-none d-flex justify-content-between align-items-center">
-                                    <span><i class="fas fa-fire me-2 text-success"></i> แผนที่ความร้อนการวิ่ง</span>
-                                    <i class="fas fa-chevron-right text-muted"></i>
-                                </a>
-                            </li>
                         </ul>
                     </div>
                 </div>
@@ -76,12 +96,6 @@
                                     <i class="fas fa-chevron-right text-muted"></i>
                                 </a>
                             </li>
-                            <li class="list-group-item border-0 px-0 py-2">
-                                <a href="{{ route('admin.redeems') }}" class="text-decoration-none d-flex justify-content-between align-items-center">
-                                    <span><i class="fas fa-exchange-alt me-2 text-warning"></i> ประวัติการแลกรางวัล</span>
-                                    <i class="fas fa-chevron-right text-muted"></i>
-                                </a>
-                            </li>
                         </ul>
                     </div>
                 </div>
@@ -105,12 +119,6 @@
                             <li class="list-group-item border-0 px-0 py-2">
                                 <a href="{{ route('admin.health-articles.statistics') }}" class="text-decoration-none d-flex justify-content-between align-items-center">
                                     <span><i class="fas fa-chart-bar me-2 text-info"></i> สถิติบทความสุขภาพ</span>
-                                    <i class="fas fa-chevron-right text-muted"></i>
-                                </a>
-                            </li>
-                            <li class="list-group-item border-0 px-0 py-2">
-                                <a href="{{ route('admin.health-articles.comments') }}" class="text-decoration-none d-flex justify-content-between align-items-center">
-                                    <span><i class="fas fa-comments me-2 text-info"></i> ความคิดเห็นบทความ</span>
                                     <i class="fas fa-chevron-right text-muted"></i>
                                 </a>
                             </li>
@@ -178,34 +186,6 @@
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- เครื่องมือส่งออกข้อมูล -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white py-3">
-                    <h5 class="m-0 fw-bold">เครื่องมือส่งออกข้อมูล</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <p class="mb-0">ส่งออกข้อมูลในรูปแบบ Excel หรือ CSV สำหรับการวิเคราะห์เพิ่มเติม</p>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="d-flex justify-content-md-end gap-2">
-                                <button class="btn btn-sm btn-outline-success" id="export-excel">
-                                    <i class="fas fa-file-excel me-1"></i> Excel
-                                </button>
-                                <button class="btn btn-sm btn-outline-primary" id="export-csv">
-                                    <i class="fas fa-file-csv me-1"></i> CSV
-                                </button>
                             </div>
                         </div>
                     </div>

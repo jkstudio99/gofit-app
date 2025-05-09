@@ -200,9 +200,6 @@
                 <a href="{{ route('admin.run.calendar') }}" class="btn btn-sm btn-outline-primary">
                     <i class="fas fa-calendar-alt me-1"></i> ปฏิทินการวิ่ง
                 </a>
-                <a href="{{ route('admin.run.heatmap') }}" class="btn btn-sm btn-outline-primary">
-                    <i class="fas fa-fire-alt me-1"></i> แผนที่ความร้อน
-                </a>
             </div>
         </div>
         <div class="card-body">
@@ -395,20 +392,59 @@
 
         // Weekly Run Chart
         const chartData = @json($lastWeekStats ?? []);
-        const labels = chartData.map(item => item.date);
-        const counts = chartData.map(item => item.count);
+
+        // แสดงข้อมูลดิบในคอนโซลเพื่อดีบัก
+        console.log('Raw Chart Data:', chartData);
+
+        // แปลงรูปแบบวันที่ใหม่ทั้งหมด
+        const labels = chartData.map(item => {
+            // แปลงวันที่ให้เป็นรูปแบบไทย
+            const date = new Date(item.date);
+            console.log('Processing date:', item.date, date);
+
+            const thaiMonths = [
+                'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+                'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'
+            ];
+            const day = date.getDate();
+            const month = thaiMonths[date.getMonth()];
+
+            // บังคับเป็นปี พ.ศ. 2568 (ปีปัจจุบัน)
+            const currentYear = new Date().getFullYear();
+            const thaiYear = 68; // บังคับเป็น 68 เลย (2568)
+
+            const formattedDate = `${day} ${month} ${thaiYear}`;
+            console.log('Formatted to:', formattedDate);
+
+            return formattedDate;
+        });
+
+        console.log('Formatted labels:', labels);
 
         var options = {
             series: [{
                 name: 'จำนวนกิจกรรมการวิ่ง',
-                data: counts
+                data: chartData.map(item => item.count)
             }],
             chart: {
                 height: 350,
                 type: 'area',
                 toolbar: {
                     show: false
-                }
+                },
+                fontFamily: 'Prompt, sans-serif',
+                locales: [{
+                    name: 'th',
+                    options: {
+                        months: ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                                'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'],
+                        shortMonths: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+                                    'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'],
+                        days: ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'],
+                        shortDays: ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส']
+                    }
+                }],
+                defaultLocale: 'th'
             },
             dataLabels: {
                 enabled: false
@@ -429,6 +465,12 @@
             },
             xaxis: {
                 categories: labels,
+                labels: {
+                    style: {
+                        fontSize: '12px',
+                        fontFamily: 'Prompt, sans-serif'
+                    }
+                }
             },
             tooltip: {
                 y: {

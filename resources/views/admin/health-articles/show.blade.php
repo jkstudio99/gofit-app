@@ -140,6 +140,15 @@
         color: white;
         font-size: 15px;
     }
+
+    /* ปุ่มลบบทความให้เป็นสีขาวเสมอ */
+    .btn-danger, .btn-danger:hover, .btn-danger:focus, .btn-danger:active {
+        color: white !important;
+    }
+
+    .btn-danger i, .btn-danger:hover i {
+        color: white !important;
+    }
 </style>
 @endsection
 
@@ -151,13 +160,13 @@
             <a href="{{ route('admin.health-articles.index') }}" class="btn btn-outline-secondary me-2">
                 <i class="fas fa-arrow-left me-1"></i> กลับไปยังรายการบทความ
             </a>
-            <a href="{{ route('admin.health-articles.edit', $article->article_id) }}" class="btn article-action-btn btn-warning me-2">
-                <i class="fas fa-edit"></i>
+            <a href="{{ route('admin.health-articles.edit', $article->article_id) }}" class="btn btn-warning me-2">
+                <i class="fas fa-edit me-1"></i> แก้ไข
             </a>
-            <button type="button" class="btn article-action-btn btn-danger delete-article"
+            <button type="button" class="btn btn-danger delete-article"
                     data-article-id="{{ $article->article_id }}"
                     data-article-title="{{ $article->title }}">
-                <i class="fas fa-trash-alt"></i>
+                <i class="fas fa-trash-alt me-1"></i> ลบบทความ
             </button>
         </div>
     </div>
@@ -378,8 +387,8 @@
             @endif
 
             <div class="d-flex justify-content-end mt-3">
-                <a href="{{ route('admin.health-articles.edit', $article->article_id) }}" class="btn article-action-btn btn-warning me-2">
-                    <i class="fas fa-edit"></i>
+                <a href="{{ route('admin.health-articles.edit', $article->article_id) }}" class="btn btn-warning">
+                    <i class="fas fa-edit me-1"></i> แก้ไขบทความ
                 </a>
             </div>
         </div>

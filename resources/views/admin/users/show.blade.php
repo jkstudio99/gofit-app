@@ -30,6 +30,78 @@
         padding: 1rem 0;
     }
 
+    /* Button styling for action buttons - matching badges style */
+    .btn-info.badge-action-btn {
+        background-color: #3B82F6 !important;
+        border-color: #3B82F6 !important;
+        color: white !important;
+    }
+
+    .btn-info.badge-action-btn:hover {
+        background-color: #2563EB !important;
+        border-color: #2563EB !important;
+    }
+
+    .btn-warning.badge-action-btn {
+        background-color: #F59E0B !important;
+        border-color: #F59E0B !important;
+    }
+
+    .btn-warning.badge-action-btn:hover {
+        background-color: #D97706 !important;
+        border-color: #D97706 !important;
+    }
+
+    .btn-secondary.badge-action-btn {
+        background-color: #6B7280 !important;
+        border-color: #6B7280 !important;
+    }
+
+    .btn-secondary.badge-action-btn:hover {
+        background-color: #4B5563 !important;
+        border-color: #4B5563 !important;
+    }
+
+    .btn-danger.badge-action-btn {
+        background-color: #EF4444 !important;
+        border-color: #EF4444 !important;
+    }
+
+    .btn-danger.badge-action-btn:hover {
+        background-color: #DC2626 !important;
+        border-color: #DC2626 !important;
+    }
+
+    .btn-danger i, .btn-danger.badge-action-btn i,
+    .btn-info.badge-action-btn i,
+    .btn-secondary.badge-action-btn i {
+        color: white !important;
+    }
+
+    /* Make buttons circular and ensure proper icon alignment */
+    .badge-action-btn {
+        border-radius: 50% !important;
+        width: 36px !important;
+        height: 36px !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 3px !important;
+    }
+
+    .badge-action-btn i {
+        font-size: 0.875rem !important;
+    }
+
+    /* For action buttons that include text */
+    .badge-action-btn.with-text {
+        border-radius: 0.5rem !important;
+        width: auto !important;
+        height: auto !important;
+        padding: 0.375rem 0.75rem !important;
+    }
+
     /* SweetAlert2 Custom Styles */
     .swal2-styled.swal2-confirm {
         background-color: #2DC679 !important;
@@ -251,17 +323,26 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="d-flex justify-content-between align-items-center">
-                <h1 class="h3 mb-0">ข้อมูลผู้ใช้</h1>
+                <h1 class="h3 mb-0">รายละเอียดผู้ใช้</h1>
                 <div>
                     <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary me-2">
                         <i class="fas fa-arrow-left me-1"></i> กลับไปยังรายการ
                     </a>
-                    <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-warning me-2">
-                        <i class="fas fa-edit me-1"></i> แก้ไข
+                    <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-warning badge-action-btn" title="แก้ไขข้อมูล">
+                        <i class="fas fa-edit"></i>
                     </a>
-                    <a href="{{ route('admin.users.reset-password', $user) }}" class="btn btn-info me-2 text-white">
-                        <i class="fas fa-key me-1"></i> รีเซ็ตรหัสผ่าน
+                    <a href="{{ route('admin.users.reset-password', $user) }}" class="btn btn-secondary badge-action-btn" title="รีเซ็ตรหัสผ่าน">
+                        <i class="fas fa-key"></i>
                     </a>
+                    @if(Auth::id() != $user->user_id)
+                    <button type="button" class="btn btn-danger badge-action-btn" id="deleteUserBtn" title="ลบผู้ใช้นี้">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <form id="deleteUserForm" action="{{ route('admin.users.destroy', $user) }}" method="POST" style="display: none;">
+                        @csrf
+                        @method('DELETE')
+                    </form>
+                    @endif
                 </div>
             </div>
         </div>

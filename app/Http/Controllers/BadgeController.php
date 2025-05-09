@@ -113,7 +113,7 @@ class BadgeController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('badge_name', 'like', "%{$search}%")
-                  ->orWhere('badge_description', 'like', "%{$search}%");
+                  ->orWhere('badge_desc', 'like', "%{$search}%");
             });
         }
 
@@ -155,15 +155,50 @@ class BadgeController extends Controller
             ? round(($userBadgeCount / ($badgeCount * $totalUsers)) * 100)
             : 0;
 
-        return view('admin.badges.index', compact(
-            'badges',
-            'badgeTypes',
-            'sortField',
-            'sortDirection',
-            'totalUsers',
-            'recentBadges',
-            'unlockRate'
-        ));
+        return view('admin.badges.index', compact('badges', 'badgeTypes', 'sortField', 'sortDirection', 'totalUsers', 'recentBadges', 'unlockRate'));
+    }
+
+    /**
+     * API endpoint for AJAX badge search
+     */
+    public function apiSearch(Request $request)
+    {
+        $query = Badge::query();
+
+        // Search functionality
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('badge_name', 'like', "%{$search}%")
+                  ->orWhere('badge_desc', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by badge type
+        if ($request->has('type') && !empty($request->type)) {
+            $query->where('type', $request->type);
+        }
+
+        // Sort options
+        $sortField = $request->get('sort', 'created_at');
+        $sortDirection = $request->get('direction', 'desc');
+
+        $allowedSortFields = ['badge_name', 'created_at', 'type', 'criteria'];
+        if (!in_array($sortField, $allowedSortFields)) {
+            $sortField = 'created_at';
+        }
+
+        $query->orderBy($sortField, $sortDirection);
+
+        // Get badges with count of users who earned each badge
+        $badges = $query->withCount('users')->paginate(50);
+
+        return response()->json([
+            'success' => true,
+            'html' => view('admin.badges.partials.badge_list', compact('badges'))->render(),
+            'pagination' => view('admin.badges.partials.pagination', compact('badges'))->render(),
+            'count' => $badges->total()
+        ]);
     }
 
     /**

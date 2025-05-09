@@ -9,7 +9,7 @@
     /* Badge Cards */
     .badge-card {
         transition: all 0.3s ease;
-        border-radius: 10px;
+        border-radius: 12px;
         overflow: hidden;
         position: relative;
         box-shadow: 0 3px 10px rgba(0,0,0,0.1);
@@ -18,7 +18,7 @@
 
     .badge-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
     }
 
     .badge-card.unlocked:hover {
@@ -26,17 +26,17 @@
     }
 
     .badge-img-container {
-        height: 120px;
+        height: 150px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: transparent;
-        padding: 15px;
+        background-color: #f8f9fa;
     }
 
     .badge-img {
-        max-height: 90px;
-        max-width: 90px;
+        max-height: 120px;
+        width: auto;
+        max-width: 80%;
         object-fit: contain;
         transition: all 0.3s ease;
     }
@@ -51,22 +51,19 @@
 
     .badge-type {
         position: absolute;
-        top: 10px;
-        right: 10px;
-        font-size: 0.7rem;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        top: 15px;
+        left: 15px;
+        z-index: 2;
+        border-radius: 8px;
+        padding: 5px 8px;
+        font-size: 0.75rem;
     }
 
     .badge-stats {
         position: absolute;
-        top: 10px;
-        left: 10px;
-        font-size: 0.7rem;
+        top: 15px;
+        right: 15px;
+        z-index: 2;
     }
 
     .badge-overlay {
@@ -97,23 +94,23 @@
 
     /* Stats Cards */
     .badge-stat-card {
-        border-radius: 10px;
+        border-radius: 12px;
         transition: all 0.3s ease;
     }
 
     .badge-stat-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08) !important;
     }
 
     .badge-stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 48px;
-        height: 48px;
-        border-radius: 10px;
-        font-size: 20px;
+        font-size: 1.5rem;
     }
 
     /* Progress bars */
@@ -143,18 +140,20 @@
 
     /* Badge Category Styling */
     .badge-category-section {
-        border-radius: 10px;
-        overflow: hidden;
+        border-radius: 12px;
+        padding: 15px;
+        background-color: #f8f9fa;
+        margin-bottom: 25px;
     }
 
     .badge-type-icon {
         width: 40px;
         height: 40px;
-        border-radius: 10px;
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.25rem;
+        font-size: 1.2rem;
     }
 
     .badge-type-header {
@@ -221,13 +220,13 @@
     }
 
     .badge-action-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-right: 5px;
+        border-radius: 8px;
     }
 
     /* Make delete button icons white */
@@ -264,6 +263,21 @@
         border-radius: 10px;
         padding: 15px;
         margin-bottom: 20px;
+    }
+
+    /* CSS สำหรับแสดง loading */
+    .loading-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        padding: 20px;
     }
 </style>
 @endsection
@@ -340,12 +354,12 @@
     <!-- Search and Filter -->
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <form action="{{ route('admin.badges.index') }}" method="GET" class="row g-3">
+            <div class="row g-3">
                 <div class="col-md-6">
                     <div class="input-group">
-                        <input type="text" name="search" class="form-control search-box"
+                        <input type="text" id="search-input" class="form-control search-box"
                                placeholder="ค้นหาตามชื่อหรือคำอธิบาย..." value="{{ request('search') }}">
-                        <button class="btn btn-primary" type="submit">
+                        <button class="btn btn-primary" id="search-button" type="button">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
@@ -362,7 +376,7 @@
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <label class="form-label">ประเภทเหรียญตรา</label>
-                                <select name="type" class="form-select">
+                                <select id="type-filter" class="form-select">
                                     <option value="">ทั้งหมด</option>
                                     @foreach($badgeTypes as $type)
                                         <option value="{{ $type }}" {{ request('type') == $type ? 'selected' : '' }}>
@@ -386,7 +400,7 @@
 
                             <div class="col-md-4">
                                 <label class="form-label">เรียงตาม</label>
-                                <select name="sort" class="form-select">
+                                <select id="sort-filter" class="form-select">
                                     <option value="created_at" {{ $sortField == 'created_at' ? 'selected' : '' }}>วันที่สร้าง</option>
                                     <option value="badge_name" {{ $sortField == 'badge_name' ? 'selected' : '' }}>ชื่อเหรียญตรา</option>
                                     <option value="type" {{ $sortField == 'type' ? 'selected' : '' }}>ประเภท</option>
@@ -396,24 +410,24 @@
 
                             <div class="col-md-4">
                                 <label class="form-label">ลำดับ</label>
-                                <select name="direction" class="form-select">
+                                <select id="direction-filter" class="form-select">
                                     <option value="asc" {{ $sortDirection == 'asc' ? 'selected' : '' }}>น้อยไปมาก</option>
                                     <option value="desc" {{ $sortDirection == 'desc' ? 'selected' : '' }}>มากไปน้อย</option>
                                 </select>
                             </div>
 
                             <div class="col-12 text-end mt-3">
-                                <a href="{{ route('admin.badges.index') }}" class="btn btn-outline-secondary me-2">
+                                <button type="button" id="reset-filter" class="btn btn-outline-secondary me-2">
                                     <i class="fas fa-undo me-1"></i> รีเซ็ตตัวกรอง
-                                </a>
-                                <button type="submit" class="btn btn-primary">
+                                </button>
+                                <button type="button" id="apply-filter" class="btn btn-primary">
                                     <i class="fas fa-filter me-1"></i> กรอง
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 
@@ -425,304 +439,39 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title m-0">
                             <i class="fas fa-medal me-2 text-primary"></i>รายการเหรียญตรา
-                            @if(request()->hasAny(['search', 'type', 'sort']))
-                            <span class="badge bg-success ms-2">
-                                <i class="fas fa-filter me-1"></i> กำลังแสดงผลลัพธ์: {{ $badges->total() }} รายการ
+                            <span id="filter-badge" class="badge bg-success ms-2 {{ !request()->hasAny(['search', 'type', 'sort']) ? 'd-none' : '' }}">
+                                <i class="fas fa-filter me-1"></i> กำลังแสดงผลลัพธ์: <span id="total-count">{{ $badges->total() }}</span> รายการ
                             </span>
-                            @endif
                         </h5>
                         <span class="badge bg-info text-white rounded-pill px-3 py-2">
-                            <i class="fas fa-medal me-1"></i> เหรียญตราทั้งหมด: {{ $badges->total() }}
+                            <i class="fas fa-medal me-1"></i> เหรียญตราทั้งหมด: <span id="all-count">{{ $badges->total() }}</span>
                         </span>
                     </div>
                 </div>
 
-                <div class="card-body pt-4">
-                    @if($badges->isEmpty())
-                        <div class="text-center py-5">
-                            <div class="text-muted mb-3">
-                                <i class="fas fa-medal fa-4x"></i>
+                <div class="card-body pt-4 position-relative">
+                    <!-- Loading spinner -->
+                    <div id="loading-spinner" class="loading-container d-none">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">กำลังโหลด...</span>
                             </div>
-                            <h5>ไม่พบข้อมูลเหรียญตรา</h5>
-                            <p class="text-muted">ไม่พบข้อมูลที่ตรงกับเงื่อนไขการค้นหา</p>
+                            <p class="mt-2">กำลังโหลดข้อมูล...</p>
                         </div>
-                    @else
-                        @php
-                            // จัดกลุ่มตามประเภท
-                            $badgesByType = $badges->groupBy('type');
+                    </div>
 
-                            // กำหนดลำดับการแสดงผล และชื่อแสดงผลภาษาไทย
-                            $typeOrder = ['distance', 'calories', 'streak', 'speed', 'event'];
-                            $typeNames = [
-                                'distance' => 'ระยะทาง',
-                                'calories' => 'แคลอรี่',
-                                'streak' => 'ต่อเนื่อง',
-                                'speed' => 'ความเร็ว',
-                                'event' => 'กิจกรรม'
-                            ];
-                            $typeIcons = [
-                                'distance' => 'fa-route',
-                                'calories' => 'fa-fire',
-                                'streak' => 'fa-calendar-check',
-                                'speed' => 'fa-tachometer-alt',
-                                'event' => 'fa-trophy'
-                            ];
-                            $typeColors = [
-                                'distance' => 'success',
-                                'calories' => 'danger',
-                                'streak' => 'success',
-                                'speed' => 'info',
-                                'event' => 'warning'
-                            ];
-                        @endphp
-
-                        <!-- แสดงเหรียญตามประเภท -->
-                        <ul class="nav nav-tabs mb-4" id="badgeTypeTabs" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-badges" type="button" role="tab" aria-controls="all-badges" aria-selected="true">
-                                    <i class="fas fa-medal me-1"></i> ทั้งหมด
-                                </button>
-                            </li>
-                            @foreach($typeOrder as $type)
-                                @if($badgesByType->has($type))
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="{{ $type }}-tab" data-bs-toggle="tab" data-bs-target="#{{ $type }}-badges" type="button" role="tab" aria-controls="{{ $type }}-badges" aria-selected="false">
-                                            <i class="fas {{ $typeIcons[$type] }} me-1"></i> {{ $typeNames[$type] }}
-                                            <span class="badge bg-{{ $typeColors[$type] }} ms-1 rounded-pill">{{ $badgesByType[$type]->count() }}</span>
-                                        </button>
-                                    </li>
-                                @endif
-                            @endforeach
-                        </ul>
-
-                        <div class="tab-content" id="badgeTypeContent">
-                            <!-- ทั้งหมด -->
-                            <div class="tab-pane fade show active" id="all-badges" role="tabpanel" aria-labelledby="all-tab">
-                                @foreach($typeOrder as $type)
-                                    @if($badgesByType->has($type))
-                                        <div class="badge-category-section mb-4">
-                                            <div class="d-flex align-items-center mb-3">
-                                                <div class="badge-type-icon bg-{{ $typeColors[$type] }} bg-opacity-10 text-{{ $typeColors[$type] }} me-2">
-                                                    <i class="fas {{ $typeIcons[$type] }}"></i>
-                                                </div>
-                                                <h5 class="mb-0">เหรียญ{{ $typeNames[$type] }}</h5>
-                                                <div class="ms-auto">
-                                                    <span class="badge bg-{{ $typeColors[$type] }}">
-                                                        {{ $badgesByType[$type]->count() }} รายการ
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4 mb-4">
-                                                @foreach($badgesByType[$type] as $badge)
-                                                    <div class="col">
-                                                        <div class="card h-100 badge-card"
-                                                             data-bs-toggle="tooltip"
-                                                             data-bs-placement="top"
-                                                             title="{{ $badge->badge_desc }}">
-
-                                                            <!-- Badge Type Indicator -->
-                                                            <span class="badge badge-type bg-{{ $typeColors[$type] }}">
-                                                                <i class="fas {{ $typeIcons[$type] }}"></i>
-                                                            </span>
-
-                                                            <!-- Users Badge -->
-                                                            <div class="badge-stats">
-                                                                <a href="{{ route('admin.badges.users', $badge) }}" class="badge bg-light text-dark">
-                                                                    <i class="fas fa-users me-1"></i> {{ $badge->users_count ?? 0 }} คน
-                                                                </a>
-                                                            </div>
-
-                                                            <div class="badge-img-container">
-                                                                @if($badge->badge_image)
-                                                                    <img src="{{ asset('storage/' . $badge->badge_image) }}"
-                                                                         class="badge-img"
-                                                                         alt="{{ $badge->badge_name }}">
-                                                                @else
-                                                                    <div class="text-center text-muted">
-                                                                        <i class="fas fa-medal fa-3x"></i>
-                                                                        <p class="small mt-2">ไม่มีรูปภาพ</p>
-                                                                    </div>
-                                                                @endif
-                                                            </div>
-
-                                                            <div class="card-body">
-                                                                <h6 class="card-title">{{ $badge->badge_name }}</h6>
-                                                                <p class="card-text badge-requirement small text-muted">
-                                                                    @if($badge->type == 'distance')
-                                                                        วิ่งระยะทางสะสม {{ $badge->criteria }} กม.
-                                                                    @elseif($badge->type == 'calories')
-                                                                        เผาผลาญแคลอรี่สะสม {{ $badge->criteria }} แคลอรี่
-                                                                    @elseif($badge->type == 'streak')
-                                                                        วิ่งติดต่อกัน {{ $badge->criteria }} วัน
-                                                                    @elseif($badge->type == 'speed')
-                                                                        วิ่งด้วยความเร็วเฉลี่ย {{ $badge->criteria }} กม./ชม.
-                                                                    @elseif($badge->type == 'event')
-                                                                        เข้าร่วมกิจกรรม {{ $badge->criteria }} ครั้ง
-                                                                    @else
-                                                                        {{ $badge->criteria }}
-                                                                    @endif
-                                                                </p>
-
-                                                                <!-- แสดงคะแนนที่จะได้รับ -->
-                                                                <div class="badge-points small fw-bold">
-                                                                    <span class="d-inline-block bg-warning bg-opacity-10 text-warning rounded-pill px-2 py-1 mt-1">
-                                                                        <i class="fas fa-coins me-1"></i> {{ $badge->points ?? 100 }} คะแนน
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-
-                                                            <div class="card-footer bg-white py-2">
-                                                                <div class="d-flex justify-content-center">
-                                                                    <a href="{{ route('admin.badges.show', $badge) }}" class="btn btn-sm btn-info badge-action-btn me-2 text-white" title="ดูรายละเอียด">
-                                                                        <i class="fas fa-eye"></i>
-                                                                    </a>
-                                                                    <a href="{{ route('admin.badges.edit', $badge) }}" class="btn btn-sm btn-warning badge-action-btn me-2" title="แก้ไข">
-                                                                        <i class="fas fa-edit"></i>
-                                                                    </a>
-                                                                    <button type="button" class="btn btn-sm btn-danger badge-action-btn delete-badge"
-                                                                            title="ลบ" data-badge-id="{{ $badge->badge_id }}"
-                                                                            data-badge-name="{{ $badge->badge_name }}"
-                                                                            data-users-count="{{ $badge->users_count ?? 0 }}">
-                                                                        <i class="fas fa-trash"></i>
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @endif
-                                @endforeach
-                            </div>
-
-                            <!-- แท็บแยกตามประเภท -->
-                            @foreach($typeOrder as $type)
-                                @if($badgesByType->has($type))
-                                    <div class="tab-pane fade" id="{{ $type }}-badges" role="tabpanel" aria-labelledby="{{ $type }}-tab">
-                                        <div class="badge-type-header mb-4">
-                                            <div class="d-flex align-items-center">
-                                                <div class="badge-type-icon bg-{{ $typeColors[$type] }} bg-opacity-10 text-{{ $typeColors[$type] }} me-3">
-                                                    <i class="fas {{ $typeIcons[$type] }}"></i>
-                                                </div>
-                                                <div>
-                                                    <h4 class="mb-1">เหรียญ{{ $typeNames[$type] }}</h4>
-                                                    <p class="text-muted mb-0">
-                                                        @if($type == 'distance')
-                                                            เหรียญที่ผู้ใช้จะได้รับเมื่อวิ่งได้ระยะทางตามเป้าหมาย
-                                                        @elseif($type == 'calories')
-                                                            เหรียญที่ผู้ใช้จะได้รับเมื่อเผาผลาญแคลอรี่ตามเป้าหมาย
-                                                        @elseif($type == 'streak')
-                                                            เหรียญที่ผู้ใช้จะได้รับเมื่อวิ่งติดต่อกันตามจำนวนวัน
-                                                        @elseif($type == 'speed')
-                                                            เหรียญที่ผู้ใช้จะได้รับเมื่อวิ่งด้วยความเร็วเฉลี่ยตามเป้าหมาย
-                                                        @elseif($type == 'event')
-                                                            เหรียญที่ผู้ใช้จะได้รับเมื่อเข้าร่วมกิจกรรมตามจำนวนครั้ง
-                                                        @endif
-                                                    </p>
-                                                </div>
-                                                <div class="ms-auto">
-                                                    <span class="badge bg-{{ $typeColors[$type] }} rounded-pill px-3 py-2">
-                                                        <i class="fas fa-medal me-1"></i>
-                                                        {{ $badgesByType[$type]->count() }} รายการ
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
-                                            @foreach($badgesByType[$type] as $badge)
-                                                <div class="col">
-                                                    <div class="card h-100 badge-card"
-                                                         data-bs-toggle="tooltip"
-                                                         data-bs-placement="top"
-                                                         title="{{ $badge->badge_desc }}">
-
-                                                        <!-- Badge Type Indicator -->
-                                                        <span class="badge badge-type bg-{{ $typeColors[$type] }}">
-                                                            <i class="fas {{ $typeIcons[$type] }}"></i>
-                                                        </span>
-
-                                                        <!-- Users Badge -->
-                                                        <div class="badge-stats">
-                                                            <a href="{{ route('admin.badges.users', $badge) }}" class="badge bg-light text-dark">
-                                                                <i class="fas fa-users me-1"></i> {{ $badge->users_count ?? 0 }} คน
-                                                            </a>
-                                                        </div>
-
-                                                        <div class="badge-img-container">
-                                                            @if($badge->badge_image)
-                                                                <img src="{{ asset('storage/' . $badge->badge_image) }}"
-                                                                     class="badge-img"
-                                                                     alt="{{ $badge->badge_name }}">
-                                                            @else
-                                                                <div class="text-center text-muted">
-                                                                    <i class="fas fa-medal fa-3x"></i>
-                                                                    <p class="small mt-2">ไม่มีรูปภาพ</p>
-                                                                </div>
-                                                            @endif
-                                                        </div>
-
-                                                        <div class="card-body">
-                                                            <h6 class="card-title">{{ $badge->badge_name }}</h6>
-                                                            <p class="card-text badge-requirement small text-muted">
-                                                                @if($badge->type == 'distance')
-                                                                    วิ่งระยะทางสะสม {{ $badge->criteria }} กม.
-                                                                @elseif($badge->type == 'calories')
-                                                                    เผาผลาญแคลอรี่สะสม {{ $badge->criteria }} แคลอรี่
-                                                                @elseif($badge->type == 'streak')
-                                                                    วิ่งติดต่อกัน {{ $badge->criteria }} วัน
-                                                                @elseif($badge->type == 'speed')
-                                                                    วิ่งด้วยความเร็วเฉลี่ย {{ $badge->criteria }} กม./ชม.
-                                                                @elseif($badge->type == 'event')
-                                                                    เข้าร่วมกิจกรรม {{ $badge->criteria }} ครั้ง
-                                                                @else
-                                                                    {{ $badge->criteria }}
-                                                                @endif
-                                                            </p>
-
-                                                            <!-- แสดงคะแนนที่จะได้รับ -->
-                                                            <div class="badge-points small fw-bold">
-                                                                <span class="d-inline-block bg-warning bg-opacity-10 text-warning rounded-pill px-2 py-1 mt-1">
-                                                                    <i class="fas fa-coins me-1"></i> {{ $badge->points ?? 100 }} คะแนน
-                                                                </span>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="card-footer bg-white py-2">
-                                                            <div class="d-flex justify-content-center">
-                                                                <a href="{{ route('admin.badges.show', $badge) }}" class="btn btn-sm btn-info badge-action-btn me-2 text-white" title="ดูรายละเอียด">
-                                                                    <i class="fas fa-eye"></i>
-                                                                </a>
-                                                                <a href="{{ route('admin.badges.edit', $badge) }}" class="btn btn-sm btn-warning badge-action-btn me-2" title="แก้ไข">
-                                                                    <i class="fas fa-edit"></i>
-                                                                </a>
-                                                                <button type="button" class="btn btn-sm btn-danger badge-action-btn delete-badge"
-                                                                        title="ลบ" data-badge-id="{{ $badge->badge_id }}"
-                                                                        data-badge-name="{{ $badge->badge_name }}"
-                                                                        data-users-count="{{ $badge->users_count ?? 0 }}">
-                                                                    <i class="fas fa-trash"></i>
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @endif
-                            @endforeach
-                        </div>
-                    @endif
+                    <!-- Badges list container -->
+                    <div id="badges-list-container">
+                        @include('admin.badges.partials.badge_list')
+                    </div>
                 </div>
 
                 <div class="card-footer bg-white py-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="text-muted">
-                            แสดง {{ $badges->firstItem() ?? 0 }} ถึง {{ $badges->lastItem() ?? 0 }} จาก {{ $badges->total() }} รายการ
+                            แสดง {{ $badges->firstItem() ?? 0 }} ถึง {{ $badges->lastItem() ?? 0 }} จาก <span id="pagination-total">{{ $badges->total() }}</span> รายการ
                         </div>
-                        <div class="pagination-container">
+                        <div class="pagination-container" id="pagination-container">
                             {{ $badges->appends(request()->query())->links('pagination::bootstrap-4') }}
                         </div>
                     </div>
@@ -789,153 +538,258 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize tooltips
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
+        // Setup delete badge functionality with SweetAlert2
+        setupDeleteButtons();
+
+        // Timer สำหรับ debounce
+        let typingTimer;
+        const doneTypingInterval = 500; // เวลารอ 500 ms หลังจากพิมพ์เสร็จ
+
+        // AJAX search และตัวกรอง
+        const searchInput = document.getElementById('search-input');
+        const typeFilter = document.getElementById('type-filter');
+        const sortFilter = document.getElementById('sort-filter');
+        const directionFilter = document.getElementById('direction-filter');
+        const searchButton = document.getElementById('search-button');
+        const applyFilterButton = document.getElementById('apply-filter');
+        const resetFilterButton = document.getElementById('reset-filter');
+
+        // Event สำหรับ debounce การพิมพ์
+        searchInput.addEventListener('keyup', function() {
+            clearTimeout(typingTimer);
+            if (searchInput.value) {
+                typingTimer = setTimeout(fetchBadges, doneTypingInterval);
+            }
         });
 
-        // Handle filter badge clicks
-        document.querySelectorAll('.filter-badge').forEach(badge => {
-            badge.addEventListener('click', function() {
-                document.querySelectorAll('.filter-badge').forEach(b => {
-                    b.classList.remove('active');
+        // ให้ทุก element ที่เป็นตัวกรองทำงานเมื่อมีการเปลี่ยนแปลง
+        typeFilter.addEventListener('change', fetchBadges);
+        sortFilter.addEventListener('change', fetchBadges);
+        directionFilter.addEventListener('change', fetchBadges);
+
+        // ปุ่มค้นหา
+        searchButton.addEventListener('click', fetchBadges);
+
+        // ปุ่ม apply filter
+        applyFilterButton.addEventListener('click', fetchBadges);
+
+        // ปุ่ม reset filter
+        resetFilterButton.addEventListener('click', resetFilters);
+
+        // Pagination จะถูกจัดการใน fetchBadges และจะเป็นแบบ Ajax ด้วย
+        document.addEventListener('click', function(e) {
+            // ตรวจสอบว่า element ที่ click เป็นลิงก์หน้าหรือไม่
+            if (e.target.closest('.pagination a')) {
+                e.preventDefault();
+                const href = e.target.closest('a').getAttribute('href');
+                if (href) {
+                    fetchBadgesFromUrl(href);
+                }
+            }
+        });
+
+        // ฟังก์ชันดึงรางวัลจากพารามิเตอร์ปัจจุบัน
+        function fetchBadges() {
+            const searchValue = searchInput.value.trim();
+            const typeValue = typeFilter ? typeFilter.value : '';
+            const sortValue = sortFilter ? sortFilter.value : 'created_at';
+            const directionValue = directionFilter ? directionFilter.value : 'desc';
+
+            // แสดง loading spinner
+            document.getElementById('loading-spinner').classList.remove('d-none');
+
+            // สร้าง URL พร้อม query parameters
+            const url = new URL('{{ route("admin.badges.api.search") }}');
+            if (searchValue) url.searchParams.append('search', searchValue);
+            if (typeValue) url.searchParams.append('type', typeValue);
+            if (sortValue) url.searchParams.append('sort', sortValue);
+            if (directionValue) url.searchParams.append('direction', directionValue);
+
+            // ส่ง AJAX request
+            fetch(url.toString())
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // อัพเดต badges list
+                        document.getElementById('badges-list-container').innerHTML = data.html;
+
+                        // อัพเดต pagination
+                        document.getElementById('pagination-container').innerHTML = data.pagination;
+
+                        // อัพเดต count ถ้ามี
+                        const totalCountElement = document.getElementById('total-count');
+                        if (totalCountElement) {
+                            totalCountElement.textContent = data.count || 0;
+                        }
+                        const paginationTotalElement = document.getElementById('pagination-total');
+                        if (paginationTotalElement) {
+                            paginationTotalElement.textContent = data.count || 0;
+                        }
+                        const allCountElement = document.getElementById('all-count');
+                        if (allCountElement) {
+                            allCountElement.textContent = data.count || 0;
+                        }
+
+                        // แสดง/ซ่อน filter badge
+                        const filterBadge = document.getElementById('filter-badge');
+                        if (searchValue || typeValue || sortValue !== 'created_at' || directionValue !== 'desc') {
+                            filterBadge.classList.remove('d-none');
+                        } else {
+                            filterBadge.classList.add('d-none');
+                        }
+
+                        // ติดตั้ง event listeners สำหรับปุ่มลบ
+                        setupDeleteButtons();
+
+                        // Initialize tooltips
+                        reinitializeTooltips();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching badges:', error);
+                    Swal.fire({
+                        title: 'เกิดข้อผิดพลาด!',
+                        text: 'ไม่สามารถดึงข้อมูลได้ กรุณาลองใหม่อีกครั้ง',
+                        icon: 'error',
+                        confirmButtonText: 'ตกลง'
+                    });
+                })
+                .finally(() => {
+                    // ซ่อน loading spinner
+                    document.getElementById('loading-spinner').classList.add('d-none');
                 });
-                this.classList.add('active');
-            });
-        });
-
-        // Handle tab clicks - preserve selected tab on page reload using localStorage
-        const tabButtons = document.querySelectorAll('#badgeTypeTabs .nav-link');
-        const tabItems = document.querySelectorAll('.tab-pane');
-
-        // Check if there's a saved tab
-        const savedTab = localStorage.getItem('selectedAdminBadgeTab');
-        if (savedTab && document.getElementById(savedTab)) {
-            // Deactivate all tabs
-            tabButtons.forEach(button => button.classList.remove('active'));
-            tabItems.forEach(item => {
-                item.classList.remove('show', 'active');
-            });
-
-            // Activate the saved tab
-            document.getElementById(savedTab).classList.add('active');
-            const targetId = document.getElementById(savedTab).getAttribute('data-bs-target').substring(1);
-            document.getElementById(targetId).classList.add('show', 'active');
         }
 
-        // Handle tab clicks
-        tabButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                localStorage.setItem('selectedAdminBadgeTab', this.id);
+        // ฟังก์ชันดึงรางวัลจาก URL ที่กำหนด (สำหรับ pagination)
+        function fetchBadgesFromUrl(url) {
+            // แสดง loading spinner
+            document.getElementById('loading-spinner').classList.remove('d-none');
+
+            // ส่ง AJAX request
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // อัพเดต badges list
+                        document.getElementById('badges-list-container').innerHTML = data.html;
+
+                        // อัพเดต pagination
+                        document.getElementById('pagination-container').innerHTML = data.pagination;
+
+                        // ติดตั้ง event listeners สำหรับปุ่มลบ
+                        setupDeleteButtons();
+
+                        // Initialize tooltips
+                        reinitializeTooltips();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching badges:', error);
+                    Swal.fire({
+                        title: 'เกิดข้อผิดพลาด!',
+                        text: 'ไม่สามารถดึงข้อมูลได้ กรุณาลองใหม่อีกครั้ง',
+                        icon: 'error',
+                        confirmButtonText: 'ตกลง'
+                    });
+                })
+                .finally(() => {
+                    // ซ่อน loading spinner
+                    document.getElementById('loading-spinner').classList.add('d-none');
+                });
+        }
+
+        // ฟังก์ชัน reset filters
+        function resetFilters() {
+            searchInput.value = '';
+            if (typeFilter) typeFilter.value = '';
+            if (sortFilter) sortFilter.value = 'created_at';
+            if (directionFilter) directionFilter.value = 'desc';
+
+            // Fetch badges with reset filters
+            fetchBadges();
+        }
+
+        // Initialize tooltips
+        function reinitializeTooltips() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
             });
-        });
+        }
 
-        // กำหนดค่าเริ่มต้นสำหรับ SweetAlert2 ทั้งหมด
-        Swal.mixin({
-            customClass: {
-                confirmButton: 'swal-confirm-btn',
-                cancelButton: 'swal-cancel-btn',
-            }
-        });
+        // ฟังก์ชันตั้งค่า event listeners สำหรับปุ่มลบ
+        function setupDeleteButtons() {
+            document.querySelectorAll('.delete-badge').forEach(button => {
+                button.addEventListener('click', function() {
+                    const badgeId = this.getAttribute('data-badge-id');
+                    const badgeName = this.getAttribute('data-badge-name');
+                    const usersCount = parseInt(this.getAttribute('data-users-count') || '0');
 
-        // กำหนดสี CSS สำหรับปุ่ม SweetAlert
-        const style = document.createElement('style');
-        style.innerHTML = `
-            .swal2-confirm.swal-confirm-btn {
-                background-color: #2DC679 !important;
-                border-color: #2DC679 !important;
-                box-shadow: none !important;
-                margin-right: 10px;
-            }
-            .swal2-confirm:focus {
-                box-shadow: 0 0 0 3px rgba(45, 198, 121, 0.3) !important;
-            }
-            .swal2-actions {
-                justify-content: center !important;
-                gap: 10px;
-            }
-        `;
-        document.head.appendChild(style);
-
-        // Delete confirmation with SweetAlert2
-        const deleteButtons = document.querySelectorAll('.delete-badge');
-
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const badgeId = this.getAttribute('data-badge-id');
-                const badgeName = this.getAttribute('data-badge-name');
-                const usersCount = parseInt(this.getAttribute('data-users-count'));
-
-                let warningText = 'คุณแน่ใจหรือไม่ที่จะลบเหรียญตรา?';
-                if (usersCount > 0) {
-                    warningText += ` มีผู้ใช้ ${usersCount} คนที่ได้รับเหรียญตรานี้ ซึ่งจะถูกลบออกด้วย`;
-                }
-
-                Swal.fire({
-                    title: `ลบเหรียญตรา "${badgeName}"?`,
-                    html: `
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            คำเตือน: การลบเหรียญตราไม่สามารถกู้คืนได้
-                        </div>
-                        <p class="mt-3">${warningText}</p>
-                    `,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#2DC679', // GoFit primary color
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: '<i class="fas fa-trash me-1"></i> ลบเหรียญตรา',
-                    cancelButtonText: 'ยกเลิก',
-                    buttonsStyling: true,
-                    reverseButtons: false,
-                    customClass: {
-                        confirmButton: 'swal-confirm-btn',
-                        actions: 'justify-content-center gap-2'
+                    let confirmMessage = `คุณต้องการลบเหรียญตรา "${badgeName}" ใช่หรือไม่?`;
+                    if (usersCount > 0) {
+                        confirmMessage += `<br><br><span class="text-danger">เหรียญตรานี้มีผู้ใช้ได้รับแล้ว ${usersCount} คน การลบจะทำให้ผู้ใช้เหล่านั้นเสียเหรียญตรานี้ไป</span>`;
                     }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // สร้าง form สำหรับ submit การลบ
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = `/admin/badges/${badgeId}`;
 
-                        const csrfToken = document.createElement('input');
-                        csrfToken.type = 'hidden';
-                        csrfToken.name = '_token';
-                        csrfToken.value = '{{ csrf_token() }}';
+                    Swal.fire({
+                        title: 'ยืนยันการลบ',
+                        html: confirmMessage,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'ลบ',
+                        cancelButtonText: 'ยกเลิก',
+                        showLoaderOnConfirm: false // ปิดการแสดง loading
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Create form for deletion
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = `{{ url('admin/badges') }}/${badgeId}`;
+                            form.style.display = 'none';
 
-                        const methodField = document.createElement('input');
-                        methodField.type = 'hidden';
-                        methodField.name = '_method';
-                        methodField.value = 'DELETE';
+                            const csrfToken = document.createElement('input');
+                            csrfToken.type = 'hidden';
+                            csrfToken.name = '_token';
+                            csrfToken.value = '{{ csrf_token() }}';
 
-                        form.appendChild(csrfToken);
-                        form.appendChild(methodField);
-                        document.body.appendChild(form);
-                        form.submit();
-                    }
+                            const method = document.createElement('input');
+                            method.type = 'hidden';
+                            method.name = '_method';
+                            method.value = 'DELETE';
+
+                            form.appendChild(csrfToken);
+                            form.appendChild(method);
+                            document.body.appendChild(form);
+                            form.submit();
+                        }
+                    });
                 });
             });
+        }
+
+        // Initialize tooltips on page load
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
         });
 
-        // Display SweetAlert for session message if exists
+        // Display alerts for success/error messages
         @if(session('success'))
             Swal.fire({
+                icon: 'success',
                 title: 'สำเร็จ!',
                 text: "{{ session('success') }}",
-                icon: 'success',
-                confirmButtonColor: '#2DC679',
-                confirmButtonText: 'ตกลง'
+                timer: 3000,
+                showConfirmButton: false
             });
         @endif
 
         @if(session('error'))
             Swal.fire({
-                title: 'ผิดพลาด!',
-                text: "{{ session('error') }}",
                 icon: 'error',
-                confirmButtonColor: '#2DC679',
+                title: 'เกิดข้อผิดพลาด!',
+                text: "{{ session('error') }}",
                 confirmButtonText: 'ตกลง'
             });
         @endif

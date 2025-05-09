@@ -32,8 +32,8 @@ class ReportController extends Controller
                                 ->whereYear('created_at', now()->year)
                                 ->count();
 
-        $activeUsers = User::withCount('activities')
-                        ->orderBy('activities_count', 'desc')
+        $activeUsers = User::withCount('runs')
+                        ->orderBy('runs_count', 'desc')
                         ->limit(10)
                         ->get();
 

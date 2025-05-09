@@ -137,6 +137,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/users/{user}/reset-password', [AdminController::class, 'resetPassword'])->name('users.update-password');
     Route::post('/users/{user}/update-profile-image', [AdminController::class, 'updateProfileImage'])->name('users.update-profile-image');
 
+    // API สำหรับ Live Search ผู้ใช้
+    Route::get('/api/users', [AdminController::class, 'apiUsers'])->name('api.users');
+
     // Image Upload for Summernote Editor
     Route::post('/upload/image', [AdminHealthArticleController::class, 'uploadImage'])->name('upload.image');
 
@@ -157,6 +160,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Rewards management
     Route::get('/rewards', [RewardController::class, 'admin'])->name('rewards');
+    Route::get('/rewards/api/search', [RewardController::class, 'apiSearch'])->name('rewards.api.search');
     Route::get('/rewards/statistics', [RewardController::class, 'statistics'])->name('rewards.statistics');
     Route::get('/rewards/create', [RewardController::class, 'create'])->name('rewards.create');
     Route::post('/rewards', [RewardController::class, 'store'])->name('rewards.store');
@@ -164,9 +168,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/rewards/{reward}/edit', [RewardController::class, 'edit'])->name('rewards.edit');
     Route::put('/rewards/{reward}', [RewardController::class, 'update'])->name('rewards.update');
     Route::delete('/rewards/{reward}', [RewardController::class, 'destroy'])->name('rewards.destroy');
+    Route::patch('/rewards/{reward}/toggle-active', [RewardController::class, 'toggleActive'])->name('rewards.toggle-active');
 
     // Redeems history
     Route::get('/redeems', [App\Http\Controllers\RedeemController::class, 'adminIndex'])->name('redeems');
+    Route::get('/redeems/api/search', [App\Http\Controllers\RedeemController::class, 'apiSearch'])->name('redeems.api.search');
     Route::post('/redeems/{redeem}/status', [App\Http\Controllers\RedeemController::class, 'updateStatus'])->name('redeems.update-status');
 
     // สถิติเป้าหมายของผู้ใช้
@@ -316,3 +322,8 @@ Route::prefix('tour')->middleware(['auth'])->group(function () {
     Route::get('/user-settings', [App\Http\Controllers\OnboardingController::class, 'getUserTourSettings'])
         ->name('tour.user-settings');
 });
+
+// Admin Routes for badges
+Route::get('/admin/badges', [BadgeController::class, 'admin'])->name('admin.badges.index');
+Route::get('/admin/badges/api/search', [BadgeController::class, 'apiSearch'])->name('admin.badges.api.search');
+Route::get('/admin/badges/create', [BadgeController::class, 'create'])->name('admin.badges.create');

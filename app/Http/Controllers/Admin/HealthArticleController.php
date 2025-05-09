@@ -256,61 +256,201 @@ class HealthArticleController extends Controller
     }
 
     /**
-     * Display the statistics for all health articles.
+     * Get views chart data for the last 7 days
      *
+     * @return array
+     */
+    private function getViewsChartData($range = 'week', $startDate = null, $endDate = null)
+    {
+        // กำหนดช่วงเวลาตามที่เลือก
+        $now = Carbon::now();
+        $start = null;
+        $end = $now->copy()->endOfDay();
+        $format = 'd/m'; // รูปแบบการแสดงวันที่เริ่มต้น
+        $interval = '1 day'; // ช่วงเวลาระหว่างจุดในกราฟ
+
+        switch ($range) {
+            case 'week':
+                $start = $now->copy()->subDays(6)->startOfDay();
+                break;
+            case 'month':
+                $start = $now->copy()->subDays(29)->startOfDay();
+                break;
+            case 'quarter':
+                $start = $now->copy()->subMonths(3)->startOfDay();
+                $format = 'd/m/Y';
+                $interval = '1 week';
+                break;
+            case 'year':
+                $start = $now->copy()->subYear()->startOfDay();
+                $format = 'M Y';
+                $interval = '1 month';
+                break;
+            case 'all':
+                // หาวันที่เก่าที่สุดจากบทความ
+                $oldestArticle = HealthArticle::orderBy('created_at', 'asc')->first();
+                if ($oldestArticle) {
+                    $start = Carbon::parse($oldestArticle->created_at)->startOfDay();
+                } else {
+                    $start = $now->copy()->subYear()->startOfDay();
+                }
+                $format = 'M Y';
+                $interval = '1 month';
+                break;
+            case 'custom':
+                if ($startDate && $endDate) {
+                    $start = Carbon::parse($startDate)->startOfDay();
+                    $end = Carbon::parse($endDate)->endOfDay();
+
+                    // ปรับรูปแบบการแสดงผลตามช่วงเวลา
+                    $diffInDays = $start->diffInDays($end);
+                    if ($diffInDays <= 14) {
+                        $format = 'd/m';
+                        $interval = '1 day';
+                    } elseif ($diffInDays <= 60) {
+                        $format = 'd/m/Y';
+                        $interval = '1 week';
+                    } else {
+                        $format = 'M Y';
+                        $interval = '1 month';
+                    }
+                } else {
+                    $start = $now->copy()->subDays(6)->startOfDay();
+                }
+                break;
+            default:
+                $start = $now->copy()->subDays(6)->startOfDay();
+        }
+
+        // สร้างช่วงวันที่สำหรับแสดงในกราฟ
+        $labels = [];
+        $viewCounts = [];
+
+        // กำหนดจุดข้อมูลตามช่วงเวลาที่เลือก
+        if ($interval == '1 day') {
+            // แสดงข้อมูลรายวัน
+            $current = $start->copy();
+            while ($current <= $end) {
+                $dateStr = $current->format('Y-m-d');
+                $labels[] = $current->format($format);
+
+                // ดึงยอดวิวของวันนั้น
+                $viewCount = HealthArticle::whereDate('created_at', '<=', $dateStr)
+                    ->sum('view_count');
+
+                $viewCounts[] = $viewCount;
+                $current->addDay();
+            }
+        } elseif ($interval == '1 week') {
+            // แสดงข้อมูลรายสัปดาห์
+            $current = $start->copy()->startOfWeek();
+            while ($current <= $end) {
+                $weekEnd = $current->copy()->endOfWeek();
+                if ($weekEnd > $end) {
+                    $weekEnd = $end->copy();
+                }
+
+                $labels[] = $current->format($format) . ' - ' . $weekEnd->format($format);
+
+                // ดึงยอดวิวของสัปดาห์นั้น
+                $viewCount = HealthArticle::whereDate('created_at', '<=', $weekEnd->format('Y-m-d'))
+                    ->sum('view_count');
+
+                $viewCounts[] = $viewCount;
+                $current->addWeek();
+            }
+        } else {
+            // แสดงข้อมูลรายเดือน
+            $current = $start->copy()->startOfMonth();
+            while ($current <= $end) {
+                $labels[] = $current->format($format);
+
+                // ดึงยอดวิวของเดือนนั้น
+                $viewCount = HealthArticle::whereDate('created_at', '<=', $current->endOfMonth()->format('Y-m-d'))
+                    ->sum('view_count');
+
+                $viewCounts[] = $viewCount;
+                $current->addMonth();
+            }
+        }
+
+        return [
+            'labels' => $labels,
+            'views' => $viewCounts
+        ];
+    }
+
+    /**
+     * Display statistics about health articles.
+     *
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function statistics()
+    public function statistics(Request $request)
     {
-        // Get the most viewed articles
+        // กำหนดค่าเริ่มต้นสำหรับตัวกรอง
+        $range = $request->input('range', 'month');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        // ดึงบทความที่มีผู้เข้าชมมากที่สุด
         $mostViewedArticles = HealthArticle::published()
                                ->orderBy('view_count', 'desc')
                                ->limit(5)
                                ->get();
 
-        // Since we don't have the likes table yet, just use the published articles
+        // ดึงบทความที่มีผู้ถูกใจมากที่สุด
         $mostLikedArticles = HealthArticle::published()
-                              ->orderBy('created_at', 'desc')
+                              ->withCount('likes')
+                              ->orderBy('likes_count', 'desc')
                               ->limit(5)
                               ->get();
 
-        // Since we don't have the comments table yet, just use the published articles
+        // ดึงบทความที่มีความคิดเห็นมากที่สุด
         $mostCommentedArticles = HealthArticle::published()
-                                  ->orderBy('created_at', 'desc')
+                                  ->withCount('comments')
+                                  ->orderBy('comments_count', 'desc')
                                   ->limit(5)
                                   ->get();
 
-        // Get recent articles
+        // ดึงบทความล่าสุด
         $recentArticles = HealthArticle::published()
                           ->orderBy('created_at', 'desc')
                           ->limit(5)
                           ->get();
 
-        // Get stats by category
+        // ดึงสถิติตามหมวดหมู่
         $categoryStats = ArticleCategory::withCount(['articles' => function($query) {
                             $query->where('is_published', true);
                         }])
                         ->orderBy('articles_count', 'desc')
                         ->get();
 
-        // Define category colors for the chart
+        // กำหนดสีสำหรับแต่ละหมวดหมู่
         $categoryColors = [
             '#2DC679', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6',
             '#EC4899', '#10B981', '#6366F1', '#F97316', '#14B8A6'
         ];
 
-        // Create views chart data (last 7 days)
-        $viewsChart = $this->getViewsChartData();
+        // สร้างข้อมูลกราฟตามช่วงเวลาที่เลือก
+        $viewsChart = $this->getViewsChartData($range, $startDate, $endDate);
 
-        // Get total counts
+        // ดึงจำนวนรวมทั้งหมด
         $totalArticles = HealthArticle::count();
         $publishedArticles = HealthArticle::where('is_published', true)->count();
         $totalViews = HealthArticle::sum('view_count');
 
-        // Set placeholders for counts from tables that don't exist yet
-        $totalLikes = 0;
-        $totalComments = 0;
-        $totalShares = 0;
+        // ตรวจสอบการมีอยู่ของตารางก่อนที่จะดึงข้อมูล
+        try {
+            $totalLikes = DB::table('tb_article_likes')->count();
+            $totalComments = DB::table('tb_article_comments')->count();
+            $totalShares = DB::table('tb_article_shares')->count();
+        } catch (\Exception $e) {
+            // กำหนดค่าเริ่มต้นเป็น 0 ในกรณีที่ตารางไม่มีอยู่
+            $totalLikes = 0;
+            $totalComments = 0;
+            $totalShares = 0;
+        }
 
         return view('admin.health-articles.statistics', compact(
             'mostViewedArticles',
@@ -325,34 +465,11 @@ class HealthArticleController extends Controller
             'totalViews',
             'totalLikes',
             'totalComments',
-            'totalShares'
+            'totalShares',
+            'range',
+            'startDate',
+            'endDate'
         ));
-    }
-
-    /**
-     * Get views chart data for the last 7 days
-     *
-     * @return array
-     */
-    private function getViewsChartData()
-    {
-        $days = 7;
-        $range = [];
-        $views = [];
-
-        // Get date range
-        for ($i = $days - 1; $i >= 0; $i--) {
-            $date = Carbon::now()->subDays($i)->format('Y-m-d');
-            $range[] = Carbon::now()->subDays($i)->format('d/m');
-
-            // Count views for each day (placeholder for now)
-            $views[] = rand(10, 100); // Random placeholder data
-        }
-
-        return [
-            'labels' => $range,
-            'views' => $views
-        ];
     }
 
     /**
