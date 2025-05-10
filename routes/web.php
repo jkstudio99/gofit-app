@@ -23,6 +23,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// หน้านโยบายความเป็นส่วนตัว
+Route::get('/privacy-policy', function () {
+    return view('privacy-policy');
+});
+
 // Auth routes (มาจาก Laravel UI)
 Auth::routes();
 

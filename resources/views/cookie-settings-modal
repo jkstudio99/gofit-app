@@ -1,0 +1,3 @@
+            <div class="mt-4 text-center">
+                <a href="{{ url('/privacy-policy') }}" class="btn btn-link">ดูนโยบายความเป็นส่วนตัว</a>
+            </div>

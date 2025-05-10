@@ -173,7 +173,7 @@
 
                     <section class="mb-4">
                         <h2 class="h5 mb-3">7. ติดต่อเรา</h2>
-                        <p>หากคุณมีคำถามใด ๆ เกี่ยวกับเงื่อนไขเหล่านี้ โปรดติดต่อเราที่: <a href="mailto:support@gofit.app">support@gofit.app</a></p>
+                        <p>หากคุณมีคำถามใด ๆ เกี่ยวกับเงื่อนไขเหล่านี้ โปรดติดต่อเราที่: <a href="mailto:contact@gofitrunnow.com">contact@gofitrunnow.com</a></p>
                     </section>
                 </div>
             </div>
@@ -207,7 +207,6 @@
                         <ul>
                             <li><strong>ข้อมูลส่วนบุคคล</strong>: ชื่อ, อีเมล, หมายเลขโทรศัพท์, ที่อยู่, วันเกิด</li>
                             <li><strong>ข้อมูลบัญชี</strong>: ชื่อผู้ใช้, รหัสผ่าน (ในรูปแบบที่เข้ารหัส)</li>
-                            <li><strong>ข้อมูลสุขภาพและการออกกำลังกาย</strong>: น้ำหนัก, ส่วนสูง, กิจกรรมการออกกำลังกาย</li>
                         </ul>
                     </section>
 

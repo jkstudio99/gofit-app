@@ -37,6 +37,9 @@
         <!-- FontAwesome -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
 
+        <!-- SweetAlert2 -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
         <!-- Styles -->
         @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
@@ -647,6 +650,312 @@
                 text-align: left;
             }
         }
+
+        /* Back to Top Button Styles */
+        .back-to-top {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            display: none;
+            z-index: 99;
+            width: 44px;
+            height: 44px;
+            text-align: center;
+            padding: 0;
+            line-height: 44px;
+            border-radius: 50%;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Cookie Banner Styles - Compact Version */
+        .cookie-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(33, 37, 41, 0.85); /* เพิ่มความโปร่งใสจาก 0.95 เป็น 0.85 */
+            color: #f8f9fa;
+            z-index: 1000;
+            font-size: 0.9rem;
+            box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.2);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .cookie-content {
+            display: none; /* ซ่อนรูปแบบเก่า */
+        }
+
+        .cookie-content-compact {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0.75rem 1rem;
+        }
+
+        .cookie-buttons {
+            display: none; /* ซ่อนรูปแบบเก่า */
+        }
+
+        .cookie-buttons-compact {
+            display: flex;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .cookie-buttons-compact .btn {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .cookie-buttons-compact .btn-light {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: transparent;
+            color: white;
+        }
+
+        .cookie-buttons-compact .btn-light:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .cookie-buttons-compact .btn-primary {
+            background-color: #2DC679;
+            border-color: #2DC679;
+        }
+
+        .cookie-buttons-compact .btn-primary:hover {
+            background-color: #25a464;
+            border-color: #25a464;
+        }
+
+        .cookie-content-compact a {
+            color: #4ECDC4;
+            text-decoration: none;
+        }
+
+        .cookie-content-compact a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .cookie-content-compact {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.75rem;
+                padding: 0.75rem;
+            }
+        }
+
+        /* Cookie Modal Styles */
+        .cookie-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cookie-modal-content {
+            background-color: white;
+            border-radius: 0.5rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            margin: 0 auto; /* Add center margin */
+        }
+
+        .cookie-modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative; /* Ensure this is a positioned container */
+        }
+
+        .cookie-modal-body {
+            padding: 1.5rem;
+        }
+
+        .cookie-modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            text-align: right;
+        }
+
+        .close-button {
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: #333;
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .close-button:hover {
+            background-color: #e0e0e0;
+            color: #000;
+        }
+
+        .cookie-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .cookie-option:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .cookie-option h5 {
+            margin-bottom: 0.5rem;
+        }
+
+        .cookie-option p {
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+
+        /* Switch Toggle */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: #2DC679;
+        }
+
+        input:disabled + .slider {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .slider.round {
+            border-radius: 24px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* Cookie Confirmation Message */
+        .cookie-confirmation {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(33, 37, 41, 0.9);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 30px;
+            z-index: 1000;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            opacity: 1;
+            transition: opacity 0.5s ease;
+            text-align: center;
+        }
+
+        .cookie-confirmation p {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .cookie-confirmation i {
+            color: #2DC679;
+        }
+
+        .colored-toast.swal2-icon-success {
+            background-color: transparent !important;
+            color: #2DC679 !important;
+            border: 2px solid #2DC679 !important;
+        }
+
+        .colored-toast .swal2-title {
+            color: #2DC679 !important;
+            font-size: 1rem !important;
+        }
+
+        .colored-toast .swal2-close {
+            color: #2DC679 !important;
+        }
+
+        .colored-toast .swal2-html-container {
+            color: #2DC679 !important;
+        }
         </style>
     </head>
 <body>
@@ -813,7 +1122,7 @@
             <div class="text-center mb-5 fade-in">
                 <span class="badge bg-primary-light text-primary mb-3 rounded-pill px-3 py-2">ข้อมูลสถิติ</span>
                 <h2 class="section-title text-center">เป็นส่วนหนึ่งกับชุมชนผู้รักสุขภาพ</h2>
-                <p class="lead text-muted col-md-8 mx-auto">ร่วมเป็นส่วนหนึ่งกับชุมชนคนรักสุขภาพที่มากกว่า 10,000 คนที่ได้เปลี่ยนแปลงชีวิตด้วย GoFit</p>
+                <p class="lead text-muted col-md-8 mx-auto">ร่วมเป็นส่วนหนึ่งกับชุมชนคนรักสุขภาพที่มากกว่า 1,000 คน ที่ได้เปลี่ยนแปลงชีวิตด้วย GoFit</p>
             </div>
             <div class="row text-center">
                 <div class="col-md-4 mb-4 mb-md-0">
@@ -824,7 +1133,7 @@
                 </div>
                 <div class="col-md-4 mb-4 mb-md-0">
                     <div class="stats-counter" data-count="10000">
-                        <div class="stats-number"><span class="counter-value">10,000</span></div>
+                        <div class="stats-number"><span class="counter-value">500</span></div>
                         <div class="stats-label">กิโลเมตร</div>
                     </div>
                 </div>
@@ -1003,6 +1312,11 @@
             </div>
             <div class="text-center copyright">
                 <p>&copy; {{ date('Y') }} GoFit Web Application. All rights reserved.</p>
+                <div class="mt-2">
+                    <a href="{{ url('/privacy-policy') }}" class="text-muted mx-2">นโยบายความเป็นส่วนตัว</a>
+                    <span class="text-muted">|</span>
+                    <a href="#" id="cookie-settings-footer" class="text-muted mx-2">การตั้งค่าคุกกี้</a>
+                </div>
             </div>
         </div>
     </footer>
@@ -1300,7 +1614,6 @@
             if (closeCookieSettingsBtn) {
                 closeCookieSettingsBtn.addEventListener('click', function() {
                     document.getElementById('cookie-settings-modal').style.display = 'none';
-                    document.getElementById('cookie-banner').style.display = 'block';
                 });
             }
 
@@ -1354,18 +1667,20 @@
         }
 
         function showCookieConfirmation() {
-            const confirmation = document.getElementById('cookie-confirmation');
-            if (confirmation) {
-                confirmation.style.display = 'block';
-
-                setTimeout(function() {
-                    confirmation.style.opacity = '0';
-                    setTimeout(function() {
-                        confirmation.style.display = 'none';
-                        confirmation.style.opacity = '1';
-                    }, 500);
-                }, 3000);
-            }
+            // Use SweetAlert for confirmation
+            Swal.fire({
+                position: 'bottom-end',
+                icon: 'success',
+                title: 'บันทึกการตั้งค่าคุกกี้แล้ว',
+                showConfirmButton: false,
+                timer: 1500,
+                toast: true,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'colored-toast'
+                },
+                iconColor: '#2DC679'
+            });
         }
 
         function applyCookieSettings(preferences) {
@@ -1374,11 +1689,13 @@
             // Apply functional cookies if enabled
             if (preferences.functional) {
                 // Example: enable theme preferences, language settings
+                console.log('Functional cookies enabled');
             }
 
             // Apply analytics cookies if enabled
             if (preferences.analytics) {
                 // Initialize analytics with respectful tracking
+                console.log('Analytics cookies enabled');
                 if (typeof gtag === 'function') {
                     // Google Analytics consent
                     gtag('consent', 'update', {
@@ -1387,6 +1704,7 @@
                 }
             } else {
                 // Deny analytics tracking
+                console.log('Analytics cookies disabled');
                 if (typeof gtag === 'function') {
                     gtag('consent', 'update', {
                         'analytics_storage': 'denied'
@@ -1397,6 +1715,7 @@
             // Apply marketing cookies if enabled
             if (preferences.marketing) {
                 // Example: initialize ad personalization
+                console.log('Marketing cookies enabled');
                 if (typeof gtag === 'function') {
                     // Google Ads consent
                     gtag('consent', 'update', {
@@ -1407,6 +1726,7 @@
                 }
             } else {
                 // Deny marketing tracking
+                console.log('Marketing cookies disabled');
                 if (typeof gtag === 'function') {
                     gtag('consent', 'update', {
                         'ad_storage': 'denied',
@@ -1443,18 +1763,31 @@
                 });
             }
         });
+
+        // ตรวจสอบและลบ comment ที่มี cookie functions และเพิ่มฟังก์ชั่นใหม่
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get link to cookie settings in footer
+            const cookieSettingsFooter = document.getElementById('cookie-settings-footer');
+            if (cookieSettingsFooter) {
+                cookieSettingsFooter.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.getElementById('cookie-settings-modal').style.display = 'block';
+                });
+            }
+
+            // เพิ่มในส่วนของ cookie functions ด้านล่างหรือตรงที่เหมาะสม
+        });
     </script>
     @endsection
 
     <!-- Cookie Consent Banner -->
     <div id="cookie-banner" class="cookie-banner" style="display: none;">
-        <div class="cookie-content">
-            <h4>เราใช้คุกกี้เพื่อมอบประสบการณ์ที่ดีที่สุดให้คุณ</h4>
-            <p>GoFit ใช้คุกกี้เพื่อปรับปรุงประสบการณ์การใช้งานของคุณ เพื่อวิเคราะห์การใช้งานเว็บไซต์ และเพื่อช่วยในกิจกรรมทางการตลาดของเรา <a href="{{ url('/privacy-policy') }}">นโยบายความเป็นส่วนตัว</a></p>
-            <div class="cookie-buttons">
-                <button id="accept-necessary-cookies" class="btn btn-gofit-outline">ยอมรับเฉพาะที่จำเป็น</button>
-                <button id="cookie-settings" class="btn btn-gofit-outline">ตั้งค่าคุกกี้</button>
-                <button id="accept-all-cookies" class="btn btn-gofit">ยอมรับทั้งหมด</button>
+        <div class="cookie-content-compact">
+            <span>เราใช้คุกกี้เพื่อมอบประสบการณ์ที่ดีที่สุดให้คุณ <a href="{{ url('/privacy-policy') }}" class="text-primary">นโยบายความเป็นส่วนตัว</a></span>
+            <div class="cookie-buttons-compact">
+                <button id="accept-necessary-cookies" class="btn btn-sm btn-light">เฉพาะที่จำเป็น</button>
+                <button id="cookie-settings" class="btn btn-sm btn-light">ตั้งค่า</button>
+                <button id="accept-all-cookies" class="btn btn-sm btn-primary">ยอมรับทั้งหมด</button>
             </div>
         </div>
     </div>
@@ -1463,40 +1796,47 @@
     <div id="cookie-settings-modal" class="cookie-modal" style="display: none;">
         <div class="cookie-modal-content">
             <div class="cookie-modal-header">
-                <h4>ตั้งค่าความเป็นส่วนตัวของคุกกี้</h4>
-                <button id="close-cookie-settings" class="close-button">&times;</button>
+                <h4 class="m-0">ตั้งค่าความเป็นส่วนตัวของคุกกี้</h4>
+                <button id="close-cookie-settings" class="close-button" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="cookie-modal-body">
+                <p class="text-muted mb-4">คุณสามารถปรับแต่งการตั้งค่าคุกกี้ได้ตามความต้องการ</p>
+
                 <div class="cookie-option">
                     <div>
                         <h5>คุกกี้ที่จำเป็น</h5>
-                        <p>คุกกี้เหล่านี้จำเป็นสำหรับการทำงานของเว็บไซต์และไม่สามารถปิดได้</p>
+                        <p>คุกกี้เหล่านี้จำเป็นสำหรับการทำงานของเว็บไซต์ และไม่สามารถปิดได้</p>
                     </div>
                     <label class="switch">
-                        <input type="checkbox" checked disabled>
+                        <input type="checkbox" checked disabled id="necessary-cookies">
                         <span class="slider round"></span>
                     </label>
                 </div>
+
                 <div class="cookie-option">
                     <div>
                         <h5>คุกกี้ฟังก์ชันการใช้งาน</h5>
-                        <p>ช่วยให้เว็บไซต์จดจำตัวเลือกของคุณ เช่น ธีม ภาษา และการตั้งค่าอื่นๆ</p>
+                        <p>ช่วยให้เราสามารถจดจำการตั้งค่าที่คุณเลือก เช่น ภาษา ธีม และการกำหนดค่าอื่นๆ</p>
                     </div>
                     <label class="switch">
                         <input type="checkbox" id="functional-cookies">
                         <span class="slider round"></span>
                     </label>
                 </div>
+
                 <div class="cookie-option">
                     <div>
-                        <h5>คุกกี้การวิเคราะห์</h5>
-                        <p>ช่วยให้เราสามารถเข้าใจวิธีที่ผู้ใช้โต้ตอบกับเว็บไซต์ของเรา</p>
+                        <h5>คุกกี้วิเคราะห์</h5>
+                        <p>ช่วยให้เราเข้าใจวิธีที่ผู้ใช้โต้ตอบกับเว็บไซต์ของเรา และปรับปรุงประสบการณ์การใช้งาน</p>
                     </div>
                     <label class="switch">
                         <input type="checkbox" id="analytics-cookies">
                         <span class="slider round"></span>
                     </label>
                 </div>
+
                 <div class="cookie-option">
                     <div>
                         <h5>คุกกี้การตลาด</h5>
@@ -1506,6 +1846,10 @@
                         <input type="checkbox" id="marketing-cookies">
                         <span class="slider round"></span>
                     </label>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <a href="{{ url('/privacy-policy') }}" class="btn btn-link">ดูนโยบายความเป็นส่วนตัว</a>
                 </div>
             </div>
             <div class="cookie-modal-footer">
@@ -1519,197 +1863,286 @@
         <p><i class="fas fa-check-circle"></i> บันทึกการตั้งค่าคุกกี้แล้ว</p>
     </div>
 
-    <style>
-        /* Cookie Banner Styles */
-        .cookie-banner {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: white;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            padding: 1rem;
-            border-top: 3px solid var(--color-primary);
-        }
+    <!-- Back to Top Button -->
+    <a id="back-to-top" href="#" class="btn btn-primary btn-lg back-to-top" role="button" aria-label="Scroll to top">
+        <i class="fas fa-chevron-up"></i>
+    </a>
 
-        .cookie-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem;
-        }
+    <script>
+        // Back to Top Button functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the button
+            var backToTopButton = document.getElementById("back-to-top");
 
-        .cookie-buttons {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            margin-top: 1rem;
-        }
+            // When the user scrolls down 300px from the top of the document, show the button
+            window.onscroll = function() {
+                if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                    backToTopButton.style.display = "block";
+                } else {
+                    backToTopButton.style.display = "none";
+                }
+            };
 
-        /* Cookie Modal Styles */
-        .cookie-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1001;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+            // When the user clicks on the button, scroll to the top of the document
+            backToTopButton.addEventListener("click", function(e) {
+                e.preventDefault();
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
 
-        .cookie-modal-content {
-            background-color: white;
-            border-radius: var(--radius-lg);
-            max-width: 600px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .cookie-modal-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .cookie-modal-body {
-            padding: 1.5rem;
-        }
-
-        .cookie-modal-footer {
-            padding: 1.5rem;
-            border-top: 1px solid rgba(0, 0, 0, 0.1);
-            text-align: right;
-        }
-
-        .close-button {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--color-text-secondary);
-        }
-
-        .cookie-option {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        }
-
-        .cookie-option:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-
-        .cookie-option h5 {
-            margin-bottom: 0.5rem;
-        }
-
-        .cookie-option p {
-            color: var(--color-text-secondary);
-            margin-bottom: 0;
-        }
-
-        /* Switch Toggle */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-            flex-shrink: 0;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-        }
-
-        input:checked + .slider {
-            background-color: var(--color-primary);
-        }
-
-        input:disabled + .slider {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-
-        .slider.round {
-            border-radius: 24px;
-        }
-
-        .slider.round:before {
-            border-radius: 50%;
-        }
-
-        /* Cookie Confirmation */
-        .cookie-confirmation {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: var(--color-primary);
-            color: white;
-            padding: 10px 20px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-md);
-            z-index: 1000;
-            transition: opacity 0.5s;
-        }
-
-        .cookie-confirmation p {
-            margin: 0;
-        }
-
-        .cookie-confirmation i {
-            margin-right: 8px;
-        }
-
-        @media (max-width: 768px) {
-            .cookie-buttons {
-                flex-direction: column;
+            // Get link to cookie settings in footer
+            const cookieSettingsFooter = document.getElementById('cookie-settings-footer');
+            if (cookieSettingsFooter) {
+                cookieSettingsFooter.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showCookieSettings();
+                });
             }
 
-            .cookie-buttons button {
-                width: 100%;
-                margin-bottom: 0.5rem;
+            // Cookie Consent Banner functionality
+            // Check if user already accepted cookies
+            if (!localStorage.getItem('cookie_consent')) {
+                setTimeout(function() {
+                    const cookieBanner = document.getElementById('cookie-banner');
+                    if (cookieBanner) {
+                        cookieBanner.style.display = 'block';
+                    }
+                }, 1000);
+            }
+
+            // Handle accept all cookies
+            const acceptAllBtn = document.getElementById('accept-all-cookies');
+            if (acceptAllBtn) {
+                acceptAllBtn.addEventListener('click', function() {
+                    acceptCookies('all');
+                });
+            }
+
+            // Handle accept necessary cookies only
+            const acceptNecessaryBtn = document.getElementById('accept-necessary-cookies');
+            if (acceptNecessaryBtn) {
+                acceptNecessaryBtn.addEventListener('click', function() {
+                    acceptCookies('necessary');
+                });
+            }
+
+            // Handle cookie settings
+            const cookieSettingsBtn = document.getElementById('cookie-settings');
+            if (cookieSettingsBtn) {
+                cookieSettingsBtn.addEventListener('click', function() {
+                    document.getElementById('cookie-banner').style.display = 'none';
+                    showCookieSettings();
+                });
+            }
+        });
+
+        function showCookieSettings() {
+            // Get saved preferences
+            let functional = false;
+            let analytics = false;
+            let marketing = false;
+
+            try {
+                const savedPreferences = localStorage.getItem('cookie_preferences');
+                if (savedPreferences) {
+                    const preferences = JSON.parse(savedPreferences);
+                    functional = preferences.functional || false;
+                    analytics = preferences.analytics || false;
+                    marketing = preferences.marketing || false;
+                }
+            } catch (e) {
+                console.error('Error loading cookie preferences:', e);
+            }
+
+            // Show SweetAlert for cookie settings
+            Swal.fire({
+                title: 'ตั้งค่าความเป็นส่วนตัวของคุกกี้',
+                html: `
+                    <div class="text-start">
+                        <div class="mb-4">
+                            <p class="text-muted">คุณสามารถปรับแต่งการตั้งค่าคุกกี้ได้ตามความต้องการ</p>
+                        </div>
+
+                        <div class="mb-3 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-1">คุกกี้ที่จำเป็น</h5>
+                                    <p class="text-muted small mb-0">คุกกี้เหล่านี้จำเป็นสำหรับการทำงานของเว็บไซต์ และไม่สามารถปิดได้</p>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="swal-necessary-cookies" checked disabled>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-1">คุกกี้ฟังก์ชันการใช้งาน</h5>
+                                    <p class="text-muted small mb-0">ช่วยให้เราสามารถจดจำการตั้งค่าที่คุณเลือก เช่น ภาษา ธีม และการกำหนดค่าอื่นๆ</p>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="swal-functional-cookies" ${functional ? 'checked' : ''}>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-1">คุกกี้วิเคราะห์</h5>
+                                    <p class="text-muted small mb-0">ช่วยให้เราเข้าใจวิธีที่ผู้ใช้โต้ตอบกับเว็บไซต์ของเรา และปรับปรุงประสบการณ์การใช้งาน</p>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="swal-analytics-cookies" ${analytics ? 'checked' : ''}>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-1">คุกกี้การตลาด</h5>
+                                    <p class="text-muted small mb-0">ช่วยให้เราสามารถแสดงโฆษณาที่เกี่ยวข้องกับความสนใจของคุณ</p>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="swal-marketing-cookies" ${marketing ? 'checked' : ''}>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'บันทึกการตั้งค่า',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#2DC679',
+                width: '32rem',
+                customClass: {
+                    title: 'text-dark'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const preferences = {
+                        necessary: true, // Always true
+                        functional: document.getElementById('swal-functional-cookies').checked,
+                        analytics: document.getElementById('swal-analytics-cookies').checked,
+                        marketing: document.getElementById('swal-marketing-cookies').checked
+                    };
+
+                    localStorage.setItem('cookie_consent', 'custom');
+                    localStorage.setItem('cookie_preferences', JSON.stringify(preferences));
+
+                    // Show confirmation
+                    showCookieConfirmation();
+
+                    // Apply cookie settings
+                    applyCookieSettings(preferences);
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    // Refresh the page when user clicks Cancel
+                    location.reload();
+                }
+            });
+        }
+
+        function acceptCookies(type) {
+            // Save consent to localStorage
+            localStorage.setItem('cookie_consent', type);
+
+            const preferences = {
+                necessary: true,
+                functional: type === 'all',
+                analytics: type === 'all',
+                marketing: type === 'all'
+            };
+
+            localStorage.setItem('cookie_preferences', JSON.stringify(preferences));
+
+            // Hide banner
+            const cookieBanner = document.getElementById('cookie-banner');
+            if (cookieBanner) {
+                cookieBanner.style.display = 'none';
+            }
+
+            // Show confirmation
+            showCookieConfirmation();
+
+            // Apply cookie settings
+            applyCookieSettings(preferences);
+        }
+
+        function showCookieConfirmation() {
+            // Use SweetAlert for confirmation
+            Swal.fire({
+                position: 'bottom-end',
+                icon: 'success',
+                title: 'บันทึกการตั้งค่าคุกกี้แล้ว',
+                showConfirmButton: false,
+                timer: 1500,
+                toast: true,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'colored-toast'
+                },
+                iconColor: '#2DC679'
+            });
+        }
+
+        function applyCookieSettings(preferences) {
+            // Apply necessary cookies - always enabled
+
+            // Apply functional cookies if enabled
+            if (preferences.functional) {
+                // Example: enable theme preferences, language settings
+                console.log('Functional cookies enabled');
+            }
+
+            // Apply analytics cookies if enabled
+            if (preferences.analytics) {
+                // Initialize analytics with respectful tracking
+                console.log('Analytics cookies enabled');
+                if (typeof gtag === 'function') {
+                    // Google Analytics consent
+                    gtag('consent', 'update', {
+                        'analytics_storage': 'granted'
+                    });
+                }
+            } else {
+                // Deny analytics tracking
+                console.log('Analytics cookies disabled');
+                if (typeof gtag === 'function') {
+                    gtag('consent', 'update', {
+                        'analytics_storage': 'denied'
+                    });
+                }
+            }
+
+            // Apply marketing cookies if enabled
+            if (preferences.marketing) {
+                // Example: initialize ad personalization
+                console.log('Marketing cookies enabled');
+                if (typeof gtag === 'function') {
+                    // Google Ads consent
+                    gtag('consent', 'update', {
+                        'ad_storage': 'granted',
+                        'ad_user_data': 'granted',
+                        'ad_personalization': 'granted'
+                    });
+                }
+            } else {
+                // Deny marketing tracking
+                console.log('Marketing cookies disabled');
+                if (typeof gtag === 'function') {
+                    gtag('consent', 'update', {
+                        'ad_storage': 'denied',
+                        'ad_user_data': 'denied',
+                        'ad_personalization': 'denied'
+                    });
+                }
             }
         }
-    </style>
+    </script>
 </body>
 </html>
 

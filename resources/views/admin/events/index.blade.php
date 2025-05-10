@@ -369,7 +369,7 @@
                                     @if($event->distance)
                                         <span class="badge bg-info text-white me-1">{{ $event->distance }} กม.</span>
                                     @endif
-                                    ผู้สร้าง: {{ $event->creator->name ?? 'N/A' }}
+                                    ผู้สร้าง: {{ $event->creator ? $event->creator->firstname.' '.$event->creator->lastname : 'admin' }}
                                 </div>
                             </td>
                             <td>
