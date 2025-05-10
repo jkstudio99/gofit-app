@@ -326,7 +326,7 @@
         }
 
         .footer-link::before {
-            content: '';
+            content: none; /* เปลี่ยนจาก '' เป็น none เพื่อไม่แสดงขีดเส้น */
             position: absolute;
             left: 0;
             top: 50%;
@@ -340,12 +340,12 @@
 
         .footer-link:hover {
             color: var(--color-primary);
-            padding-left: 10px;
+            padding-left: 0; /* เปลี่ยนจาก 10px เป็น 0 เพื่อไม่ให้ข้อความเลื่อน */
         }
 
         .footer-link:hover::before {
-            width: 5px;
-            opacity: 1;
+            width: 0; /* เปลี่ยนจาก 5px เป็น 0 เพื่อไม่แสดงขีด */
+            opacity: 0;
         }
 
         .social-icons {
