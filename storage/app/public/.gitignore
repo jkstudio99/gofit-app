@@ -1,2 +1,14 @@
 *
 !.gitignore
+
+# Ignore temporary files
+*.tmp
+*.temp
+
+# Don't ignore these directories and their contents
+!*/
+!*.jpg
+!*.jpeg
+!*.png
+!*.gif
+!*.webp
