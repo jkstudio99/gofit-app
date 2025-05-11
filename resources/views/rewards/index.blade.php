@@ -876,6 +876,9 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ asset('js/tour-settings-fix.js') }}"></script>
+<script src="{{ asset('js/badge-onboarding-fix.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize tooltips

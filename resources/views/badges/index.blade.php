@@ -918,6 +918,7 @@
 @endsection
 
 @section('scripts')
+<script src="{{ asset('js/badge-onboarding-fix.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize tooltips

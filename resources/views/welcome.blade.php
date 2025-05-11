@@ -1000,7 +1000,6 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6 mb-5 mb-lg-0 fade-in-left" data-animation-delay="0">
-                    <span class="badge bg-primary-light text-primary mb-3 rounded-pill px-3 py-2">เริ่มออกกำลังกายวันนี้</span>
                     <h1 class="display-4 fw-bold mb-4">ออกกำลังกายได้สนุก<br>ด้วย <span style="color: var(--color-primary);">GOFIT</span></h1>
                     <p class="lead mb-4">เว็บแอปพลิเคชันที่จะทำให้การออกกำลังกายของคุณสนุกมากขึ้นด้วยระบบเกมมิฟิเคชัน สะสมแต้ม รับเหรียญตรา และแลกของรางวัลมากมาย</p>
 

@@ -505,38 +505,6 @@
 
         <!-- Footer -->
         <footer>
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-4 mb-5 mb-lg-0">
-                        <a href="{{ url('/') }}">
-                            <img src="{{ asset('images/gofit-logo-text-black.svg') }}" alt="GoFit Logo" style="height: 2.5rem;" class="mb-4">
-                        </a>
-                        <p class="mb-4">GoFit คือเว็บแอปพลิเคชันที่จะเปลี่ยนการออกกำลังกายของคุณให้สนุกและมีแรงจูงใจมากขึ้นด้วยระบบเกมมิฟิเคชัน</p>
-                        <div class="social-icons">
-                            <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
-                            <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
-                        </div>
-                    </div>
-                    <div class="col-lg-2 col-md-4 mb-5 mb-md-0">
-                        <h5 class="footer-title">เมนูหลัก</h5>
-                        <a href="{{ url('/') }}" class="footer-link">หน้าแรก</a>
-                        <a href="{{ url('/#features') }}" class="footer-link">ฟีเจอร์</a>
-                        <a href="{{ url('/#how-it-works') }}" class="footer-link">วิธีการใช้งาน</a>
-                    </div>
-                    <div class="col-lg-2 col-md-4 mb-5 mb-md-0">
-                        <h5 class="footer-title">บัญชีผู้ใช้</h5>
-                        <a href="{{ route('login') }}" class="footer-link">เข้าสู่ระบบ</a>
-                        <a href="{{ route('register') }}" class="footer-link">สมัครสมาชิก</a>
-                        <a href="{{ route('password.request') }}" class="footer-link">ลืมรหัสผ่าน</a>
-                    </div>
-                    <div class="col-lg-4 col-md-4">
-                        <h5 class="footer-title">ติดต่อเรา</h5>
-                        <p class="mb-2"><i class="fas fa-map-marker-alt me-2"></i> <a href="https://maps.google.com/?q=123 ถนนพระราม 9 แขวงห้วยขวาง กรุงเทพฯ 10310" target="_blank">123 ถนนพระราม 9 แขวงห้วยขวาง กรุงเทพฯ 10310</a></p>
-                        <p class="mb-2"><i class="fas fa-phone me-2"></i> <a href="tel:0993831496">099-383-1496</a></p>
-                        <p class="mb-2"><i class="fas fa-envelope me-2"></i> <a href="mailto:contact@gofitrunnow.com">contact@gofitrunnow.com</a></p>
-                    </div>
-                </div>
                 <div class="text-center copyright">
                     <p>&copy; {{ date('Y') }} GoFit Web Application. All rights reserved.</p>
                     <div class="mt-2">

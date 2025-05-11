@@ -245,18 +245,20 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ asset('js/tour-settings-fix.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // ปุ่มเริ่มทัวร์ใหม่
         document.querySelectorAll('.restart-tour-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const tourKey = this.getAttribute('data-tour-key');
-                const url = tourKey === 'dashboard' ? '/dashboard' :
-                            tourKey === 'run' ? '/run' :
-                            tourKey === 'badges' ? '/badges' :
-                            tourKey === 'rewards' ? '/rewards' : '/';
 
-                // อัปเดตสถานะเป็น pending
+                // Clear any previously set localStorage values for this tour
+                localStorage.removeItem(`tour_${tourKey}_skipped`);
+                localStorage.removeItem(`tour_${tourKey}_completed`);
+
+                // Set the tour to pending and show it again
                 fetch('/tour/update', {
                     method: 'POST',
                     headers: {
@@ -272,14 +274,42 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // ไปยังหน้าที่ต้องการพร้อมแสดงทัวร์
-                        window.location.href = url + '?tour=show';
+                        let tourPage = '/';
+
+                        // Redirect to the appropriate page based on tour key
+                        if (tourKey === 'dashboard') {
+                            tourPage = '/';
+                        } else if (tourKey === 'run') {
+                            tourPage = '/run';
+                        } else if (tourKey === 'badges') {
+                            tourPage = '/badges';
+                        } else if (tourKey === 'rewards') {
+                            tourPage = '/rewards';
+                        }
+
+                        // Show success message with SweetAlert
+                        Swal.fire({
+                            title: 'สำเร็จ!',
+                            text: 'รีเซ็ตการแนะนำเรียบร้อยแล้ว',
+                            icon: 'success',
+                            confirmButtonColor: '#2DC679',
+                            confirmButtonText: 'ไปที่หน้านั้นเลย',
+                            showCancelButton: true,
+                            cancelButtonText: 'อยู่หน้านี้ต่อ',
+                            cancelButtonColor: '#6c757d'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = tourPage;
+                            } else {
+                                window.location.reload();
+                            }
+                        });
                     }
                 });
             });
         });
 
-        // Toggle แสดงอีกครั้ง
+        // Toggle การแสดงทัวร์อีกครั้ง
         document.querySelectorAll('.show-again-toggle').forEach(toggle => {
             toggle.addEventListener('change', function() {
                 const tourKey = this.getAttribute('data-tour-key');
@@ -297,26 +327,28 @@
                         show_again: showAgain
                     })
                 });
-            });
-        });
 
-        // ปุ่มรีเซ็ตทั้งหมด
-        document.getElementById('reset-all-tours').addEventListener('click', function() {
-            if (confirm('คุณต้องการรีเซ็ตการแนะนำการใช้งานทั้งหมดใช่หรือไม่?')) {
-                fetch('/tour/reset', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.reload();
+                // Show toast notification
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
                     }
                 });
-            }
-        });
+
+                Toast.fire({
+                    icon: 'success',
+                    title: showAgain ? 'เปิดการแสดงอีกครั้ง' : 'ปิดการแสดงอีกครั้ง'
+                });
+            });
+                });
+
+        // ปุ่มรีเซ็ตทั้งหมด (now handled by tour-settings-fix.js)
     });
 </script>
 @endsection

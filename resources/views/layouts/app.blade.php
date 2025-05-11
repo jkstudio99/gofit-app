@@ -1890,5 +1890,6 @@
 
     <!-- Tour Script -->
     <script src="{{ asset('js/app-tour.js') }}"></script>
+    <script src="{{ asset('js/tour-settings-fix.js') }}"></script>
 </body>
 </html>
