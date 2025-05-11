@@ -168,7 +168,7 @@
                 <div class="card-body pt-4">
                     @if($rewards->isEmpty())
                         <div class="text-center py-5">
-                            <img src="{{ asset('images/empty-rewards.svg') }}" alt="ไม่มีรางวัล" class="img-fluid mb-3" style="max-width: 200px;">
+                            <i class="fas fa-gift fa-5x text-secondary mb-3"></i>
                             <h4>ไม่พบรางวัล</h4>
                             <p class="text-muted">ขออภัย ไม่มีรางวัลในขณะนี้ กรุณาลองใหม่ในภายหลัง</p>
                         </div>
