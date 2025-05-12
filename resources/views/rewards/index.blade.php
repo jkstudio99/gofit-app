@@ -591,7 +591,7 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary">
                     <h5 class="mb-0">รายละเอียดการแลกรางวัล</h5>
                 </div>
                 <div class="card-body">

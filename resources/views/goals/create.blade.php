@@ -364,7 +364,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const activityTypeOtherContainer = document.getElementById('activity_type_other_container');
 
     activityTypeSelect.addEventListener('change', function() {
-        if (this.value === 'other') {
+        if (this.value === 'running_other') {
             activityTypeOtherContainer.style.display = 'block';
         } else {
             activityTypeOtherContainer.style.display = 'none';
@@ -372,7 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Initialize the activity_type_other field visibility
-    if (activityTypeSelect.value === 'other') {
+    if (activityTypeSelect.value === 'running_other') {
         activityTypeOtherContainer.style.display = 'block';
     }
 

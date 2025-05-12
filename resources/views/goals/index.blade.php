@@ -633,6 +633,44 @@
             </div>
         </div>
     </div>
+
+    <!-- เพิ่มส่วนอธิบายเกี่ยวกับเป้าหมาย -->
+    <div class="card shadow-sm mt-4">
+        <div class="card-header bg-primary">
+            <h5 class="mb-0">วิธีการตั้งเป้าหมายและติดตามความคืบหน้า</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-bullseye fa-3x text-primary"></i>
+                        </div>
+                        <h5>1. สร้างเป้าหมาย</h5>
+                        <p class="text-muted">ตั้งเป้าหมายที่ท้าทายแต่สามารถทำได้จริง เลือกประเภทที่เหมาะกับคุณ</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-running fa-3x text-primary"></i>
+                        </div>
+                        <h5>2. ออกกำลังกายสม่ำเสมอ</h5>
+                        <p class="text-muted">วิ่งและบันทึกผลเพื่อติดตามความคืบหน้าของเป้าหมาย</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-trophy fa-3x text-primary"></i>
+                        </div>
+                        <h5>3. รับรางวัล</h5>
+                        <p class="text-muted">เมื่อบรรลุเป้าหมาย คุณจะได้รับเหรียญและคะแนนพิเศษ</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
