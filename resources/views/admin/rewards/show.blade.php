@@ -231,18 +231,6 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="card-footer bg-white py-3">
-                    <div class="d-flex justify-content-end">
-                        <a href="{{ route('admin.rewards.edit', $reward) }}" class="btn btn-warning me-2">
-                            <i class="fas fa-edit me-2"></i>แก้ไขรางวัล
-                        </a>
-
-                        <button type="button" class="btn btn-danger delete-reward">
-                            <i class="fas fa-trash me-2"></i>ลบรางวัล
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
 

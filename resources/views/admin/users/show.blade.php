@@ -492,7 +492,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <div class="col-md-4 mb-3">
                                             <div class="card h-100">
                                                 <div class="card-body text-center">
-                                                    <img src="{{ asset('badges/' . $badge->badge_image) }}" alt="{{ $badge->badge_name }}" class="img-fluid mb-2" style="height: 80px;">
+                                                    <img src="{{ asset('storage/' . $badge->badge_image) }}" alt="{{ $badge->badge_name }}" class="img-fluid mb-2" style="height: 80px;">
                                                     <h5 class="card-title mb-1">{{ $badge->badge_name }}</h5>
                                                     <p class="text-muted small">ได้รับเมื่อ {{ $badge->pivot->created_at->format('d/m/Y') }}</p>
                                                     <p class="small">{{ $badge->badge_description }}</p>

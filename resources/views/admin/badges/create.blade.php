@@ -88,6 +88,11 @@
     #type-container .invalid-feedback-icon {
         display: none !important;
     }
+
+    /* ซ่อนไอคอน feedback ทั้งหมดสำหรับ dropdown เพื่อไม่ให้บังตัวเลือก */
+    #type-container .feedback-icon {
+        display: none !important;
+    }
 </style>
 @endsection
 

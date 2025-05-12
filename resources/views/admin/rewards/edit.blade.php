@@ -227,13 +227,6 @@
                                     อัพโหลดรูปภาพขนาดไม่เกิน 2MB (รองรับ: JPEG, PNG, GIF)
                                 </small>
                             </div>
-
-                            <div class="form-check mt-3">
-                                <input class="form-check-input" type="checkbox" name="remove_image" id="remove_image">
-                                <label class="form-check-label text-danger" for="remove_image">
-                                    ลบรูปภาพปัจจุบัน
-                                </label>
-                            </div>
                         </div>
                     </div>
                 </div>

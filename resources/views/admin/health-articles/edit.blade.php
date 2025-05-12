@@ -354,11 +354,11 @@
                         </div>
                         <div class="article-info-item">
                             <i class="fas fa-calendar-alt text-muted"></i>
-                            สร้างเมื่อ: {{ $article->created_at->format('d/m/Y H:i') }}
+                            สร้างเมื่อ: {{ $article->created_at->thaiFormat('j M y H:i') }} น.
                         </div>
                         <div class="article-info-item">
                             <i class="fas fa-edit text-muted"></i>
-                            แก้ไขล่าสุด: {{ $article->updated_at->format('d/m/Y H:i') }}
+                            แก้ไขล่าสุด: {{ $article->updated_at->thaiFormat('j M y H:i') }} น.
                         </div>
                         <div class="article-info-item">
                             <i class="fas fa-eye text-muted"></i>

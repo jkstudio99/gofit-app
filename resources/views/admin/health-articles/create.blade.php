@@ -312,7 +312,7 @@
                 </div>
 
                 <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-success btn-lg">
+                    <button type="submit" class="btn btn-primary btn-lg">
                         <i class="fas fa-save me-1"></i> บันทึกบทความ
                     </button>
                     <a href="{{ route('admin.health-articles.index') }}" class="btn btn-outline-secondary">

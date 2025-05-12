@@ -174,7 +174,7 @@
 
                         <div class="form-group mb-3">
                             <label class="form-label">วันที่สมัคร</label>
-                            <input type="text" class="form-control bg-light" value="{{ $user->created_at->format('d/m/Y H:i:s') }}" readonly disabled>
+                            <input type="text" class="form-control bg-light" value="{{ $user->created_at->thaiFormat('j M y H:i') }} น." readonly disabled>
                         </div>
                     </div>
                 </div>

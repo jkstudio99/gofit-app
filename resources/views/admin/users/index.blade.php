@@ -332,7 +332,7 @@
                                     <span class="badge badge-outline-danger"><i class="fas fa-ban me-1"></i>ระงับการใช้งาน</span>
                             @endif
                         </td>
-                        <td>{{ $user->created_at->format('d/m/Y H:i') }}</td>
+                        <td>{{ $user->created_at->thaiFormat('j M y H:i') }} น.</td>
                         <td>
                                 <div class="d-flex justify-content-center">
                                     <a href="{{ route('admin.users.show', $user) }}" class="btn btn-sm btn-info badge-action-btn me-2" title="ดูข้อมูล">
@@ -554,13 +554,23 @@
                     }
 
                     const createdAt = new Date(user.created_at);
-                    const formattedDate = createdAt.toLocaleDateString('th-TH', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
+                    const thaiMonths = [
+                        'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+                        'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'
+                    ];
+
+                    // แปลงเป็นปี พ.ศ.
+                    let thaiYear = createdAt.getFullYear() + 543;
+                    // ใช้เฉพาะเลข 2 หลักสุดท้ายของปี พ.ศ.
+                    thaiYear = thaiYear.toString().substr(-2);
+
+                    // สร้างวันที่ในรูปแบบไทย
+                    const formattedDate =
+                        createdAt.getDate() + ' ' +
+                        thaiMonths[createdAt.getMonth()] + ' ' +
+                        thaiYear + ' ' +
+                        createdAt.getHours().toString().padStart(2, '0') + ':' +
+                        createdAt.getMinutes().toString().padStart(2, '0') + ' น.';
 
                     html += `
                         <tr>

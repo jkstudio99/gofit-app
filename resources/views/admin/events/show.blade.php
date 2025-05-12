@@ -355,7 +355,7 @@
                                         <div class="d-flex align-items-center">
                                             @if($participant->user)
                                             @if($participant->user->profile_image)
-                                                <img src="{{ asset('storage/' . $participant->user->profile_image) }}"
+                                                <img src="{{ asset('profile_images/' . $participant->user->profile_image) }}"
                                                      class="participant-avatar me-2" alt="{{ $participant->user->username }}"
                                                      onerror="this.onerror=null; this.src='{{ asset('images/default-profile.jpg') }}';">
                                             @else
