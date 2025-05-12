@@ -94,7 +94,7 @@
             <div class="card border-0 shadow-sm rounded-3">
                 <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
                     <h5 class="m-0 fw-bold">สรุปข้อมูลรายเดือน ปี {{ $currentYear + 543 }}</h5>
-                    <div class="d-flex justify-content-end gap-2 mb-3">
+                    <div class="d-flex justify-content-end gap-2">
                         <a href="#" id="export-excel" class="btn btn-primary">
                             <i class="fas fa-file-excel me-1"></i> ส่งออก Excel
                         </a>
@@ -121,11 +121,28 @@
                                         'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
                                     ];
 
-                                    // สร้างข้อมูลรายเดือน (สมมติข้อมูล)
+                                    // สร้างข้อมูลรายเดือน
                                     $monthlyData = [];
+
+                                    // สร้างข้อมูลจำนวนกิจกรรมรายเดือน (ใช้ข้อมูลจาก $activitiesByMonth ถ้ามี)
+                                    $activitiesByMonthMap = [];
+
+                                    // ตรวจสอบว่า $activitiesByMonth มีหรือไม่
+                                    if (isset($activitiesByMonth)) {
+                                        foreach ($activitiesByMonth as $item) {
+                                            $activitiesByMonthMap[$item->month] = $item->count;
+                                        }
+                                    }
+
                                     for ($m = 1; $m <= 12; $m++) {
                                         $distance = 0;
                                         $calories = 0;
+                                        $activityCount = 0;
+
+                                        // หาข้อมูลจำนวนกิจกรรมจาก activitiesByMonth
+                                        if (isset($activitiesByMonthMap[$m])) {
+                                            $activityCount = $activitiesByMonthMap[$m];
+                                        }
 
                                         // หาข้อมูลระยะทางจาก distanceByMonth
                                         foreach ($distanceByMonth as $item) {
@@ -146,7 +163,7 @@
                                         $monthlyData[] = [
                                             'month' => $m,
                                             'month_name' => $monthNames[$m - 1],
-                                            'activities' => rand(10, 100), // สมมติค่า
+                                            'activities' => $activityCount,
                                             'distance' => $distance,
                                             'calories' => $calories
                                         ];
@@ -165,7 +182,7 @@
                             <tfoot>
                                 <tr class="table-light fw-bold">
                                     <td>รวมทั้งสิ้น</td>
-                                    <td class="text-center">{{ number_format($activitiesCount) }}</td>
+                                    <td class="text-center">{{ number_format(collect($monthlyData)->sum('activities')) }}</td>
                                     <td class="text-center">{{ number_format(collect($monthlyData)->sum('distance'), 2) }}</td>
                                     <td class="text-center">{{ number_format(collect($monthlyData)->sum('calories')) }}</td>
                                 </tr>
@@ -310,11 +327,12 @@
         const caloriesChart = new ApexCharts(document.getElementById('calories-chart'), caloriesOptions);
         caloriesChart.render();
 
-        // ตาราง DataTable
+        // ตาราง DataTable - กำหนดให้ไม่มีการเรียงลำดับเริ่มต้น
         $('#monthly-data').DataTable({
             paging: false,
             searching: false,
             info: false,
+            ordering: false, // ปิดการเรียงลำดับเพื่อให้เดือนเรียงตามปฏิทิน
             language: {
                 url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/th.json'
             }

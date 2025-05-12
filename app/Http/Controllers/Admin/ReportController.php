@@ -123,11 +123,22 @@ class ReportController extends Controller
                             ->orderBy('month')
                             ->get();
 
+        // เพิ่มการนับจำนวนกิจกรรมรายเดือน
+        $activitiesByMonth = Run::select(
+                                DB::raw('MONTH(created_at) as month'),
+                                DB::raw('COUNT(*) as count')
+                            )
+                            ->whereYear('created_at', $currentYear)
+                            ->groupBy('month')
+                            ->orderBy('month')
+                            ->get();
+
         return view('admin.reports.yearly', compact(
             'usersCount',
             'activitiesCount',
             'distanceByMonth',
             'caloriesByMonth',
+            'activitiesByMonth',
             'currentYear'
         ));
     }
