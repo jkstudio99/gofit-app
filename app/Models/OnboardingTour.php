@@ -10,6 +10,8 @@ class OnboardingTour extends Model
 {
     use HasFactory;
 
+    protected $table = 'tb_onboarding_tours';
+
     protected $fillable = [
         'user_id',
         'tour_key',
