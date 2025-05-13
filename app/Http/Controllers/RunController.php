@@ -341,7 +341,7 @@ class RunController extends Controller
 
         // Debug: log a sample of route data for one activity
         $sampleActivity = Run::where('user_id', $userId)
-            ->where('is_completed', true)
+            ->whereNotNull('end_time')
             ->orderBy('start_time', 'desc')
             ->first();
 
@@ -352,25 +352,48 @@ class RunController extends Controller
 
         // ดึงกิจกรรมทั้งหมดของผู้ใช้ปัจจุบัน (เฉพาะที่เสร็จสมบูรณ์แล้ว)
         $activities = Run::where('user_id', $userId)
-            ->where('is_completed', true) // Only show completed runs
+            ->whereNotNull('end_time')
             ->orderBy('start_time', 'desc')
             ->paginate(10);
 
         // คำนวณสถิติรวม (เฉพาะกิจกรรมที่เสร็จสมบูรณ์)
         $totalDistance = Run::where('user_id', $userId)
-            ->where('is_completed', true)
+            ->whereNotNull('end_time')
             ->sum('distance');
         $totalCalories = Run::where('user_id', $userId)
-            ->where('is_completed', true)
+            ->whereNotNull('end_time')
             ->sum('calories_burned');
-        $totalDuration = Run::where('user_id', $userId)
-            ->where('is_completed', true)
-            ->sum('duration');
 
-        // แปลงวินาทีเป็นรูปแบบชั่วโมง:นาที
+        // คำนวณ totalDuration ใหม่โดยตรวจสอบค่า duration และคำนวณจาก start_time และ end_time ถ้าจำเป็น
+        $totalDuration = 0;
+        $allCompletedActivities = Run::where('user_id', $userId)
+            ->whereNotNull('end_time')
+            ->get();
+
+        foreach ($allCompletedActivities as $activity) {
+            if ($activity->duration > 0) {
+                $totalDuration += $activity->duration;
+            } else {
+                // คำนวณเวลาจาก start_time และ end_time
+                if ($activity->start_time && $activity->end_time) {
+                    $startTime = $activity->start_time instanceof Carbon
+                        ? $activity->start_time
+                        : Carbon::parse($activity->start_time);
+
+                    $endTime = $activity->end_time instanceof Carbon
+                        ? $activity->end_time
+                        : Carbon::parse($activity->end_time);
+
+                    $totalDuration += $startTime->diffInSeconds($endTime);
+                }
+            }
+        }
+
+        // แปลงวินาทีเป็นรูปแบบชั่วโมง:นาที:วินาที
         $totalHours = floor($totalDuration / 3600);
         $totalMinutes = floor(($totalDuration % 3600) / 60);
-        $totalTime = sprintf('%02d:%02d', $totalHours, $totalMinutes);
+        $totalSeconds = $totalDuration % 60;
+        $totalTime = sprintf('%02d:%02d:%02d', $totalHours, $totalMinutes, $totalSeconds);
 
         return view('run.history', compact('activities', 'totalDistance', 'totalCalories', 'totalTime'));
     }

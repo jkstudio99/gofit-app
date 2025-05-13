@@ -180,6 +180,7 @@ class RunActivityController extends Controller
                 // บันทึกข้อมูลเพื่อไม่ให้เกิด error แต่แจ้งผู้ใช้ว่ามีการบันทึกซ้ำ
                 $activity->end_time = Carbon::now();
                 $activity->distance = $request->distance;
+                $activity->duration = $request->duration;
                 $activity->calories_burned = $request->calories;
                 $activity->average_speed = $request->average_speed;
                 $activity->route_data = $request->route_data;
@@ -194,6 +195,9 @@ class RunActivityController extends Controller
                 ]);
             }
 
+            // คำนวณระยะเวลาใหม่
+            $calculatedDuration = 0;
+
             // ตรวจสอบว่าเป็นการจบกิจกรรมที่ค้างอยู่หรือไม่
             $isEmergencyFinish = ($request->distance == 0 && $request->duration == 0 && $request->calories == 0);
 
@@ -203,32 +207,36 @@ class RunActivityController extends Controller
             // ถ้าเป็นการจบกิจกรรมที่ค้างอยู่ และไม่มีข้อมูลเพียงพอ ให้บันทึกข้อมูลน้อยที่สุด
             if ($isEmergencyFinish) {
                 // คำนวณระยะเวลาตั้งแต่เริ่มจนถึงตอนนี้
-                $durationSeconds = 0;
-
                 if (!empty($activity->start_time)) {
                     try {
                         $startTime = $activity->start_time instanceof Carbon
                             ? $activity->start_time
                             : Carbon::parse($activity->start_time);
 
-                        $durationSeconds = $startTime->diffInSeconds(Carbon::now());
+                        $calculatedDuration = $startTime->diffInSeconds(Carbon::now());
                     } catch (\Exception $e) {
                         // บันทึกข้อผิดพลาดแต่ไม่หยุดการทำงาน
                         Log::error('Error calculating duration: ' . $e->getMessage());
-                        $durationSeconds = 0;
+                        $calculatedDuration = 0;
                     }
                 }
 
                 $activity->distance = 0;
+                $activity->duration = $calculatedDuration;
                 $activity->calories_burned = 0;
                 $activity->average_speed = 0;
                 $activity->route_data = "[]";
                 $activity->notes = "กิจกรรมถูกจบโดยอัตโนมัติเนื่องจากไม่มีการบันทึกข้อมูล";
+
+                Log::info('บันทึกการวิ่งฉุกเฉิน: เวลาที่ใช้ = ' . $calculatedDuration . ' วินาที');
             } else {
                 // บันทึกข้อมูลปกติ
                 $activity->distance = $request->distance;
+                $activity->duration = $request->duration > 0 ? $request->duration : 0;
                 $activity->calories_burned = $request->calories;
                 $activity->average_speed = $request->average_speed;
+
+                Log::info('บันทึกข้อมูลการวิ่ง: เวลาที่ใช้ = ' . $request->duration . ' วินาที');
 
                 // Ensure route_data is a valid JSON string
                 try {
@@ -501,70 +509,79 @@ class RunActivityController extends Controller
     }
 
     /**
-     * Check if user has any active (unfinished) activities
+     * Check for active/unfinished activities
      */
     public function checkActiveActivity()
     {
         $user = Auth::user();
 
-        // Check if user has any unfinished activities
-        $unfinishedActivity = Run::where('user_id', $user->user_id)
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User not authenticated',
+                'has_active' => false
+            ], 401);
+        }
+
+        // ค้นหากิจกรรมที่ยังไม่เสร็จสิ้น
+        $activeActivity = Run::where('user_id', $user->user_id)
             ->whereNull('end_time')
             ->first();
 
-        if ($unfinishedActivity) {
-            // ตรวจสอบว่ากิจกรรมนี้เก่าเกินไปหรือไม่ (เก่ากว่า 6 ชั่วโมง)
-            $startTime = $unfinishedActivity->start_time instanceof Carbon
-                ? $unfinishedActivity->start_time
-                : Carbon::parse($unfinishedActivity->start_time);
-
-            if ($startTime->lt(Carbon::now()->subHours(6))) {
-                // ถ้าเป็นกิจกรรมเก่า ให้ปิดโดยอัตโนมัติ
-                $unfinishedActivity->end_time = Carbon::now();
-                $unfinishedActivity->save();
-
-                Log::info('ปิดกิจกรรมเก่าที่ยังไม่เสร็จสิ้นโดยอัตโนมัติ', [
-                    'user_id' => $user->user_id,
-                    'activity_id' => $unfinishedActivity->run_id
-                ]);
-
-                // ส่งคืนค่าว่าไม่มีกิจกรรมที่กำลังดำเนินอยู่
-                return response()->json([
-                    'has_active' => false
-                ]);
-            }
-
-            // ถ้ามีกิจกรรมที่ยังไม่เสร็จ ให้ส่งข้อมูลเพิ่มเติมเพื่อให้สามารถดำเนินการต่อได้
-            $duration = 0;
-            if ($unfinishedActivity->start_time) {
-                $duration = $startTime->diffInSeconds(Carbon::now());
-            }
-
-            // กำหนดค่าเริ่มต้นสำหรับข้อมูลที่อาจไม่มี
-            $routeData = "[]";
-
-            // ถ้ามีข้อมูลเส้นทาง ให้ดึงมา
-            if (!empty($unfinishedActivity->route_data)) {
-                $routeData = $unfinishedActivity->route_data;
-            }
-
-            // สร้าง response ที่มีข้อมูลเพิ่มเติม
+        if (!$activeActivity) {
             return response()->json([
-                'has_active' => true,
-                'activity_id' => $unfinishedActivity->run_id,
-                'start_time' => $unfinishedActivity->start_time,
-                'duration' => $duration,
-                'distance' => $unfinishedActivity->distance ?? 0,
-                'average_speed' => $unfinishedActivity->average_speed ?? 0,
-                'calories_burned' => $unfinishedActivity->calories_burned ?? 0,
-                'is_test' => $unfinishedActivity->is_test ?? false,
-                'route_data' => $routeData,
-                'elapsed_time' => $duration
+                'status' => 'success',
+                'has_active' => false,
+                'message' => 'ไม่พบกิจกรรมที่ยังไม่เสร็จสิ้น'
             ]);
         }
 
+        // คำนวณเวลาที่ผ่านไปตั้งแต่เริ่มกิจกรรม
+        $elapsedTime = 0;
+        try {
+            if ($activeActivity->start_time) {
+                $startTime = $activeActivity->start_time instanceof Carbon
+                    ? $activeActivity->start_time
+                    : Carbon::parse($activeActivity->start_time);
+
+                $elapsedTime = $startTime->diffInSeconds(Carbon::now());
+            }
+        } catch (\Exception $e) {
+            Log::error('Error calculating elapsed time: ' . $e->getMessage());
+        }
+
+        // ตรวจสอบว่ากิจกรรมนี้ถูกหยุดชั่วคราวหรือไม่ (ถ้ามี column is_paused)
+        $isPaused = false;
+        if (Schema::hasColumn('tb_run', 'is_paused')) {
+            $isPaused = (bool)$activeActivity->is_paused;
+        }
+
+        // โหลดข้อมูลเส้นทาง
+        $routeData = [];
+        if ($activeActivity->route_data) {
+            try {
+                if (is_string($activeActivity->route_data)) {
+                    $routeData = json_decode($activeActivity->route_data, true);
+                } else {
+                    $routeData = $activeActivity->route_data;
+                }
+            } catch (\Exception $e) {
+                Log::error('Error parsing route data: ' . $e->getMessage());
+            }
+        }
+
         return response()->json([
-            'has_active' => false
+            'status' => 'success',
+            'has_active' => true,
+            'activity_id' => $activeActivity->run_id,
+            'start_time' => $activeActivity->start_time,
+            'elapsed_time' => $elapsedTime,
+            'distance' => $activeActivity->distance ?? 0,
+            'average_speed' => $activeActivity->average_speed ?? 0,
+            'calories_burned' => $activeActivity->calories_burned ?? 0,
+            'is_paused' => $isPaused,
+            'is_test' => (bool)$activeActivity->is_test,
+            'route_data' => $routeData
         ]);
     }
 

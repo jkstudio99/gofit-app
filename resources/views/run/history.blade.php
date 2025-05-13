@@ -39,7 +39,7 @@
                         <div class="col-md-3 mb-3">
                             <div class="p-3 bg-light rounded text-center">
                                 <div class="fs-2 text-primary fw-bold">{{ $totalTime }}</div>
-                                <div class="text-muted">เวลาสะสม (ชม.)</div>
+                                <div class="text-muted">เวลาสะสม</div>
                             </div>
                         </div>
                     </div>
@@ -71,7 +71,25 @@
                                             echo sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
                                         @endphp
                                     @else
-                                        00:00:00
+                                        @php
+                                            if ($activity->start_time && $activity->end_time) {
+                                                $startTime = $activity->start_time instanceof \Carbon\Carbon
+                                                    ? $activity->start_time
+                                                    : \Carbon\Carbon::parse($activity->start_time);
+
+                                                $endTime = $activity->end_time instanceof \Carbon\Carbon
+                                                    ? $activity->end_time
+                                                    : \Carbon\Carbon::parse($activity->end_time);
+
+                                                $duration = $startTime->diffInSeconds($endTime);
+                                                $hours = floor($duration / 3600);
+                                                $minutes = floor(($duration % 3600) / 60);
+                                                $seconds = $duration % 60;
+                                                echo sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+                                            } else {
+                                                echo '00:00:00';
+                                            }
+                                        @endphp
                                     @endif
                                 </td>
                                 <td>{{ number_format($activity->average_speed, 1) }} กม./ชม.</td>
@@ -80,7 +98,25 @@
                                     <button class="btn btn-sm btn-outline-primary view-run-details"
                                         data-id="{{ $activity->run_id }}"
                                         data-distance="{{ number_format($activity->distance, 2) }}"
-                                        data-time="@if($activity->duration){{ sprintf('%02d:%02d:%02d', floor($activity->duration / 3600), floor(($activity->duration % 3600) / 60), $activity->duration % 60) }}@else 00:00:00 @endif"
+                                        data-time="@if($activity->duration){{ sprintf('%02d:%02d:%02d', floor($activity->duration / 3600), floor(($activity->duration % 3600) / 60), $activity->duration % 60) }}@else @php
+                                            if ($activity->start_time && $activity->end_time) {
+                                                $startTime = $activity->start_time instanceof \Carbon\Carbon
+                                                    ? $activity->start_time
+                                                    : \Carbon\Carbon::parse($activity->start_time);
+
+                                                $endTime = $activity->end_time instanceof \Carbon\Carbon
+                                                    ? $activity->end_time
+                                                    : \Carbon\Carbon::parse($activity->end_time);
+
+                                                $duration = $startTime->diffInSeconds($endTime);
+                                                $hours = floor($duration / 3600);
+                                                $minutes = floor(($duration % 3600) / 60);
+                                                $seconds = $duration % 60;
+                                                echo sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+                                            } else {
+                                                echo '00:00:00';
+                                            }
+                                        @endphp @endif"
                                         data-calories="{{ number_format($activity->calories_burned, 0) }}"
                                         data-route="{{ is_string($activity->route_data) ? $activity->route_data : json_encode($activity->route_data) }}">
                                         <i class="fas fa-map-marked-alt"></i>

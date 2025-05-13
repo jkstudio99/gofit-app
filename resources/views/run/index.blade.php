@@ -279,7 +279,7 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         try {
-            console.log('DOM loaded, initializing map...');
+            console.log('DOM loaded, initializing app...');
 
         // ตั้งค่าแผนที่หลัก
         initMap();
@@ -293,7 +293,9 @@
             getCurrentLocation();
 
             // ตรวจสอบว่ามีกิจกรรมที่ยังไม่เสร็จสิ้นหรือไม่
+            console.log('เริ่มตรวจสอบกิจกรรมที่ยังไม่เสร็จสิ้น...');
             checkForActiveActivity();
+            console.log('เรียกใช้ฟังก์ชัน checkForActiveActivity แล้ว');
 
             // เมื่อผู้ใช้รีเฟรชหน้าหรือปิดแท็บ จะไม่บันทึกข้อมูลโดยอัตโนมัติ
             window.addEventListener('beforeunload', function(e) {
@@ -769,7 +771,7 @@
                     duration: 1
                 });
             } else {
-                // ถ้าไม่มีเส้นทาง หรือยังไม่ได้เริ่มวิ่ง ให้เลื่อนแผนที่ไปที่ตำแหน่งปัจจุบันโดยไม่ซูม
+                // ถ้าไม่มีเส้นทาง หรือยังไม่เริ่มวิ่ง ให้เลื่อนแผนที่ไปที่ตำแหน่งปัจจุบันโดยไม่ซูม
                 map.panTo([lat, lng]);
             }
         }
@@ -884,8 +886,13 @@
         // หยุดเวลาเดิม (ถ้ามี)
         if (timer) clearInterval(timer);
 
+        // บันทึกเวลาเริ่มต้นของ JavaScript ณ ปัจจุบันเพื่อคำนวณเวลาที่ผ่านไปอย่างแม่นยำ
+        const timerStartTime = Date.now() - (elapsedSeconds * 1000);
+
         timer = setInterval(function() {
-            elapsedSeconds++;
+            // คำนวณเวลาที่ผ่านไปจากเวลาเริ่มต้น
+            const currentTime = Date.now();
+            elapsedSeconds = Math.floor((currentTime - timerStartTime) / 1000);
 
             // คำนวณระยะทางและแคลอรี่ถ้าอยู่ในโหมดจำลอง
             if (useSimulation && !isPaused) {
@@ -1208,118 +1215,99 @@
         .then(data => {
             Swal.close();
 
-            if (data.has_active && data.activity_id == activityId) {
-                // ตั้งค่าสถานะการวิ่ง
-                runId = activityId;
-                isRunning = true;
-                isPaused = false;
+            console.log('ข้อมูลกิจกรรมค้าง:', data);
 
-                // กำหนดโหมดการวิ่งตามข้อมูลที่ได้รับ
-                useSimulation = data.is_test;
+            if (data.has_active) {
+                // บันทึกข้อมูลจาก server
+                runId = data.activity_id;
 
-                // อัปเดตการแสดงผลของโหมดการวิ่ง
-                if (useSimulation) {
-                    document.getElementById('toggleModeBtn').setAttribute('data-mode', 'simulation');
-                    document.getElementById('toggleModeText').textContent = 'ใช้ GPS จริง';
-                    document.getElementById('simulationBadge').textContent = 'โหมดจำลอง';
-                    document.getElementById('simulationBadge').className = 'badge bg-info ms-2';
-                    document.getElementById('simulationAlert').style.display = 'block';
-                    document.getElementById('speedSelectorContainer').style.display = 'block';
-                } else {
-                    document.getElementById('toggleModeBtn').setAttribute('data-mode', 'real');
-                    document.getElementById('toggleModeText').textContent = 'ใช้โหมดจำลอง';
-                    document.getElementById('simulationBadge').textContent = 'โหมด GPS จริง';
-                    document.getElementById('simulationBadge').className = 'badge bg-success ms-2';
-                    document.getElementById('simulationAlert').style.display = 'none';
-                    document.getElementById('speedSelectorContainer').style.display = 'none';
+                // กำหนดเวลาที่ผ่านไปจากข้อมูลบน server
+                if (data.elapsed_time && data.elapsed_time > 0) {
+                    elapsedSeconds = parseInt(data.elapsed_time);
+                    console.log('กำหนดเวลาที่ผ่านไปเป็น ' + elapsedSeconds + ' วินาที');
                 }
 
-                // ตั้งค่าค่าต่างๆ จากข้อมูลที่ได้รับ
-                currentDistance = parseFloat(data.distance) || 0;
-                elapsedSeconds = parseInt(data.elapsed_time) || 0;
-                currentSpeed = parseFloat(data.average_speed) || 0;
-                totalCalories = parseFloat(data.calories_burned) || 0;
-
-                // ถ้ามีข้อมูลเส้นทาง ให้โหลดเส้นทาง
-                if (data.route_data && data.route_data !== '[]') {
+                // โหลดข้อมูลเส้นทาง
+                if (data.route_data) {
                     try {
-                        let routeData;
                         if (typeof data.route_data === 'string') {
-                            routeData = JSON.parse(data.route_data);
-                        } else {
-                            routeData = data.route_data;
+                            let routeData = JSON.parse(data.route_data);
+                            if (Array.isArray(routeData)) {
+                                routePoints = routeData.map(point => [point.lat, point.lng]);
+                            }
+                        } else if (Array.isArray(data.route_data)) {
+                            routePoints = data.route_data.map(point => [point.lat, point.lng]);
                         }
-
-                        // แปลงเส้นทางเป็นรูปแบบที่ใช้ใน routePoints
-                        routePoints = Array.isArray(routeData) ?
-                            routeData.map(point => [point.lat, point.lng]) : [];
-
-        // อัปเดตเส้นทางบนแผนที่
-                        if (routePoints.length > 0) {
-                            // ล้างเส้นทางเดิม
-        if (routePolyline) {
-                                map.removeLayer(routePolyline);
-                            }
-
-                            // สร้างเส้นทางใหม่
-            routePolyline = L.polyline(routePoints, {
-                color: 'blue',
-                weight: 5,
-                opacity: 0.7
-            }).addTo(map);
-
-                            // ปรับมุมมองแผนที่ให้เห็นเส้นทางทั้งหมด
-                            if (routePoints.length > 1) {
-                                map.fitBounds(routePolyline.getBounds(), {
-                                    padding: [50, 50],
-                                    maxZoom: 16
-                                });
-                            }
-
-                            // อัปเดตตำแหน่งปัจจุบัน
-                            if (routePoints.length > 0) {
-                                const lastPoint = routePoints[routePoints.length - 1];
-                                updateMap(lastPoint[0], lastPoint[1]);
-                            }
-                        }
-                    } catch (e) {
-                        console.error('Error parsing route data:', e);
-                        routePoints = [];
+                    } catch (error) {
+                        console.error('Error parsing route data:', error);
                     }
                 }
 
-                // อัปเดตหน้าจอ
-                updateRunStats();
+                // อัปเดตค่าต่างๆ
+                currentDistance = data.distance || 0;
+                totalCalories = data.calories_burned || 0;
+                currentSpeed = data.average_speed || 0;
+                useSimulation = data.is_test || false;
 
-                // เปลี่ยนปุ่มควบคุม
+                // อัปเดต UI
+                document.getElementById('distance').innerText = currentDistance.toFixed(2);
+                document.getElementById('time').innerText = formatTime(elapsedSeconds);
+                document.getElementById('speed').innerText = currentSpeed.toFixed(1);
+                document.getElementById('calories').innerText = Math.round(totalCalories);
+
+                // แสดงหน้าจอการวิ่ง
                 document.getElementById('startRunBtn').style.display = 'none';
-                document.querySelector('.running-controls').style.display = 'flex';
+                document.querySelector('.running-controls').style.display = 'block';
 
-                // เริ่มจับเวลาต่อ
+                // เริ่มต้นการวิ่งอีกครั้ง
+                isRunning = true;
+                isPaused = false;
+
+                // เริ่มนับเวลาใหม่
                 startTimer();
 
-                // เริ่มการติดตามตำแหน่งหรือจำลอง
+                // เริ่มการจำลองหรือติดตามตำแหน่งอีกครั้ง
                 if (useSimulation) {
+                    // อัปเดตปุ่มสลับโหมด
+                    document.getElementById('toggleModeBtn').classList.remove('btn-primary');
+                    document.getElementById('toggleModeBtn').classList.add('btn-warning');
+                    document.getElementById('toggleModeBtn').innerHTML = '<i class="fas fa-running me-2"></i>โหมดจำลอง';
+
+                    // เริ่มการจำลอง
                     simulateRunning();
                 } else {
+                    // อัปเดตปุ่มสลับโหมด
+                    document.getElementById('toggleModeBtn').classList.remove('btn-warning');
+                    document.getElementById('toggleModeBtn').classList.add('btn-primary');
+                    document.getElementById('toggleModeBtn').innerHTML = '<i class="fas fa-map-marker-alt me-2"></i>ใช้ GPS จริง';
+
+                    // เริ่มการติดตามตำแหน่ง
                     startLocationTracking();
                 }
 
-                // ปิดไม่ให้เปลี่ยนโหมดในขณะวิ่ง
-                updateToggleModeButton();
-
-                // แสดงการแจ้งเตือน
-                showAlert('success', 'ดำเนินการต่อสำเร็จ', 'กลับมาดำเนินการกิจกรรมการวิ่งต่อเรียบร้อยแล้ว');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'ดำเนินการต่อ',
+                    text: 'กำลังกลับไปดำเนินการกิจกรรมที่ค้างอยู่',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
             } else {
-                showAlert('error', 'เกิดข้อผิดพลาด', 'ไม่พบกิจกรรมที่ค้างอยู่ หรือกิจกรรมอาจถูกปิดไปแล้ว');
-                resetRunState();
+                // ไม่พบกิจกรรมค้าง
+                Swal.fire({
+                    icon: 'info',
+                    title: 'ไม่พบกิจกรรมค้าง',
+                    text: 'ไม่พบกิจกรรมที่ยังไม่เสร็จสิ้น'
+                });
             }
         })
         .catch(error => {
-            Swal.close();
-            console.error('Error resuming activity:', error);
-            showAlert('error', 'เกิดข้อผิดพลาด', 'ไม่สามารถดำเนินการต่อกิจกรรมได้: ' + error.message);
-            resetRunState();
+            console.error('Error fetching activity data:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด',
+                text: 'ไม่สามารถโหลดข้อมูลกิจกรรมได้: ' + error.message
+            });
         });
     }
 
@@ -1333,6 +1321,8 @@
             document.getElementById('pauseRunBtn').innerHTML = '<i class="fas fa-pause-circle me-2"></i>หยุดชั่วคราว';
             document.getElementById('pauseRunBtn').classList.remove('btn-success');
             document.getElementById('pauseRunBtn').classList.add('btn-secondary');
+
+            // เริ่มจับเวลาต่อโดยใช้เวลาที่เก็บไว้ล่าสุด
             startTimer();
 
             // เริ่มการติดตามตำแหน่งหรือการจำลองอีกครั้ง
@@ -1357,13 +1347,15 @@
                 console.error('Error resuming run:', error);
             });
 
-            console.log('กลับมาวิ่งต่อแล้ว');
+            console.log('กลับมาวิ่งต่อแล้ว เวลาปัจจุบัน:', elapsedSeconds, 'วินาที');
         } else {
             // หยุดชั่วคราว
             isPaused = true;
             document.getElementById('pauseRunBtn').innerHTML = '<i class="fas fa-play-circle me-2"></i>วิ่งต่อ';
             document.getElementById('pauseRunBtn').classList.remove('btn-secondary');
             document.getElementById('pauseRunBtn').classList.add('btn-success');
+
+            // บันทึกเวลาล่าสุดก่อนหยุด
             clearInterval(timer);
 
             // หยุดการติดตามตำแหน่งหรือการจำลอง
@@ -1388,7 +1380,7 @@
                 console.error('Error pausing run:', error);
             });
 
-            console.log('หยุดชั่วคราวแล้ว');
+            console.log('หยุดชั่วคราวแล้ว เวลาที่หยุด:', elapsedSeconds, 'วินาที');
         }
     }
 
@@ -1812,39 +1804,125 @@
 
     // ฟังก์ชันสำหรับแสดงสรุปการวิ่ง
     function checkForActiveActivity() {
+        console.log('===== กำลังตรวจสอบกิจกรรมที่ยังไม่เสร็จสิ้น... =====');
+
         fetch('{{ url("/run/check-active") }}', {
             method: 'GET',
             headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
             }
         })
-            .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                console.error('Server response error:', response.status);
+                return null;
+            }
+            return response.json();
+        })
         .then(data => {
-            if (data.has_active && data.activity_id) {
-                // แสดงการแจ้งเตือนว่ามีกิจกรรมที่ค้างอยู่
+            if (!data) {
+                console.log('ไม่ได้รับข้อมูลจาก server');
+                return;
+            }
+
+            console.log('ผลการตรวจสอบกิจกรรมที่ยังไม่เสร็จสิ้น:', data);
+
+            if (data.has_active) {
+                console.log('พบกิจกรรมที่ยังไม่เสร็จสิ้น, กำลังแสดง SweetAlert...');
+                // คำนวณเวลาที่ผ่านไปเป็นรูปแบบที่อ่านง่าย
+                const elapsedTimeFormatted = formatTime(data.elapsed_time || 0);
+                const distance = parseFloat(data.distance || 0).toFixed(2);
+
+                // แสดง SweetAlert ถามว่าต้องการทำอย่างไรกับกิจกรรมที่ยังไม่เสร็จสิ้น
                 Swal.fire({
-                    icon: 'warning',
                     title: 'พบกิจกรรมที่ยังไม่เสร็จสิ้น',
-                    text: 'คุณมีกิจกรรมการวิ่งที่ยังไม่เสร็จสิ้น ต้องการดำเนินการอย่างไร?',
+                    html: `<p>พบกิจกรรมการวิ่งที่ยังไม่เสร็จสิ้น:</p>
+                          <p>ระยะทาง: <strong>${distance} กม.</strong></p>
+                          <p>เวลาที่ใช้: <strong>${elapsedTimeFormatted}</strong></p>
+                          <p>คุณต้องการทำอย่างไรต่อไป?</p>`,
+                    icon: 'warning',
                     showCancelButton: true,
                     showDenyButton: true,
-                    confirmButtonText: 'จบกิจกรรม',
-                    denyButtonText: 'ดำเนินการต่อ',
-                    cancelButtonText: 'ไม่ทำอะไร'
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'ดำเนินการต่อ',
+                    denyButtonText: 'จบการวิ่ง',
+                    cancelButtonText: 'ไม่ทำอะไร',
+                    cancelButtonColor: '#d33'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // จบกิจกรรมที่ค้างอยู่
-                        finishPendingActivity(data.activity_id);
-                    } else if (result.isDenied) {
-                        // ดำเนินการต่อกับกิจกรรมที่ค้างอยู่
+                        // ดำเนินการต่อ
                         resumePendingActivity(data.activity_id);
+                    } else if (result.isDenied) {
+                        // จบการวิ่ง (finish activity with no additional data)
+                        finishPendingActivity(data.activity_id);
                     }
+                    // ถ้ากด cancel จะไม่ทำอะไร
                 });
             }
         })
         .catch(error => {
-            console.error('Error checking for active activities:', error);
+            console.error('Error checking active activities:', error);
+        });
+    }
+
+    // ฟังก์ชันสำหรับจบกิจกรรมที่ค้างอยู่
+    function finishPendingActivity(activityId) {
+        // แสดง loading
+        Swal.fire({
+            title: 'กำลังจบกิจกรรม',
+            text: 'กรุณารอสักครู่...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // ส่งคำขอไปยังเซิร์ฟเวอร์
+        fetch('{{ url("/run/finish") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                activity_id: activityId,
+                route_data: '[]',
+                distance: 0,
+                duration: 0,
+                calories: 0,
+                average_speed: 0
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            Swal.close();
+
+            if (data.status === 'success') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'จบกิจกรรมเรียบร้อย',
+                    text: 'กิจกรรมที่ค้างอยู่ถูกจบเรียบร้อยแล้ว',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: data.message || 'ไม่สามารถจบกิจกรรมได้'
+                });
+            }
+        })
+        .catch(error => {
+            Swal.close();
+            console.error('Error finishing activity:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด',
+                text: 'ไม่สามารถจบกิจกรรมได้: ' + error.message
+            });
         });
     }
 
@@ -2049,20 +2127,32 @@
         if (!runId || !isRunning || isPaused || elapsedSeconds % 10 !== 0) return;
 
         try {
+            const updateData = {
+                run_id: runId,
+                distance: parseFloat(currentDistance.toFixed(2)),
+                duration: elapsedSeconds,
+                calories: Math.round(totalCalories),
+                average_speed: parseFloat(currentSpeed.toFixed(1))
+            };
+
+            console.log('กำลังอัปเดตข้อมูลไปยังเซิร์ฟเวอร์:', updateData);
+
             fetch('{{ url("/run/update") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({
-                    run_id: runId,
-                    distance: parseFloat(currentDistance.toFixed(2)),
-                    duration: elapsedSeconds,
-                    calories: Math.round(totalCalories),
-                    average_speed: parseFloat(currentSpeed.toFixed(1))
-                })
-            }).catch(error => {
+                },
+                body: JSON.stringify(updateData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    console.error('Server response error:', response.status);
+                    return;
+                }
+                console.log('อัปเดตข้อมูลสำเร็จ');
+            })
+            .catch(error => {
                 console.error('Error updating run data:', error);
             });
         } catch (error) {
