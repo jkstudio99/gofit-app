@@ -277,13 +277,6 @@
         </div>
     </div>
 
-    @if (session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    @endif
-
     <!-- Stats Cards -->
     <div class="row mb-4">
         <div class="col-6 col-md-3 mb-3">
@@ -365,37 +358,12 @@
         </div>
     </div>
 
-    <!-- Status Filter Tags -->
-    <div class="mb-4">
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{{ route('events.index', request()->except('status')) }}"
-               class="badge bg-{{ request('status') ? 'light text-dark' : 'primary' }} py-2 px-3 filter-badge">
-                <i class="fas fa-list me-1"></i> ทั้งหมด
-            </a>
-
-            <a href="{{ route('events.index', array_merge(request()->except('status'), ['status' => 'upcoming'])) }}"
-               class="badge bg-{{ request('status') == 'upcoming' ? 'warning' : 'light text-dark' }} py-2 px-3 filter-badge">
-                <i class="fas fa-hourglass-start me-1"></i> กำลังจะมาถึง
-            </a>
-
-            <a href="{{ route('events.index', array_merge(request()->except('status'), ['status' => 'active'])) }}"
-               class="badge bg-{{ request('status') == 'active' ? 'success' : 'light text-dark' }} py-2 px-3 filter-badge">
-                <i class="fas fa-running me-1"></i> กำลังดำเนินการ
-            </a>
-
-            <a href="{{ route('events.index', array_merge(request()->except('status'), ['status' => 'completed'])) }}"
-               class="badge bg-{{ request('status') == 'completed' ? 'secondary' : 'light text-dark' }} py-2 px-3 filter-badge">
-                <i class="fas fa-flag-checkered me-1"></i> เสร็จสิ้นแล้ว
-            </a>
-        </div>
-    </div>
-
     <!-- Events Grid with Tabs -->
     <div class="row mb-4">
         <div class="col">
             <div class="card shadow-sm">
                 <div class="card-body pt-4">
-                    <!-- Tab Navigation - แบบใหม่ใช้ Bootstrap client-side tabs -->
+                    <!-- Tab Navigation - ใช้ Bootstrap client-side tabs -->
                     <ul class="nav nav-tabs mb-4" id="eventsTabs" role="tablist">
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-events" type="button" role="tab" aria-controls="all-events" aria-selected="true">
@@ -412,23 +380,34 @@
                                 <i class="fas fa-play-circle me-1"></i> กำลังดำเนินการ
                             </button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed-events" type="button" role="tab" aria-controls="completed-events" aria-selected="false">
+                                <i class="fas fa-flag-checkered me-1"></i> เสร็จสิ้นแล้ว
+                            </button>
+                        </li>
                     </ul>
 
                     <!-- Tab Content -->
                     <div class="tab-content" id="eventsTabsContent">
-                        <!-- All Events Tab -->
+                        <!-- All Events Tab (ไม่แสดงกิจกรรมที่สิ้นสุดแล้ว) -->
                         <div class="tab-pane fade show active" id="all-events" role="tabpanel" aria-labelledby="all-tab">
-                            @if ($events->isEmpty())
+                            @php
+                                $activeAndUpcomingEvents = $events->filter(function($event) {
+                                    return $event->status !== 'completed';
+                                });
+                            @endphp
+
+                            @if ($activeAndUpcomingEvents->isEmpty())
                                 <div class="text-center py-5">
                                     <div class="mb-4">
                                         <i class="fas fa-calendar-times fa-5x text-muted"></i>
                                     </div>
                                     <h5>ไม่พบกิจกรรม</h5>
-                                    <p class="text-muted mb-4">ขออภัย ไม่พบกิจกรรมที่ตรงกับเงื่อนไขการค้นหา</p>
+                                    <p class="text-muted mb-4">ขออภัย ไม่พบกิจกรรมที่กำลังจะมาถึงหรือกำลังดำเนินการอยู่</p>
                                 </div>
                             @else
                                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                                    @foreach ($events as $event)
+                                    @foreach ($activeAndUpcomingEvents as $event)
                                     <div class="col">
                                         @include('events.partials.event-card')
                                     </div>
@@ -488,6 +467,33 @@
                             @else
                                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                                     @foreach ($activeEvents as $event)
+                                    <div class="col">
+                                        @include('events.partials.event-card')
+                                    </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Completed Events Tab -->
+                        <div class="tab-pane fade" id="completed-events" role="tabpanel" aria-labelledby="completed-tab">
+                            @php
+                                $completedEvents = $events->filter(function($event) {
+                                    return $event->status === 'completed';
+                                });
+                            @endphp
+
+                            @if ($completedEvents->isEmpty())
+                                <div class="text-center py-5">
+                                    <div class="mb-4">
+                                        <i class="fas fa-flag-checkered fa-5x text-muted"></i>
+                                    </div>
+                                    <h5>ไม่พบกิจกรรมที่เสร็จสิ้นแล้ว</h5>
+                                    <p class="text-muted">ยังไม่มีกิจกรรมที่เสร็จสิ้นในขณะนี้</p>
+                                </div>
+                            @else
+                                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                                    @foreach ($completedEvents as $event)
                                     <div class="col">
                                         @include('events.partials.event-card')
                                     </div>

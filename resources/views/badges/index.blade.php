@@ -918,6 +918,7 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{{ asset('js/badge-onboarding-fix.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -998,4 +999,25 @@
 
                 // Find the correct form to submit - check both formats of form IDs
                 const form = document.getElementById(`unlock-form-${badgeId}`) ||
-                             document.querySelector(`
+                             document.getElementById(`unlock-form-distance-${badgeId}`) ||
+                             document.getElementById(`unlock-form-calories-${badgeId}`) ||
+                             document.getElementById(`unlock-form-streak-${badgeId}`) ||
+                             document.getElementById(`unlock-form-speed-${badgeId}`) ||
+                             document.getElementById(`unlock-form-event-${badgeId}`);
+
+                if (form) {
+                    // Submit the form
+                    form.submit();
+                } else {
+                    console.error('Form not found for badge ID:', badgeId);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่พบฟอร์มสำหรับการปลดล็อคเหรียญตรานี้'
+                    });
+                }
+            }
+        });
+    }
+</script>
+@endsection

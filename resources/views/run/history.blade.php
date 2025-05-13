@@ -82,7 +82,7 @@
                                         data-distance="{{ number_format($activity->distance, 2) }}"
                                         data-time="@if($activity->duration){{ sprintf('%02d:%02d:%02d', floor($activity->duration / 3600), floor(($activity->duration % 3600) / 60), $activity->duration % 60) }}@else 00:00:00 @endif"
                                         data-calories="{{ number_format($activity->calories_burned, 0) }}"
-                                        data-route="{{ json_encode($activity->route_data) }}">
+                                        data-route="{{ is_string($activity->route_data) ? $activity->route_data : json_encode($activity->route_data) }}">
                                         <i class="fas fa-map-marked-alt"></i>
                                     </button>
                                     <button class="btn btn-sm btn-outline-danger delete-run" data-id="{{ $activity->run_id }}">
@@ -290,8 +290,9 @@
                 const time = this.getAttribute('data-time');
                 const calories = this.getAttribute('data-calories');
 
-                // กำหนดค่าตัวแปร global เพื่อใช้ในเหตุการณ์ shown.bs.modal
+                // บันทึกข้อมูลเส้นทางสำหรับใช้ต่อไป
                 currentRouteData = routeData;
+                console.log('Route data (raw):', routeData.substring(0, 100) + (routeData.length > 100 ? '...' : ''));
 
                 // แสดงข้อมูลสรุป
                 document.getElementById('summaryDistance').innerText = distance + " กม.";

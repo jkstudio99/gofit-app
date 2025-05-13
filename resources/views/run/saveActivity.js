@@ -1,5 +1,17 @@
+// ตัวแปรป้องกันการส่งข้อมูลซ้ำ
+let isSaving = false;
+
 // ฟังก์ชันบันทึกกิจกรรมการวิ่ง
 function saveActivity() {
+    // ป้องกันการบันทึกซ้ำซ้อน
+    if (isSaving) {
+        console.log('กำลังบันทึกข้อมูล โปรดรอสักครู่...');
+        return;
+    }
+
+    // ตั้งค่าสถานะว่ากำลังบันทึก
+    isSaving = true;
+
     // แสดง loading state
     Swal.fire({
         title: 'กำลังบันทึก',
@@ -26,6 +38,9 @@ function saveActivity() {
 
     // แปลงเป็น JSON string
     const routeDataJSON = JSON.stringify(routeDataFormatted);
+
+    // บันทึก endpoint ที่ใช้สำหรับการ debug
+    console.log('Using endpoint:', runStoreUrl);
 
     // ส่งข้อมูลไปบันทึกที่ API endpoint
     fetch(runStoreUrl, {
@@ -63,6 +78,9 @@ function saveActivity() {
         });
     })
     .then(data => {
+        // รีเซ็ตสถานะการบันทึก
+        isSaving = false;
+
         // ปิด loading
         Swal.close();
 
@@ -95,6 +113,9 @@ function saveActivity() {
         }
     })
     .catch(error => {
+        // รีเซ็ตสถานะการบันทึก
+        isSaving = false;
+
         // ปิด loading
         Swal.close();
 

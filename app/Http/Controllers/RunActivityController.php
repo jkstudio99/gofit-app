@@ -153,11 +153,45 @@ class RunActivityController extends Controller
                 ], 404);
             }
 
+            // ตรวจสอบว่ากิจกรรมนี้ถูกบันทึกไปแล้วหรือไม่
             if (!is_null($activity->end_time)) {
+                // แทนที่จะส่งข้อผิดพลาด ให้ส่งกลับข้อมูลเดิมพร้อมแจ้งว่าบันทึกแล้ว
                 return response()->json([
-                    'status' => 'error',
-                    'message' => 'กิจกรรมนี้จบไปแล้ว'
-                ], 400);
+                    'status' => 'success',
+                    'message' => 'กิจกรรมนี้ถูกบันทึกไปแล้ว',
+                    'activity' => $activity
+                ]);
+            }
+
+            // ตรวจสอบว่ามีการบันทึกซ้ำซ้อนหรือไม่ (ตรวจจากเวลาเริ่มที่เหมือนกัน)
+            $duplicateActivity = Run::where('user_id', $user->user_id)
+                ->where('start_time', $activity->start_time)
+                ->where('run_id', '!=', $activity->run_id)
+                ->whereNotNull('end_time')
+                ->first();
+
+            if ($duplicateActivity) {
+                Log::warning('พบการบันทึกซ้ำซ้อน', [
+                    'user_id' => $user->user_id,
+                    'original_activity_id' => $duplicateActivity->run_id,
+                    'current_activity_id' => $activity->run_id
+                ]);
+
+                // บันทึกข้อมูลเพื่อไม่ให้เกิด error แต่แจ้งผู้ใช้ว่ามีการบันทึกซ้ำ
+                $activity->end_time = Carbon::now();
+                $activity->distance = $request->distance;
+                $activity->calories_burned = $request->calories;
+                $activity->average_speed = $request->average_speed;
+                $activity->route_data = $request->route_data;
+                $activity->notes = "พบการบันทึกซ้ำซ้อนกับกิจกรรม ID: " . $duplicateActivity->run_id;
+                $activity->save();
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'ตรวจพบการบันทึกซ้ำซ้อน',
+                    'activity' => $activity,
+                    'is_duplicate' => true
+                ]);
             }
 
             // ตรวจสอบว่าเป็นการจบกิจกรรมที่ค้างอยู่หรือไม่
@@ -221,9 +255,12 @@ class RunActivityController extends Controller
             if (!$activity->is_test && !$isEmergencyFinish) {
                 try {
                     $this->checkForBadges($user, $activity);
+
+                    // อัปเดตความคืบหน้าของเป้าหมาย
+                    $this->updateGoalProgress($activity);
                 } catch (\Exception $e) {
                     // Just log badge checking errors, don't fail the whole request
-                    Log::error('Error checking badges: ' . $e->getMessage());
+                    Log::error('Error checking badges or updating goals: ' . $e->getMessage());
                 }
             }
 
@@ -369,11 +406,41 @@ class RunActivityController extends Controller
                 ], 401);
             }
 
+            // ป้องกันการบันทึกซ้ำซ้อนโดยตรวจสอบว่ามีกิจกรรมที่ถูกบันทึกในช่วงเวลาใกล้เคียงกันหรือไม่
+            $startTime = Carbon::now()->subMinutes(30); // เวลาเริ่มต้นโดยประมาณ
+            $endTime = Carbon::now(); // เวลาสิ้นสุด
+
+            // ตรวจสอบว่ามีกิจกรรมที่ถูกบันทึกในช่วงเวลา +/- 2 นาทีหรือไม่
+            $existingActivity = Run::where('user_id', $user->user_id)
+                ->where(function($query) use ($startTime, $endTime) {
+                    $query->whereBetween('start_time', [$startTime->copy()->subMinutes(2), $startTime->copy()->addMinutes(2)])
+                        ->orWhereBetween('end_time', [$endTime->copy()->subMinutes(2), $endTime->copy()->addMinutes(2)]);
+                })
+                ->whereNotNull('end_time')
+                ->first();
+
+            if ($existingActivity) {
+                Log::warning('พบการบันทึกซ้ำซ้อนในช่วงเวลาใกล้เคียง', [
+                    'user_id' => $user->user_id,
+                    'existing_activity_id' => $existingActivity->run_id,
+                    'start_time' => $startTime->toDateTimeString(),
+                    'end_time' => $endTime->toDateTimeString()
+                ]);
+
+                // ส่งกลับข้อมูลกิจกรรมที่มีอยู่แล้ว
+                return response()->json([
+                    'success' => true,
+                    'message' => 'กิจกรรมนี้ถูกบันทึกไปแล้ว',
+                    'activity' => $existingActivity,
+                    'is_duplicate' => true
+                ]);
+            }
+
             // สร้างกิจกรรมใหม่
             $activity = new Run();
             $activity->user_id = $user->user_id;
-            $activity->start_time = Carbon::now()->subMinutes(30); // สมมติว่าวิ่งมา 30 นาที
-            $activity->end_time = Carbon::now();
+            $activity->start_time = $startTime;
+            $activity->end_time = $endTime;
             $activity->distance = $request->distance;
             $activity->calories_burned = $request->calories_burned;
             $activity->average_speed = $request->average_speed;
@@ -391,6 +458,9 @@ class RunActivityController extends Controller
             // ตรวจสอบเหรียญรางวัล - เฉพาะการวิ่งจริงเท่านั้น
             if (!$activity->is_test) {
                 $this->checkForBadges($user, $activity);
+
+                // อัปเดตความคืบหน้าของเป้าหมาย
+                $this->updateGoalProgress($activity);
             }
 
             return response()->json([
@@ -606,6 +676,94 @@ class RunActivityController extends Controller
                 'status' => 'error',
                 'message' => 'เกิดข้อผิดพลาดในการอัปเดตข้อมูลการวิ่ง: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * อัปเดตความคืบหน้าของเป้าหมาย
+     *
+     * @param Run $run ข้อมูลการวิ่ง
+     * @return void
+     */
+    private function updateGoalProgress($run)
+    {
+        try {
+            $user = $run->user;
+            if (!$user) {
+                return;
+            }
+
+            // ดึงเป้าหมายที่กำลังดำเนินการอยู่ของผู้ใช้
+            $goals = DB::table('tb_activity_goals')
+                ->where('user_id', $user->user_id)
+                ->where('is_completed', false)
+                ->whereDate('end_date', '>=', now())
+                ->get();
+
+            foreach ($goals as $goal) {
+                $currentValue = $goal->current_value ?? 0;
+                $updated = false;
+
+                // อัปเดตความคืบหน้าตามประเภทเป้าหมาย
+                switch ($goal->type) {
+                    case 'distance':
+                        if ($run->distance) {
+                            $currentValue += $run->distance;
+                            $updated = true;
+                        }
+                        break;
+                    case 'duration':
+                        if ($run->duration) {
+                            $durationMinutes = $run->duration / 60; // แปลงวินาทีเป็นนาที
+                            $currentValue += $durationMinutes;
+                            $updated = true;
+                        }
+                        break;
+                    case 'calories':
+                        if ($run->calories_burned) {
+                            $currentValue += $run->calories_burned;
+                            $updated = true;
+                        }
+                        break;
+                    case 'frequency':
+                        $currentValue += 1;
+                        $updated = true;
+                        break;
+                }
+
+                if ($updated) {
+                    // บันทึกการอัปเดตความก้าวหน้า
+                    DB::table('tb_activity_goals')
+                        ->where('id', $goal->id)
+                        ->update([
+                            'current_value' => $currentValue,
+                            'updated_at' => now()
+                        ]);
+
+                    // ตรวจสอบว่าเป้าหมายสำเร็จหรือไม่
+                    if ($currentValue >= $goal->target_value) {
+                        DB::table('tb_activity_goals')
+                            ->where('id', $goal->id)
+                            ->update([
+                                'is_completed' => true,
+                                'completed_at' => now(),
+                                'updated_at' => now()
+                            ]);
+
+                        // ล็อกการบรรลุเป้าหมาย
+                        Log::info('Goal completed', [
+                            'user_id' => $user->user_id,
+                            'goal_id' => $goal->id,
+                            'type' => $goal->type,
+                            'target_value' => $goal->target_value,
+                            'current_value' => $currentValue
+                        ]);
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            // Log error but don't stop execution
+            Log::error('Error updating goal progress: ' . $e->getMessage());
         }
     }
 }

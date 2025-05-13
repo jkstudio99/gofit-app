@@ -57,7 +57,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('run.test.start');
     Route::post('/run/finish', [RunActivityController::class, 'finish'])->name('run.finish');
     Route::post('/run/updateRoute', [RunActivityController::class, 'updateRoute'])->name('run.updateRoute');
-    Route::post('/run/store', [RunController::class, 'store'])->name('run.store');
+    Route::post('/run/store', [RunActivityController::class, 'store'])->name('run.store');
     Route::get('/run/history', [RunController::class, 'history'])->name('run.history');
     Route::get('/run/show/{id}', [RunController::class, 'show'])->name('run.show');
     Route::post('/run/destroy', [RunController::class, 'destroy'])->name('run.destroy');
@@ -270,7 +270,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/toggle-pause', [App\Http\Controllers\RunActivityController::class, 'togglePause'])->name('toggle-pause');
         Route::post('/updateRoute', [App\Http\Controllers\RunActivityController::class, 'updateRoute'])->name('updateRoute');
         Route::post('/finish', [App\Http\Controllers\RunActivityController::class, 'finish'])->name('finish');
-        Route::post('/store', [App\Http\Controllers\RunController::class, 'store'])->name('store');
+        Route::post('/store', [App\Http\Controllers\RunActivityController::class, 'store'])->name('store');
     });
 
     // Sessions routes
