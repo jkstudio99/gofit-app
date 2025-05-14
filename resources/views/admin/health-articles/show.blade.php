@@ -234,9 +234,9 @@ function formatThaiDateTime($date)
                         <i class="fas fa-calendar-alt"></i> {{ formatThaiDate($article->created_at) }}
                     </div>
                     <div class="article-meta-item">
-                        @if($article->status == 'published')
-                            <span class="badge bg-published px-2 py-1">
-                                <i class="fas fa-check-circle me-1"></i> เผยแพร่แล้ว
+                        @if($article->status == 'published' || $article->is_published || $article->status == 'อนุมัติ')
+                            <span class="badge bg-primary px-2 py-1">
+                                <i class="fas fa-check-circle me-1"></i> เผยแพร่
                             </span>
                         @else
                             <span class="badge bg-draft px-2 py-1">
@@ -367,10 +367,10 @@ function formatThaiDateTime($date)
                     <div class="article-info-item">
                         <div class="article-info-label">สถานะ</div>
                         <div>
-                            @if($article->status == 'published')
-                                <span class="badge bg-published">เผยแพร่แล้ว</span>
+                            @if($article->status == 'published' || $article->is_published || $article->status == 'อนุมัติ')
+                                <span class="badge bg-primary px-2 py-1">เผยแพร่</span>
                             @else
-                                <span class="badge bg-draft">ฉบับร่าง</span>
+                                <span class="badge bg-draft px-2 py-1">ฉบับร่าง</span>
                             @endif
                         </div>
                     </div>
@@ -386,7 +386,7 @@ function formatThaiDateTime($date)
                         <div class="article-info-label">อัปเดตล่าสุด</div>
                         <div>{{ formatThaiDateTime($article->updated_at) }}</div>
                     </div>
-                    @if($article->status == 'published' && $article->published_at)
+                    @if(($article->status == 'published' || $article->is_published || $article->status == 'อนุมัติ') && $article->published_at)
                     <div class="article-info-item">
                         <div class="article-info-label">วันที่เผยแพร่</div>
                         <div>{{ formatThaiDateTime($article->published_at) }}</div>

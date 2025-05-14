@@ -843,13 +843,7 @@
         document.getElementById('distance').textContent = currentDistance.toFixed(2);
 
         // อัปเดตเวลา
-        const hours = Math.floor(elapsedSeconds / 3600);
-        const minutes = Math.floor((elapsedSeconds % 3600) / 60);
-        const seconds = elapsedSeconds % 60;
-        document.getElementById('time').textContent =
-            String(hours).padStart(2, '0') + ':' +
-            String(minutes).padStart(2, '0') + ':' +
-            String(seconds).padStart(2, '0');
+        document.getElementById('time').textContent = formatTime(elapsedSeconds);
 
         // อัปเดตความเร็ว
         document.getElementById('speed').textContent = currentSpeed.toFixed(1);
@@ -2194,6 +2188,16 @@
             toggleBtn.removeAttribute('disabled');
             toggleBtn.title = '';
         }
+    }
+
+    // ฟังก์ชันสำหรับแปลงวินาทีเป็นรูปแบบ HH:MM:SS
+    function formatTime(totalSeconds) {
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        return String(hours).padStart(2, '0') + ':' +
+               String(minutes).padStart(2, '0') + ':' +
+               String(seconds).padStart(2, '0');
     }
 </script>
 @endsection
